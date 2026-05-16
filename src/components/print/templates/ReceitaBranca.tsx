@@ -14,19 +14,19 @@ export default function ReceitaBranca() {
   return (
     <div className="p-10 text-black bg-white font-sans text-[11px] leading-relaxed relative min-h-[29.7cm]">
       {/* === CABEÇALHO === */}
-      <div className="border-b-2 border-gray-800 pb-4 mb-6">
+      <div className="border-b-2 border-gray-900 pb-3 mb-5">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-[16px] font-bold uppercase tracking-wide text-gray-900">
+            <p className="text-[15px] font-bold uppercase tracking-wider text-gray-900">
               {MEDICO.nome}
             </p>
-            <p className="text-[10px] text-gray-500 mt-1">{MEDICO.crm}</p>
-            <p className="text-[10px] text-gray-500 mt-0.5">{MEDICO.endereco} — {MEDICO.cidade}</p>
+            <p className="text-[9px] text-gray-600 mt-0.5">{MEDICO.crm}</p>
+            <p className="text-[9px] text-gray-600">{MEDICO.endereco} — {MEDICO.cidade}</p>
           </div>
           <div className="text-right">
             <p
-              className="font-black uppercase text-gray-800 border border-gray-300 px-4 py-2 rounded"
-              style={{ fontSize: '17px', letterSpacing: '0.08em' }}
+              className="font-black uppercase text-gray-900 border-2 border-gray-900 px-3 py-1.5"
+              style={{ fontSize: '16px', letterSpacing: '0.1em' }}
             >
               Receita Médica
             </p>
@@ -35,61 +35,61 @@ export default function ReceitaBranca() {
       </div>
 
       {/* === PACIENTE === */}
-      <div className="mb-6 pb-4 border-b border-gray-200">
-        <div className="flex gap-8">
+      <div className="mb-5 pb-3 border-b border-gray-300">
+        <div className="flex gap-6">
           <div className="flex-[3]">
-            <span className="text-[9px] font-bold uppercase text-gray-500 tracking-wide">Paciente</span>
-            <p className="text-[13px] font-semibold text-gray-900 mt-0.5 border-b border-dotted border-gray-400 pb-0.5">
+            <span className="text-[8px] font-bold uppercase text-gray-600 tracking-wide">Paciente</span>
+            <p className="text-[12px] font-semibold text-gray-900 mt-0.5 border-b border-dotted border-gray-500 pb-0.5">
               {pacienteNome || '________________________________________________'}
             </p>
           </div>
           {pacienteCpf && (
             <div className="flex-1">
-              <span className="text-[9px] font-bold uppercase text-gray-500 tracking-wide">CPF</span>
-              <p className="text-[11px] font-medium text-gray-800 mt-0.5 border-b border-dotted border-gray-400 pb-0.5">
+              <span className="text-[8px] font-bold uppercase text-gray-600 tracking-wide">CPF</span>
+              <p className="text-[10px] font-medium text-gray-800 mt-0.5 border-b border-dotted border-gray-500 pb-0.5">
                 {pacienteCpf}
               </p>
             </div>
           )}
           <div className="flex-1 text-right">
-            <span className="text-[9px] font-bold uppercase text-gray-500 tracking-wide">Data</span>
-            <p className="text-[11px] font-medium text-gray-800 mt-0.5">{dataFormatada}</p>
+            <span className="text-[8px] font-bold uppercase text-gray-600 tracking-wide">Data</span>
+            <p className="text-[10px] font-medium text-gray-800 mt-0.5">{dataFormatada}</p>
           </div>
         </div>
       </div>
 
       {/* === MEDICAMENTOS === */}
-      <div className="mb-12 space-y-5">
+      <div className="mb-10">
         {medicamentos
           .filter((m) => m.principioAtivo || m.nomeDigitado)
           .map((med, idx) => (
-            <div key={med.id} className="flex gap-3">
-              <div className="font-bold text-[13px] text-gray-400 w-5 pt-0.5 shrink-0">
+            <div key={med.id} className="mb-4 flex gap-2">
+              <div className="font-bold text-[12px] text-gray-400 w-4 pt-0.5 shrink-0">
                 {idx + 1}.
               </div>
               <div className="flex-1">
-                <div className="flex items-start gap-4 justify-between">
-                  <div className="flex-1">
-                    <p className="font-bold text-[13px] text-gray-900 uppercase">
+                <div className="flex items-baseline gap-3 justify-between mb-0.5">
+                  <div>
+                    <p className="font-bold text-[12px] text-gray-900 uppercase">
                       {med.principioAtivo || med.nomeDigitado}
                     </p>
                     {med.formaFarmaceutica && (
-                      <p className="text-[10px] text-gray-500 italic">{med.formaFarmaceutica}</p>
+                      <p className="text-[9px] text-gray-500 italic ml-0.5">{med.formaFarmaceutica}</p>
                     )}
-                    {med.uso && <p className="text-[10px] text-gray-500">{med.uso}</p>}
                   </div>
                   {med.quantidade && (
-                    <p className="text-[10px] text-gray-600 shrink-0">
-                      <span className="font-semibold">Qtd.:</span> {med.quantidade}
+                    <p className="text-[9px] text-gray-700 shrink-0 font-semibold">
+                      Qtd.: {med.quantidade}
                     </p>
                   )}
                 </div>
-                <p className="text-[11px] text-gray-800 mt-1">
+                {med.uso && <p className="text-[9px] text-gray-500 italic ml-0.5 mb-0.5">{med.uso}</p>}
+                <p className="text-[10px] text-gray-800">
                   <span className="font-semibold">Posologia:</span>{' '}
                   {med.posologia || '___________________________________________'}
                 </p>
                 {med.duracao && (
-                  <p className="text-[10px] text-gray-600 mt-0.5">
+                  <p className="text-[9px] text-gray-600 mt-0.5">
                     <span className="font-semibold">Duração:</span> {med.duracao}
                   </p>
                 )}
@@ -101,7 +101,7 @@ export default function ReceitaBranca() {
         {Array.from({
           length: Math.max(0, 5 - medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado).length),
         }).map((_, i) => (
-          <div key={`blank-${i}`} className="border-b border-dotted border-gray-200 h-8" />
+          <div key={`blank-${i}`} className="mb-4 border-b border-dotted border-gray-300 h-6" />
         ))}
       </div>
 
