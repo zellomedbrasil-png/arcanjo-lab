@@ -86,9 +86,9 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
                       {med.quantidade && <span className="text-[8px] font-semibold shrink-0">Qtd.: {med.quantidade}</span>}
                     </div>
                   </div>
-                  {/* Posologia logo embaixo, sem linha */}
+                  {/* Posologia logo embaixo — largura total sem indent */}
                   {med.posologia && (
-                    <div className="text-[8px] text-gray-800 pl-4 pt-0.5 pb-1 border-b border-black" style={{ minHeight: '13px' }}>
+                    <div className="text-[8px] text-gray-800 pt-0.5 pb-1 border-b border-black" style={{ minHeight: '13px' }}>
                       {med.uso && <span className="italic">{med.uso}. </span>}
                       <span>{med.posologia}</span>
                       {med.duracao && <span> — {med.duracao}</span>}
@@ -108,10 +108,10 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
         </div>
       </div>
 
-      {/* ── Data + Assinatura ── */}
+      {/* ── Data + Assinatura — logo acima do bloco de identificações ── */}
       <div
-        className="flex items-end gap-4 mt-1.5"
-        style={{ fontSize: '9px' }}
+        className="flex items-end gap-4 absolute left-8 right-8"
+        style={{ bottom: '108px', fontSize: '9px' }}
       >
         <div className="flex items-end gap-0.5">
           <div className="border-b border-black w-8 text-center text-[9px]">{data?.split('/')[0] || '__'}</div>
@@ -124,7 +124,7 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
 
         <div className="flex-1 text-right">
           <div className="inline-block text-center">
-            <div className="border-b border-black" style={{ width: '200px', height: '24px' }} />
+            <div className="border-b border-black" style={{ width: '200px', height: '22px' }} />
             <p className="text-[8px] mt-0.5 text-gray-700">Assinatura do Emitente</p>
           </div>
         </div>
