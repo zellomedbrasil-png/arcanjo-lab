@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { FileText, LogOut, Activity } from 'lucide-react';
+import { FileText, LogOut, Activity, ClipboardList } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -36,6 +36,20 @@ export default function Layout({ children }: { children: ReactNode }) {
           >
             <FileText className="mr-3 h-5 w-5 flex-shrink-0" />
             Novo Pedido
+          </NavLink>
+
+          <NavLink
+            to="/receita"
+            className={({ isActive }) =>
+              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                isActive
+                  ? 'bg-amber-50 text-amber-700'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              }`
+            }
+          >
+            <ClipboardList className="mr-3 h-5 w-5 flex-shrink-0" />
+            Receituário
           </NavLink>
         </nav>
 
