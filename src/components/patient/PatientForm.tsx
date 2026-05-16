@@ -17,18 +17,22 @@ export default function PatientForm() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Convênio</label>
-            <div className="flex space-x-4">
-              {['IPM', 'ISSEC'].map((conv) => (
-                <label key={conv} className="flex items-center">
+            <div className="flex space-x-4 flex-wrap gap-y-2">
+              {[
+                { value: 'IPM', label: 'IPM' },
+                { value: 'ISSEC', label: 'ISSEC' },
+                { value: 'PARTICULAR', label: 'Particular' },
+              ].map(({ value, label }) => (
+                <label key={value} className="flex items-center">
                   <input
                     type="radio"
                     name="convenio"
-                    value={conv}
-                    checked={convenio === conv}
+                    value={value}
+                    checked={convenio === value}
                     onChange={(e) => setPaciente({ convenio: e.target.value as Convenio })}
                     className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                   />
-                  <span className="ml-2 text-gray-700">{conv}</span>
+                  <span className="ml-2 text-gray-700">{label}</span>
                 </label>
               ))}
             </div>

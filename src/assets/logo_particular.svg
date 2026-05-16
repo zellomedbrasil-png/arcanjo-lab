@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220">
+  <!-- C body: outer arc counterclockwise, inner arc clockwise, opening na direita -->
+  <path d="M 142 76 A 68 68 0 1 0 142 176 L 120 158 A 40 40 0 1 1 120 94 Z" fill="#2ABCBE"/>
+
+  <!-- Blob fluido conectando topo do C com bolhas -->
+  <path d="M 105 80 C 108 65, 118 50, 135 40 C 150 30, 165 36, 162 54 C 159 70, 145 78, 128 80 C 118 81, 108 82, 105 80 Z" fill="#2ABCBE"/>
+
+  <!-- Ponte entre C e blob -->
+  <ellipse cx="112" cy="82" rx="18" ry="10" fill="#2ABCBE"/>
+
+  <!-- Bolha grande esquerda -->
+  <circle cx="70" cy="48" r="25" fill="#2ABCBE"/>
+
+  <!-- Bolha pequena topo -->
+  <circle cx="103" cy="14" r="10" fill="#2ABCBE"/>
+
+  <!-- Bolha pequena direita -->
+  <circle cx="156" cy="92" r="10" fill="#2ABCBE"/>
+</svg>

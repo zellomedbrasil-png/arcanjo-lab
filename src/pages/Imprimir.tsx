@@ -5,6 +5,7 @@ import { Printer, ArrowLeft } from 'lucide-react';
 
 import GuiaIPM from '../components/print/templates/GuiaIPM';
 import GuiaISSEC from '../components/print/templates/GuiaISSEC';
+import GuiaParticular from '../components/print/templates/GuiaParticular';
 
 export default function Imprimir() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export default function Imprimir() {
 
       {/* A4 Container */}
       <div className="max-w-[21cm] mx-auto bg-white min-h-[29.7cm] shadow-xl print:shadow-none print:w-[21cm] print:h-[29.7cm] print:m-0 overflow-hidden relative font-sans text-black">
-        {convenio === 'IPM' ? <GuiaIPM /> : <GuiaISSEC />}
+        {convenio === 'IPM' ? <GuiaIPM /> : convenio === 'ISSEC' ? <GuiaISSEC /> : <GuiaParticular />}
       </div>
     </div>
   );
