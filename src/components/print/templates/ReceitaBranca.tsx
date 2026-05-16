@@ -2,11 +2,9 @@ import { useReceitaStore } from '../../../store/useReceitaStore';
 
 const MEDICO = {
   nome: 'Dr. Roberto Arcanjo',
-  especialidade: 'Geriatra / Gastroenterologista',
   crm: 'CRM/CE: 26.155',
   endereco: 'R. João Lobo Filho, 250 - AllMed',
   cidade: 'Fortaleza/Ceará',
-  fone: '(85) _____-_____',
 };
 
 export default function ReceitaBranca() {
@@ -22,10 +20,8 @@ export default function ReceitaBranca() {
             <p className="text-[16px] font-bold uppercase tracking-wide text-gray-900">
               {MEDICO.nome}
             </p>
-            <p className="text-[11px] text-gray-600 mt-0.5">{MEDICO.especialidade}</p>
-            <p className="text-[10px] text-gray-500 mt-0.5">{MEDICO.crm}</p>
-            <p className="text-[10px] text-gray-500">{MEDICO.endereco} — {MEDICO.cidade}</p>
-            <p className="text-[10px] text-gray-500">Tel.: {MEDICO.fone}</p>
+            <p className="text-[10px] text-gray-500 mt-1">{MEDICO.crm}</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">{MEDICO.endereco} — {MEDICO.cidade}</p>
           </div>
           <div className="text-right">
             <p
@@ -118,7 +114,7 @@ export default function ReceitaBranca() {
           <div className="text-center">
             <div className="border-t-2 border-gray-800 pt-2 w-64">
               <p className="text-[11px] font-bold text-gray-900">{MEDICO.nome}</p>
-              <p className="text-[9px] text-gray-500">{MEDICO.crm} — {MEDICO.especialidade}</p>
+              <p className="text-[9px] text-gray-500">{MEDICO.crm}</p>
             </div>
           </div>
         </div>

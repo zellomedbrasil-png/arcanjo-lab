@@ -3,18 +3,16 @@ import { useReceitaStore } from '../../../store/useReceitaStore';
 // ── Dados fixos do médico ──────────────────────────────────────
 const MEDICO = {
   nome: 'Dr. Roberto Arcanjo',
-  especialidade: 'Geriatra / Gastroenterologista',
   crm: 'CRM/CE: 26.155',
   endereco: 'R. João Lobo Filho, 250 - AllMed',
   cidade: 'Fortaleza/Ceará',
-  fone: 'Fone: (85) _____-_____',
 };
 
 // ── Uma via (bloco que se repete 2x) ──────────────────────────
 function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA — PACIENTE' }) {
   const {
     pacienteNome, pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf,
-    pacienteRg, pacienteTelefone, medicamentos, data,
+    pacienteCpf, pacienteTelefone, medicamentos, data,
   } = useReceitaStore();
 
   const enderecoCompleto = [
@@ -45,21 +43,19 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
       <div className="flex items-start gap-4 mb-4">
         {/* Box Identificação */}
         <div
-          className="border border-black text-[10px] leading-snug"
-          style={{ minWidth: '260px', padding: '6px 10px' }}
+          className="border border-black text-[9.5px] leading-tight"
+          style={{ minWidth: '260px', padding: '5px 8px' }}
         >
           <div
-            className="text-center font-bold uppercase mb-1 border-b border-black pb-1"
-            style={{ fontSize: '9px', letterSpacing: '0.06em' }}
+            className="text-center font-bold uppercase mb-0.5 border-b border-black pb-0.5"
+            style={{ fontSize: '8px', letterSpacing: '0.05em' }}
           >
             IDENTIFICAÇÃO DO EMITENTE
           </div>
-          <p className="font-bold text-[12px]">{MEDICO.nome}</p>
-          <p>{MEDICO.especialidade}</p>
-          <p>{MEDICO.crm}</p>
-          <p>{MEDICO.endereco}</p>
-          <p>{MEDICO.cidade}</p>
-          <p>{MEDICO.fone}</p>
+          <p className="font-bold text-[11px] mb-0">{MEDICO.nome}</p>
+          <p className="mb-0">{MEDICO.crm}</p>
+          <p className="mb-0 text-[8.5px]">{MEDICO.endereco}</p>
+          <p className="text-[8.5px]">{MEDICO.cidade}</p>
         </div>
 
         {/* Rótulo da via */}
@@ -72,26 +68,26 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
       </div>
 
       {/* ── Campos Paciente e Endereço ── */}
-      <div className="mb-1" style={{ fontSize: '11px' }}>
-        <div className="flex items-end gap-2 mb-1">
+      <div className="mb-3" style={{ fontSize: '11px' }}>
+        <div className="flex items-end gap-2 mb-2">
           <span className="font-bold shrink-0">Paciente:</span>
           <div
             className="flex-1 border-b border-black"
             style={{ minHeight: '16px' }}
           >
-            {pacienteNome && <span>{pacienteNome}</span>}
+            {pacienteNome && <span className="text-[11px]">{pacienteNome}</span>}
           </div>
         </div>
-        <div className="flex items-end gap-2 mb-1">
+        <div className="flex items-end gap-2">
           <span className="font-bold shrink-0">Endereço:</span>
           <div className="flex-1 border-b border-black" style={{ minHeight: '16px' }}>
-            {enderecoCompleto && <span>{enderecoCompleto}</span>}
+            {enderecoCompleto && <span className="text-[10px]">{enderecoCompleto}</span>}
           </div>
         </div>
       </div>
 
       {/* ── Prescrição ── */}
-      <div style={{ fontSize: '11px', marginBottom: '4px' }}>
+      <div style={{ fontSize: '11px', marginBottom: '2px' }}>
         <div className="flex items-start gap-2">
           <span className="font-bold shrink-0 mt-0.5">Prescrição:</span>
           <div className="flex-1">
@@ -175,14 +171,10 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
           </div>
           <div className="flex items-end gap-3 mb-0.5">
             <div className="flex items-end gap-1 flex-1">
-              <span className="shrink-0">Ident.:</span>
-              <div className="border-b border-black" style={{ width: '70px', minHeight: '14px' }}>
-                {pacienteRg && <span>{pacienteRg}</span>}
+              <span className="shrink-0">CPF:</span>
+              <div className="flex-1 border-b border-black" style={{ minHeight: '14px' }}>
+                {pacienteCpf && <span>{pacienteCpf}</span>}
               </div>
-            </div>
-            <div className="flex items-end gap-1">
-              <span className="shrink-0">Org. Emissor:</span>
-              <div className="border-b border-black w-12" style={{ minHeight: '14px' }} />
             </div>
           </div>
           <div className="flex items-end gap-1 mb-0.5">
