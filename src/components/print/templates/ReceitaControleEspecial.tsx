@@ -67,51 +67,47 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
         </div>
       </div>
 
-      {/* ── Prescrição ── */}
-      <div style={{ fontSize: '10px', marginBottom: '1px' }}>
-        <div className="flex gap-1.5">
-          <span className="font-bold shrink-0 text-[10px]">Prescrição:</span>
-          <div className="flex-1">
-            {medsComConteudo.length > 0 ? (
-              medsComConteudo.map((med, idx) => (
-                <div key={med.id} style={{ marginBottom: '0.5px' }}>
-                  {/* Medicamento + Qtd na mesma linha */}
-                  <div className="border-b border-black pb-0.5" style={{ minHeight: '15px' }}>
-                    <div className="flex justify-between items-baseline gap-2">
-                      <div className="flex-1">
-                        <span className="font-bold text-[10px]">{idx + 1}. </span>
-                        <span className="font-bold uppercase text-[10px]">{med.principioAtivo || med.nomeDigitado}</span>
-                        {med.formaFarmaceutica && <span className="text-[8px]"> — {med.formaFarmaceutica}</span>}
-                      </div>
-                      {med.quantidade && <span className="text-[8px] font-semibold shrink-0">Qtd.: {med.quantidade}</span>}
-                    </div>
+      {/* ── Prescrição — label própria linha, meds com largura total ── */}
+      <div style={{ fontSize: '10px' }}>
+        <span className="font-bold text-[10px]">Prescrição:</span>
+        <div className="w-full mt-0.5">
+          {medsComConteudo.length > 0 ? (
+            medsComConteudo.map((med, idx) => (
+              <div key={med.id}>
+                {/* Medicamento + Qtd — linha contínua, largura total */}
+                <div className="border-b border-black pb-0.5 flex justify-between items-baseline gap-2" style={{ minHeight: '15px' }}>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-[10px]">{idx + 1}. </span>
+                    <span className="font-bold uppercase text-[10px]">{med.principioAtivo || med.nomeDigitado}</span>
+                    {med.formaFarmaceutica && <span className="text-[8px]"> — {med.formaFarmaceutica}</span>}
                   </div>
-                  {/* Posologia logo embaixo — largura total sem indent */}
-                  {med.posologia && (
-                    <div className="text-[8px] text-gray-800 pt-0.5 pb-1 border-b border-black" style={{ minHeight: '13px' }}>
-                      {med.uso && <span className="italic">{med.uso}. </span>}
-                      <span>{med.posologia}</span>
-                      {med.duracao && <span> — {med.duracao}</span>}
-                    </div>
-                  )}
+                  {med.quantidade && <span className="text-[8px] font-semibold shrink-0 ml-2">Qtd.: {med.quantidade}</span>}
                 </div>
-              ))
-            ) : (
-              <div className="border-b border-black" style={{ minHeight: '18px' }} />
-            )}
+                {/* Posologia — largura total, logo abaixo */}
+                {med.posologia && (
+                  <div className="text-[8px] text-gray-800 pt-0.5 pb-1 border-b border-black w-full" style={{ minHeight: '13px' }}>
+                    {med.uso && <span className="italic">{med.uso}. </span>}
+                    <span>{med.posologia}</span>
+                    {med.duracao && <span> — {med.duracao}</span>}
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="border-b border-black" style={{ minHeight: '15px' }} />
+          )}
 
-            {/* Linhas em branco extras */}
-            {Array.from({ length: Math.max(0, 5 - medsComConteudo.length) }).map((_, i) => (
-              <div key={`blank-${i}`} className="border-b border-black" style={{ minHeight: '15px', marginBottom: '0.5px' }} />
-            ))}
-          </div>
+          {/* Linhas em branco extras */}
+          {Array.from({ length: Math.max(0, 5 - medsComConteudo.length) }).map((_, i) => (
+            <div key={`blank-${i}`} className="border-b border-black" style={{ minHeight: '15px' }} />
+          ))}
         </div>
       </div>
 
-      {/* ── Data + Assinatura — logo acima do bloco de identificações ── */}
+      {/* ── Data + Assinatura — bem acima do bloco de identificações ── */}
       <div
         className="flex items-end gap-4 absolute left-8 right-8"
-        style={{ bottom: '108px', fontSize: '9px' }}
+        style={{ bottom: '150px', fontSize: '9px' }}
       >
         <div className="flex items-end gap-0.5">
           <div className="border-b border-black w-8 text-center text-[9px]">{data?.split('/')[0] || '__'}</div>
