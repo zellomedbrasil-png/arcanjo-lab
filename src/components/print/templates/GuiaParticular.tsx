@@ -34,7 +34,7 @@ const PROC_NOMES: Record<string, string> = {
 
 export default function GuiaParticular() {
   const {
-    pacienteNome, genero, examesSelecionados,
+    pacienteNome, pacienteCpf, genero, examesSelecionados,
     procedimentosSelecionados, tipoGuia, justificativa,
   } = useAppStore();
 
@@ -86,9 +86,6 @@ export default function GuiaParticular() {
               }}>
                 Solicitação de Exames
               </p>
-              <p style={{ fontSize: '8.5px', color: '#888', marginTop: '4px', textAlign: 'right' }}>
-                Exames Particulares
-              </p>
             </div>
           </div>
         </div>
@@ -106,6 +103,14 @@ export default function GuiaParticular() {
                 minWidth: '260px',
               }}>
                 {pacienteNome || '________________________________________________'}
+              </p>
+            </div>
+            <div style={{ flex: 1.2 }}>
+              <p style={{ fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', color: '#777', letterSpacing: '0.08em', marginBottom: '2px' }}>
+                CPF
+              </p>
+              <p style={{ fontSize: '11px', fontWeight: '500', color: '#333', borderBottom: '1px dotted #aaa', paddingBottom: '2px' }}>
+                {pacienteCpf || '___.___.___-__'}
               </p>
             </div>
             <div style={{ flex: 1 }}>

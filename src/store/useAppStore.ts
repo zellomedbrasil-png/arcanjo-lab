@@ -4,6 +4,7 @@ import type { Convenio, Genero, Medico, TipoGuia } from '../types';
 interface AppState {
   medico: Medico | null;
   pacienteNome: string;
+  pacienteCpf: string;
   genero: Genero;
   convenio: Convenio;
   tipoGuia: TipoGuia;
@@ -11,7 +12,7 @@ interface AppState {
   procedimentosSelecionados: string[];
   soap: string;          // Nota SOAP completa (uso interno/prontuário)
   justificativa: string; // Indicação Clínica curta para impressão na guia
-  
+
   setMedico: (medico: Medico | null) => void;
   setPaciente: (dados: Partial<AppState>) => void;
   toggleExame: (exameNome: string) => void;
@@ -25,6 +26,7 @@ interface AppState {
 
 const initialState = {
   pacienteNome: '',
+  pacienteCpf: '',
   genero: 'M' as Genero,
   convenio: 'IPM' as Convenio,
   tipoGuia: 'LABORATORIO' as TipoGuia,

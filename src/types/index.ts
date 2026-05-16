@@ -11,6 +11,11 @@ export interface Paciente {
   nome: string;
   genero: Genero;
   convenio: Convenio;
+  cpf?: string;
+  dataNascimento?: string;
+  matriculaIpm?: string;
+  cartaoIssec?: string;
+  telefone?: string;
 }
 
 export interface Medico {

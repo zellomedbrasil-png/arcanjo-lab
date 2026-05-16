@@ -2,11 +2,12 @@ import { useAppStore } from '../../store/useAppStore';
 import type { Convenio } from '../../types';
 
 export default function PatientForm() {
-  const { 
-    pacienteNome, 
-    genero, 
-    convenio, 
-    setPaciente 
+  const {
+    pacienteNome,
+    pacienteCpf,
+    genero,
+    convenio,
+    setPaciente
   } = useAppStore();
 
   return (
@@ -69,8 +70,8 @@ export default function PatientForm() {
         
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
           <input
             type="text"
@@ -78,6 +79,16 @@ export default function PatientForm() {
             onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
             className="w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Nome do paciente"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
+          <input
+            type="text"
+            value={pacienteCpf}
+            onChange={(e) => setPaciente({ pacienteCpf: e.target.value })}
+            className="w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="000.000.000-00"
           />
         </div>
       </div>
