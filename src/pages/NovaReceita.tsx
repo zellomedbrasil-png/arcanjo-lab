@@ -20,8 +20,7 @@ function MedicamentoCard({
   const [inputNome, setInputNome] = useState(med.nomeDigitado);
 
   const mismatch =
-    med.tipoRecomendado !== '' &&
-    med.tipoRecomendado !== tipoAtual;
+    med.tipoRecomendado === 'ESPECIAL' && tipoAtual === 'SIMPLES';
 
   const handleNomeChange = (valor: string) => {
     setInputNome(valor);
