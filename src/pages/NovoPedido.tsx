@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import PatientForm from '../components/patient/PatientForm';
 import ExamSelector from '../components/exams/ExamSelector';
+import ExamPastePanel from '../components/exams/ExamPastePanel';
 import SOAPPanel from '../components/soap/SOAPPanel';
 import { Printer, RotateCcw, CheckCircle } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
@@ -38,9 +39,11 @@ export default function NovoPedido() {
         </div>
 
         <PatientForm />
+        <ExamPastePanel />
         <ExamSelector />
         <SOAPPanel />
       </div>
+
 
       {/* Sticky bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg px-4 py-3">

@@ -3,18 +3,36 @@ import { useAppStore } from '../../store/useAppStore';
 import { groq } from '../../config/groq';
 import { Bot, Loader2, FileText, ClipboardList, Wand2, ChevronDown, ChevronUp } from 'lucide-react';
 
-const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista.
-Gere UMA ÚNICA FRASE curta e objetiva (máximo 2 linhas) de "Indicação Clínica / Justificativa" para o campo obrigatório da guia de exame do convênio.
-Formato esperado: "Investigação de [queixa principal] com [contexto clínico breve]. Solicito [exames/procedimento] para [objetivo diagnóstico]."
-NÃO use formato SOAP. NÃO use bullet points. Apenas uma frase clínica direta, em português, em maiúsculas.`;
+const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
+Gere UMA ÚNICA FRASE curta e objetiva (máximo 2-3 linhas) de "Indicação Clínica / Justificativa" para o campo obrigatório da guia de exame do convênio.
 
-const SYSTEM_PROMPT_SOAP = `Você é um médico geriatra e gastroenterologista.
+FORMATO OBRIGATÓRIO:
+"INVESTIGAÇÃO DE [queixa principal] EM PACIENTE [idade/perfil clínico] COM [comorbidades relevantes]. SOLICITO [exames/procedimento] PARA [objetivo diagnóstico]. CID-10: [código mais adequado]."
+
+REGRAS:
+- Tudo em MAIÚSCULAS
+- Inclua SEMPRE o CID-10 mais adequado ao final
+- Se houver comorbidades (HAS, DM2, dislipidemia), mencione-as
+- Para idosos, mencione "PACIENTE IDOSO" ou "PACIENTE GERIÁTRICO"
+- Seja profissional e objetivo — esta justificativa será auditada pelo convênio
+- NÃO use formato SOAP, NÃO use bullet points
+- Apenas uma frase clínica direta em português`;
+
+const SYSTEM_PROMPT_SOAP = `Você é um médico geriatra e gastroenterologista sênior.
 Gere uma nota clínica estruturada no formato SOAP em português, concisa e profissional.
+
 Formato:
-S (Subjetivo): queixa e história do paciente
-O (Objetivo): dados clínicos relevantes
-A (Avaliação): hipóteses diagnósticas
-P (Plano): conduta proposta, incluindo os exames solicitados`;
+S (Subjetivo): queixa e história do paciente, incluindo tempo de evolução, medicações em uso
+O (Objetivo): dados clínicos relevantes, sinais vitais quando pertinente
+A (Avaliação): hipóteses diagnósticas com CID-10, diagnósticos diferenciais
+P (Plano): conduta proposta, incluindo exames solicitados, medicações, orientações e retorno
+
+REGRAS:
+- Para pacientes idosos (≥60 anos), considere polifarmácia, risco de queda, Critérios de Beers
+- Inclua CID-10 nas hipóteses diagnósticas
+- Mencione interações medicamentosas relevantes se houver
+- Seja conciso mas completo`;
+
 
 export default function SOAPPanel() {
   const [queixa, setQueixa] = useState('');

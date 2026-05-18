@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useReceitaStore } from '../store/useReceitaStore';
 import { gerarPosologia } from '../services/groqReceita';
+import MedicamentoPastePanel from '../components/receita/MedicamentoPastePanel';
 import {
   Sparkles, Plus, Trash2, Printer, RotateCcw, FileText, AlertTriangle,
   ChevronDown, ChevronUp, User, Calendar, MapPin, Pill, Loader2,
@@ -391,6 +392,8 @@ export default function NovaReceita() {
               <span>IA gera posologia <strong className="text-violet-600">e avalia o tipo de receita</strong></span>
             </div>
           </div>
+
+          <MedicamentoPastePanel />
 
           <div className="space-y-3">
             {medicamentos.map((med, idx) => (
