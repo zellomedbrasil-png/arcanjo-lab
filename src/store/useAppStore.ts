@@ -6,6 +6,9 @@ interface AppState {
   medico: Medico | null;
   pacienteNome: string;
   pacienteCpf: string;
+  numeroBeneficiario: string;
+  sadtOperadora: string;
+  sadtRegistroAns: string;
   genero: Genero;
   convenio: Convenio;
   tipoGuia: TipoGuia;
@@ -29,8 +32,11 @@ interface AppState {
 const initialState = {
   pacienteNome: '',
   pacienteCpf: '',
+  numeroBeneficiario: '',
+  sadtOperadora: '',
+  sadtRegistroAns: '',
   genero: 'M' as Genero,
-  convenio: 'IPM' as Convenio,
+  convenio: 'IPM' as Convenio,  // default
   tipoGuia: 'LABORATORIO' as TipoGuia,
   examesSelecionados: [],
   procedimentosSelecionados: [] as string[],
@@ -89,6 +95,9 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         pacienteNome: state.pacienteNome,
         pacienteCpf: state.pacienteCpf,
+        numeroBeneficiario: state.numeroBeneficiario,
+        sadtOperadora: state.sadtOperadora,
+        sadtRegistroAns: state.sadtRegistroAns,
         genero: state.genero,
         convenio: state.convenio,
         tipoGuia: state.tipoGuia,

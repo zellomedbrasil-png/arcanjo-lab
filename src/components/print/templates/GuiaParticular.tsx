@@ -1,4 +1,5 @@
 import { useAppStore } from '../../../store/useAppStore';
+import { getProcedimentoNome } from '../../../data/procedimentos';
 import logoMarca from '../../../assets/logo_particular.svg';
 
 const MEDICO = {
@@ -6,30 +7,6 @@ const MEDICO = {
   crm: 'CRM/CE: 26.155',
   endereco: 'R. João Lobo Filho, 250 — AllMed',
   cidade: 'Fortaleza / Ceará',
-};
-
-const PROC_NOMES: Record<string, string> = {
-  ECOCARDIOGRAMA:      'Ecocardiograma Transtorácico',
-  ECODOPPLER:          'Ecodopplercardiograma',
-  MAPA:                'MAPA — Monitorização Ambulatorial da Pressão Arterial 24h',
-  HOLTER:              'Holter — Eletrocardiografia de Longa Duração 24h',
-  ECG:                 'Eletrocardiograma (ECG)',
-  US_ABD_TOTAL:        'Ultrassonografia do Abdome Total',
-  US_PELVICO:          'Ultrassonografia Pélvica',
-  US_TRANSVAGINAL:     'Ultrassonografia Transvaginal',
-  US_PROSTATA:         'Ultrassonografia de Próstata e Vias Urinárias',
-  US_TIREOIDE:         'Ultrassonografia de Tireoide',
-  US_VIAS_BILIARES:    'Ultrassonografia de Vias Biliares e Fígado',
-  EDA:                 'Esofagogastroduodenoscopia (EDA)',
-  COLONOSCOPIA:        'Colonoscopia',
-  RETOSSIGMOIDOSCOPIA: 'Retossigmoidoscopia',
-  RX_TORAX:            'Radiografia de Tórax (PA e Perfil)',
-  RX_COLUNA:           'Radiografia de Coluna',
-  TC_ABD:              'Tomografia Computadorizada de Abdome e Pelve com Contraste',
-  TC_CRANIO:           'Tomografia Computadorizada de Crânio',
-  RM_ABD:              'Ressonância Magnética de Abdome e Pelve',
-  RM_CRANIO:           'Ressonância Magnética de Crânio',
-  DENSITOMETRIA:       'Densitometria Óssea (DXA)',
 };
 
 export default function GuiaParticular() {
@@ -169,7 +146,7 @@ export default function GuiaParticular() {
                     {idx + 1}.
                   </span>
                   <span style={{ fontWeight: '500', color: '#1a1a1a' }}>
-                    {PROC_NOMES[proc] || proc}
+                    {getProcedimentoNome(proc)}
                   </span>
                 </div>
               ))}

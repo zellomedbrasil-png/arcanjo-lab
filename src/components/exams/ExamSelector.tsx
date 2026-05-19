@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
-import { PROCEDIMENTOS as PROCEDIMENTOS_BASE } from '../../data/procedimentos';
+import { PROCEDIMENTOS as PROCEDIMENTOS_BASE, PROCEDIMENTOS_POR_GRUPO } from '../../data/procedimentos';
+import type { ProcedimentoGrupo, ProcedimentoDef } from '../../data/procedimentos';
 import { Activity, Stethoscope, Beaker, HeartPulse, ScanFace, FileHeart, Search, Scan, Bone, Disc, X, CheckCircle2 } from 'lucide-react';
 import type { ElementType } from 'react';
 
@@ -41,6 +42,13 @@ const PROCEDIMENTOS_LEGACY: ProcDef[] = [
   { id: 'RM_CRANIO',           nome: 'RM Crânio',                             icon: Disc,       color: 'text-violet-400',  activeColor: 'text-white', activeBg: 'bg-violet-600' },
   { id: 'DENSITOMETRIA',       nome: 'Densitometria Óssea (DXA)',            icon: Bone,       color: 'text-emerald-400', activeColor: 'text-white', activeBg: 'bg-emerald-500' },
 ];
+
+const GRUPO_LABELS: Record<ProcedimentoGrupo, string> = {
+  CARDIOLOGIA: 'Cardiologia',
+  ULTRASSONOGRAFIA: 'Ultrassonografia',
+  ENDOSCOPIA: 'Endoscopia',
+  IMAGEM: 'Imagem (Rx / TC / RM)',
+};
 
 const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {
   const ui = PROCEDIMENTOS_LEGACY.find((item) => item.id === procedimento.id);
@@ -187,38 +195,50 @@ export default function ExamSelector() {
               </div>
             )}
 
-            {/* Procedure grid — compact chip pills */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-              {PROCEDIMENTOS.map((proc) => {
-                const isSelected = procedimentosSelecionados.includes(proc.id);
-                const isFull = procedimentosSelecionados.length >= 3 && !isSelected;
-                const Icon = proc.icon;
+            {/* Procedure grid — grouped by category */}
+            <div className="space-y-4">
+              {(Object.entries(PROCEDIMENTOS_POR_GRUPO) as [ProcedimentoGrupo, ProcedimentoDef[]][]).map(([grupo, procsDoGrupo]) => {
+                const procsUI = procsDoGrupo.map(p => PROCEDIMENTOS.find(u => u.id === p.id)!).filter(Boolean);
                 return (
-                  <button
-                    key={proc.id}
-                    onClick={() => toggleProcedimento(proc.id)}
-                    disabled={isFull}
-                    title={isFull ? 'Limite de 3 procedimentos atingido' : proc.nome}
-                    className={`relative flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition-all text-xs font-medium
-                      ${isSelected
-                        ? `${proc.activeBg} ${proc.activeColor} border-transparent shadow-md scale-[1.02]`
-                        : isFull
-                          ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
-                          : `border-gray-200 bg-white ${proc.color} hover:border-gray-300 hover:shadow-sm hover:scale-[1.01]`
-                      }`}
-                  >
-                    {isSelected && (
-                      <CheckCircle2
-                        size={13}
-                        className="absolute top-1.5 right-1.5 text-white opacity-90"
-                      />
-                    )}
-                    <Icon size={20} className={isFull && !isSelected ? 'opacity-30' : ''} />
-                    <span className="leading-tight">{proc.nome}</span>
-                    {isFull && (
-                      <span className="text-[9px] text-gray-300 font-normal">Limite atingido</span>
-                    )}
-                  </button>
+                  <div key={grupo}>
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                      {GRUPO_LABELS[grupo]}
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {procsUI.map((proc) => {
+                        const isSelected = procedimentosSelecionados.includes(proc.id);
+                        const isFull = procedimentosSelecionados.length >= 3 && !isSelected;
+                        const Icon = proc.icon;
+                        return (
+                          <button
+                            key={proc.id}
+                            onClick={() => toggleProcedimento(proc.id)}
+                            disabled={isFull}
+                            title={isFull ? 'Limite de 3 procedimentos atingido' : proc.nome}
+                            className={`relative flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition-all text-xs font-medium
+                              ${isSelected
+                                ? `${proc.activeBg} ${proc.activeColor} border-transparent shadow-md scale-[1.02]`
+                                : isFull
+                                  ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                                  : `border-gray-200 bg-white ${proc.color} hover:border-gray-300 hover:shadow-sm hover:scale-[1.01]`
+                              }`}
+                          >
+                            {isSelected && (
+                              <CheckCircle2
+                                size={13}
+                                className="absolute top-1.5 right-1.5 text-white opacity-90"
+                              />
+                            )}
+                            <Icon size={20} className={isFull && !isSelected ? 'opacity-30' : ''} />
+                            <span className="leading-tight">{proc.nome}</span>
+                            {isFull && (
+                              <span className="text-[9px] text-gray-300 font-normal">Limite atingido</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -226,11 +246,12 @@ export default function ExamSelector() {
             {procedimentosSelecionados.length > 0 && (
               <button
                 onClick={() => procedimentosSelecionados.forEach(p => toggleProcedimento(p))}
-                className="mt-4 text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
+                className="mt-3 text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
               >
                 Limpar seleção
               </button>
             )}
+
           </div>
         ) : (
           <div>

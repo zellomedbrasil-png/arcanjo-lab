@@ -1,4 +1,4 @@
-export type Convenio = 'IPM' | 'ISSEC' | 'PARTICULAR';
+export type Convenio = 'IPM' | 'ISSEC' | 'PARTICULAR' | 'SADT';
 export type Genero = 'M' | 'F';
 export type TipoGuia =
   | 'LABORATORIO'

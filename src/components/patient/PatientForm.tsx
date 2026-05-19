@@ -1,115 +1,146 @@
-import { Building2, Mars, UserRound, Venus } from 'lucide-react';
+import { Building2, Mars, Venus } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { formatCpf } from '../../lib/formatters';
+import { OPERADORAS } from '../../data/operadoras';
 import type { Convenio, Genero } from '../../types';
 
 export default function PatientForm() {
-  const { pacienteNome, pacienteCpf, genero, convenio, setPaciente } = useAppStore();
+  const {
+    pacienteNome, pacienteCpf, numeroBeneficiario,
+    sadtOperadora, sadtRegistroAns,
+    genero, convenio, setPaciente,
+  } = useAppStore();
 
-  const convenioOptions: Array<{ value: Convenio; label: string; hint: string }> = [
-    { value: 'IPM', label: 'IPM', hint: 'guia municipal' },
-    { value: 'ISSEC', label: 'ISSEC', hint: 'guia estadual' },
-    { value: 'PARTICULAR', label: 'Particular', hint: 'sem convênio' },
+  const convenios: Array<{ value: Convenio; label: string }> = [
+    { value: 'IPM',        label: 'IPM' },
+    { value: 'ISSEC',      label: 'ISSEC' },
+    { value: 'SADT',       label: 'SADT' },
+    { value: 'PARTICULAR', label: 'Particular' },
   ];
 
-  const generoOptions: Array<{ value: Genero; label: string; icon: typeof Mars }> = [
-    { value: 'M', label: 'Masculino', icon: Mars },
-    { value: 'F', label: 'Feminino', icon: Venus },
+  const labelBeneficiario: Partial<Record<Convenio, string>> = {
+    IPM:   'Matrícula IPM',
+    ISSEC: 'Cartão ISSEC',
+    SADT:  'Nº Cartão',
+  };
+
+  const generos: Array<{ value: Genero; label: string; icon: typeof Mars }> = [
+    { value: 'M', label: 'M', icon: Mars },
+    { value: 'F', label: 'F', icon: Venus },
   ];
+
+  const handleOperadoraChange = (nome: string) => {
+    const op = OPERADORAS.find((o) => o.nome.toLowerCase() === nome.toLowerCase());
+    setPaciente({
+      sadtOperadora: nome,
+      sadtRegistroAns: op?.registroAns ?? '',
+    });
+  };
 
   return (
-    <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-      <div className="flex items-center gap-3 mb-5">
-        <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-          <UserRound size={19} />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">Paciente e guia</h2>
-          <p className="text-xs text-gray-500">Dados mínimos para liberar a impressão rapidamente.</p>
-        </div>
-      </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-            Nome completo <span className="text-red-400">*</span>
-          </label>
+        {/* Nome */}
+        <input
+          type="text"
+          value={pacienteNome}
+          onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
+          autoFocus
+          autoComplete="name"
+          placeholder="Nome do paciente *"
+          className="flex-1 min-w-[180px] text-sm font-semibold text-gray-800 placeholder:font-normal placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
+        />
+
+        {/* CPF */}
+        <input
+          type="text"
+          value={pacienteCpf}
+          onChange={(e) => setPaciente({ pacienteCpf: formatCpf(e.target.value) })}
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="CPF"
+          className="w-32 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
+        />
+
+        {/* Nº Beneficiário */}
+        {convenio !== 'PARTICULAR' && (
           <input
             type="text"
-            value={pacienteNome}
-            onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
-            autoComplete="name"
-            autoFocus
-            className="w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-            placeholder="Nome do paciente"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">CPF</label>
-          <input
-            type="text"
-            value={pacienteCpf}
-            onChange={(e) => setPaciente({ pacienteCpf: formatCpf(e.target.value) })}
-            inputMode="numeric"
+            value={numeroBeneficiario}
+            onChange={(e) => setPaciente({ numeroBeneficiario: e.target.value })}
             autoComplete="off"
-            className="w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-            placeholder="000.000.000-00"
+            placeholder={labelBeneficiario[convenio] ?? 'Nº Cartão'}
+            className="w-36 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
           />
-        </div>
-      </div>
+        )}
 
-      <div className="mt-5 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4">
-        <div>
-          <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
-            <Building2 size={13} />
-            Convênio
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {convenioOptions.map(({ value, label, hint }) => {
-              const active = convenio === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPaciente({ convenio: value })}
-                  className={`rounded-xl border px-3 py-3 text-left transition-all ${
-                    active
-                      ? 'border-blue-500 bg-blue-50 text-blue-800 shadow-sm'
-                      : 'border-gray-200 bg-white text-gray-600 hover:border-blue-200 hover:bg-blue-50/50'
-                  }`}
-                >
-                  <span className="block text-sm font-bold">{label}</span>
-                  <span className="block text-[11px] text-gray-400 leading-tight">{hint}</span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Separador */}
+        <div className="hidden sm:block w-px h-5 bg-gray-200" />
+
+        {/* Convênio */}
+        <div className="flex items-center gap-1">
+          <Building2 size={13} className="text-gray-400 shrink-0" />
+          {convenios.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPaciente({ convenio: value })}
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+                convenio === value
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
-        <div>
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Gênero</label>
-          <div className="grid grid-cols-2 gap-2">
-            {generoOptions.map(({ value, label, icon: Icon }) => {
-              const active = genero === value;
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setPaciente({ genero: value })}
-                  className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition-all ${
-                    active
-                      ? 'border-sky-500 bg-sky-50 text-sky-700 shadow-sm'
-                      : 'border-gray-200 bg-white text-gray-600 hover:border-sky-200 hover:bg-sky-50/50'
-                  }`}
-                >
-                  <Icon size={16} />
-                  {label}
-                </button>
-              );
-            })}
+        {/* Combobox de operadora SADT */}
+        {convenio === 'SADT' && (
+          <div className="flex items-center gap-2">
+            <input
+              list="operadoras-list"
+              value={sadtOperadora}
+              onChange={(e) => handleOperadoraChange(e.target.value)}
+              placeholder="Operadora (digite ou deixe vazio = guia limpa)"
+              className="w-64 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
+            />
+            <datalist id="operadoras-list">
+              {OPERADORAS.map((o) => (
+                <option key={o.nome} value={o.nome}>
+                  {o.registroAns} — {o.grupo}
+                </option>
+              ))}
+            </datalist>
+            {sadtRegistroAns && (
+              <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+                ANS: <span className="text-gray-800">{sadtRegistroAns}</span>
+              </span>
+            )}
           </div>
+        )}
+
+        {/* Gênero */}
+        <div className="flex gap-1">
+          {generos.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPaciente({ genero: value })}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+                genero === value
+                  ? 'bg-sky-500 text-white border-sky-500'
+                  : 'border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600'
+              }`}
+            >
+              <Icon size={11} />
+              {label}
+            </button>
+          ))}
         </div>
+
       </div>
     </div>
   );

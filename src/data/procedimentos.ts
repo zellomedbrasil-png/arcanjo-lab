@@ -46,3 +46,22 @@ export function getProcedimentoNome(id: string): string {
 export function isProcedimentoCardiologico(id: string): boolean {
   return PROCEDIMENTO_POR_ID[id as ProcedimentoId]?.grupo === 'CARDIOLOGIA';
 }
+
+export function isProcedimentoUltrassom(id: string): boolean {
+  return PROCEDIMENTO_POR_ID[id as ProcedimentoId]?.grupo === 'ULTRASSONOGRAFIA';
+}
+
+export function isProcedimentoEndoscopico(id: string): boolean {
+  return PROCEDIMENTO_POR_ID[id as ProcedimentoId]?.grupo === 'ENDOSCOPIA';
+}
+
+export function isProcedimentoImagem(id: string): boolean {
+  return PROCEDIMENTO_POR_ID[id as ProcedimentoId]?.grupo === 'IMAGEM';
+}
+
+export const PROCEDIMENTOS_POR_GRUPO = (
+  ['CARDIOLOGIA', 'ULTRASSONOGRAFIA', 'ENDOSCOPIA', 'IMAGEM'] as ProcedimentoGrupo[]
+).reduce((acc, grupo) => {
+  acc[grupo] = PROCEDIMENTOS.filter((p) => p.grupo === grupo);
+  return acc;
+}, {} as Record<ProcedimentoGrupo, ProcedimentoDef[]>);

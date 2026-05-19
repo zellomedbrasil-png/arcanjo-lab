@@ -51,9 +51,7 @@ function MedicamentoCard({
   const temConteudo = !!(med.nomeDigitado.trim() || med.principioAtivo || med.posologia);
 
 
-  const borderClass = mismatch
-    ? 'border-red-300 bg-red-50'
-    : temConteudo
+  const borderClass = temConteudo
     ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-sm'
     : 'border-gray-200 bg-white';
 
@@ -93,7 +91,9 @@ function MedicamentoCard({
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               med.carregando || !inputNome.trim()
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-sm hover:shadow-md'
+                : mismatch
+                  ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-sm'
+                  : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-sm hover:shadow-md'
             }`}
           >
             {med.carregando ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
@@ -111,22 +111,6 @@ function MedicamentoCard({
           </button>
         </div>
       </div>
-
-      {/* Alerta de mismatch */}
-      {mismatch && med.tipoRecomendado && (
-        <div className="mx-4 mb-3 flex items-start gap-2 text-xs text-red-700 bg-red-100 border border-red-300 rounded-lg px-3 py-2.5">
-          <ShieldAlert size={14} className="shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold">
-              ⚠️ Este medicamento requer <strong>Receita de Controle Especial</strong>
-            </p>
-            {med.motivoEspecial && (
-              <p className="mt-0.5 text-red-600">{med.motivoEspecial}</p>
-            )}
-            <p className="mt-1 text-red-500">Você selecionou "Receita Branca Simples". Altere o tipo de receita.</p>
-          </div>
-        </div>
-      )}
 
       {/* Alerta de erro */}
       {med.erro && (
@@ -162,15 +146,12 @@ function MedicamentoCard({
         </div>
       )}
 
-      {/* Preview compacto */}
+      {/* Preview compacto — 1 linha */}
       {temConteudo && !expandido && !med.erro && (
-        <div className="px-4 pb-4 pl-12 text-xs text-gray-600 border-t border-blue-100 pt-3">
-          <p className="font-semibold text-gray-800">{med.principioAtivo}</p>
-          {med.formaFarmaceutica && <p className="text-gray-500 italic">{med.formaFarmaceutica}</p>}
-          {med.posologia && <p className="mt-0.5">{med.posologia}</p>}
-          {(med.quantidade || med.duracao) && (
-            <p className="mt-0.5 text-gray-500">{[med.quantidade, med.duracao].filter(Boolean).join(' · ')}</p>
-          )}
+        <div className="px-4 pb-3 pl-12">
+          <p className="text-xs text-gray-500 truncate">
+            {[med.principioAtivo, med.posologia, med.duracao].filter(Boolean).join(' · ')}
+          </p>
         </div>
       )}
     </div>
@@ -338,14 +319,13 @@ export default function NovaReceita() {
               <span>CPF, endereço completo com CEP, cidade, UF e telefone do paciente são obrigatórios (ANVISA).</span>
             </div>
           )}
-        </div>
-
           {pendenciasEspecial.length > 0 && (
-            <div className="mt-3 flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <div className="mt-2 flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
               <ShieldAlert size={13} className="mt-0.5 shrink-0" />
-              <span>Antes de imprimir controle especial, complete: <strong>{pendenciasEspecial.join(', ')}</strong>.</span>
+              <span>Antes de imprimir, complete: <strong>{pendenciasEspecial.join(', ')}</strong>.</span>
             </div>
           )}
+        </div>
         {/* Dados do Paciente */}
         <div ref={pacienteRef} className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
           <div className="flex items-center gap-2 mb-5">
@@ -366,37 +346,42 @@ export default function NovaReceita() {
               <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} placeholder="000.000.000-00" className={inputCls} inputMode="numeric" />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                Endereço (Rua, Nº, Bairro) {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-              </label>
-              <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} placeholder="Rua, número, bairro" className={inputCls} />
-            </div>
+            {/* Campos só obrigatórios no Controle Especial */}
+            {tipoReceita === 'ESPECIAL' && (
+              <>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                    Endereço (Rua, Nº, Bairro) <span className="text-red-400">*</span>
+                  </label>
+                  <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} placeholder="Rua, número, bairro" className={inputCls} />
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                CEP {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-              </label>
-              <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: formatCep(e.target.value) })} placeholder="00000-000" className={inputCls} inputMode="numeric" />
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                    CEP <span className="text-red-400">*</span>
+                  </label>
+                  <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: formatCep(e.target.value) })} placeholder="00000-000" className={inputCls} inputMode="numeric" />
+                </div>
 
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Cidade</label>
-                <input type="text" value={pacienteCidade} onChange={(e) => setPacienteReceita({ pacienteCidade: e.target.value })} placeholder="Fortaleza" className={inputCls} />
-              </div>
-              <div style={{ width: '80px' }}>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">UF</label>
-                <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value.toUpperCase().slice(0, 2) })} placeholder="CE" maxLength={2} className={inputCls} />
-              </div>
-            </div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Cidade</label>
+                    <input type="text" value={pacienteCidade} onChange={(e) => setPacienteReceita({ pacienteCidade: e.target.value })} placeholder="Fortaleza" className={inputCls} />
+                  </div>
+                  <div style={{ width: '80px' }}>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">UF</label>
+                    <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value.toUpperCase().slice(0, 2) })} placeholder="CE" maxLength={2} className={inputCls} />
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                Telefone {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-              </label>
-              <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatPhone(e.target.value) })} placeholder="(85) 00000-0000" className={inputCls} inputMode="tel" />
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                    Telefone <span className="text-red-400">*</span>
+                  </label>
+                  <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatPhone(e.target.value) })} placeholder="(85) 00000-0000" className={inputCls} inputMode="tel" />
+                </div>
+              </>
+            )}
 
             <div className="flex gap-3">
               <div className="flex-1">

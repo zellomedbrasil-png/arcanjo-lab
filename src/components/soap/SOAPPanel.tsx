@@ -4,7 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { ensureGroqApiKey, groq } from '../../config/groq';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
-import { Bot, Loader2, FileText, ClipboardList, Wand2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X } from 'lucide-react';
 
 const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
 Gere UMA ÚNICA FRASE curta e objetiva (máximo 2-3 linhas) de "Indicação Clínica / Justificativa" para o campo obrigatório da guia de exame do convênio.
@@ -36,7 +36,6 @@ REGRAS:
 - Mencione interações medicamentosas relevantes se houver
 - Seja conciso mas completo`;
 
-
 export default function SOAPPanel() {
   const [queixa, setQueixa] = useState('');
   const [isLoadingJust, setIsLoadingJust] = useState(false);
@@ -50,7 +49,7 @@ export default function SOAPPanel() {
     pacienteNome, genero, examesSelecionados, procedimentosSelecionados,
     soap, setSoap,
     justificativa, setJustificativa,
-    tipoGuia
+    tipoGuia,
   } = useAppStore();
 
   const buildContext = () => {
@@ -74,11 +73,10 @@ Queixa clínica: "${queixa}"`;
         max_tokens: 256,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT_JUSTIFICATIVA },
-          { role: 'user', content: buildContext() }
-        ]
+          { role: 'user', content: buildContext() },
+        ],
       });
-      const text = msg.choices[0].message.content ?? '';
-      setJustificativa(text.toUpperCase());
+      setJustificativa((msg.choices[0].message.content ?? '').toUpperCase());
       toast.success('Justificativa clínica gerada');
     } catch (err: unknown) {
       const msg = getErrorMessage(err, 'Erro ao gerar justificativa.');
@@ -100,11 +98,10 @@ Queixa clínica: "${queixa}"`;
         max_tokens: 1024,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT_SOAP },
-          { role: 'user', content: buildContext() }
-        ]
+          { role: 'user', content: buildContext() },
+        ],
       });
-      const text = msg.choices[0].message.content ?? '';
-      setSoap(text);
+      setSoap(msg.choices[0].message.content ?? '');
       setSoapExpanded(true);
       toast.success('Nota SOAP gerada');
     } catch (err: unknown) {
@@ -117,103 +114,103 @@ Queixa clínica: "${queixa}"`;
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50">
-        <Bot className="text-indigo-500" size={20} />
-        <div>
-          <h2 className="text-base font-bold text-gray-800">Assistente Clínico IA</h2>
-          <p className="text-xs text-gray-500">Gera justificativa para impressão e nota SOAP para prontuário</p>
-        </div>
-      </div>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
 
-      <div className="p-6 space-y-5">
-        {/* Queixa input */}
-        <div>
-          <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
+      {/* Queixa + botões em linha */}
+      <div className="flex gap-3 items-start">
+        <div className="flex-1">
+          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
             Queixa / Contexto Clínico
           </label>
           <textarea
             value={queixa}
             onChange={(e) => setQueixa(e.target.value)}
-            rows={3}
-            placeholder="Ex: Paciente 78 anos, astenia há 2 meses, perda de 4kg, hipertenso e diabético tipo 2."
-            className="w-full border border-gray-200 rounded-xl text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 resize-none placeholder:text-gray-400"
+            rows={2}
+            placeholder="Ex: Paciente 78a, astenia há 2 meses, perda de 4kg, HAS e DM2."
+            className="w-full border border-gray-200 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 resize-none placeholder:text-gray-400"
           />
-          {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+          {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
         </div>
 
-        {/* Action buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        {/* Botões empilhados */}
+        <div className="flex flex-col gap-1.5 pt-5 shrink-0">
           <button
             onClick={gerarJustificativa}
             disabled={isLoadingJust || !queixa.trim()}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+            title="Gerar indicação clínica para a guia"
+            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap"
           >
-            {isLoadingJust ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
-            {isLoadingJust ? (elapsedJust ? `Gerando... (${elapsedJust}s)` : 'Gerando...') : 'Gerar Justificativa (para Guia)'}
+            {isLoadingJust ? <Loader2 size={13} className="animate-spin" /> : <Wand2 size={13} />}
+            {isLoadingJust ? (elapsedJust ? `${elapsedJust}s…` : '…') : 'Justificativa'}
           </button>
           <button
             onClick={gerarSOAP}
             disabled={isLoadingSoap || !queixa.trim()}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm border border-gray-200"
+            title="Gerar nota SOAP para prontuário"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap"
           >
-            {isLoadingSoap ? <Loader2 className="animate-spin" size={16} /> : <ClipboardList size={16} />}
-            {isLoadingSoap ? (elapsedSoap ? `Gerando... (${elapsedSoap}s)` : 'Gerando...') : 'Gerar Nota SOAP (prontuário)'}
+            {isLoadingSoap ? <Loader2 size={13} className="animate-spin" /> : <ClipboardList size={13} />}
+            {isLoadingSoap ? (elapsedSoap ? `${elapsedSoap}s…` : '…') : 'SOAP'}
           </button>
-        </div>
-
-        {/* Justificativa — primary field used on print */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <FileText size={14} className="text-indigo-500" />
-            <label className="text-xs font-bold text-indigo-700 uppercase tracking-wider">
-              Indicação Clínica / Justificativa
-              <span className="ml-2 text-xs font-normal text-gray-400 normal-case">(campo impresso na guia)</span>
-            </label>
-          </div>
-          <textarea
-            value={justificativa}
-            onChange={(e) => setJustificativa(e.target.value)}
-            rows={3}
-            placeholder="Será gerada automaticamente ou escreva manualmente. Esta é a indicação clínica que aparecerá na guia."
-            className="w-full border-2 border-indigo-200 bg-indigo-50/40 rounded-xl text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none placeholder:text-gray-400 font-medium"
-          />
-        </div>
-
-        {/* SOAP — collapsible secondary section */}
-        <div className="border border-gray-200 rounded-xl overflow-hidden">
-          <button
-            onClick={() => setSoapExpanded(!soapExpanded)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
-          >
-            <div className="flex items-center gap-2">
-              <ClipboardList size={14} className="text-gray-500" />
-              <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                Nota SOAP (uso interno / prontuário)
-              </span>
-              {soap && (
-                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">Gerado</span>
-              )}
-            </div>
-            {soapExpanded ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
-          </button>
-          {soapExpanded && (
-            <div className="p-4">
-              <textarea
-                value={soap}
-                onChange={(e) => setSoap(e.target.value)}
-                rows={8}
-                placeholder="A nota SOAP completa (S/O/A/P) aparecerá aqui após geração. Não é impressa na guia."
-                className="w-full border border-gray-200 rounded-xl text-xs py-3 px-4 focus:outline-none focus:ring-2 focus:ring-gray-300 bg-gray-50 resize-none font-mono placeholder:text-gray-400"
-              />
-              <p className="text-xs text-gray-400 mt-2">
-                ℹ️ Esta nota <strong>não é impressa</strong> na guia oficial. Use para registro no prontuário.
-              </p>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Indicação Clínica — sempre visível para edição manual */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-1.5">
+            <FileText size={12} className="text-indigo-500" />
+            <label className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">
+              Indicação Clínica
+              <span className="ml-1.5 font-normal text-gray-400 normal-case">(impressa na guia)</span>
+            </label>
+          </div>
+          {justificativa && (
+            <button onClick={() => setJustificativa('')} className="text-gray-300 hover:text-red-400 transition-colors" title="Limpar">
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        <textarea
+          value={justificativa}
+          onChange={(e) => setJustificativa(e.target.value)}
+          rows={3}
+          placeholder="Gerada automaticamente ou escreva manualmente..."
+          className="w-full border-2 border-indigo-200 bg-indigo-50/30 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none placeholder:text-gray-400 font-medium"
+        />
+      </div>
+
+      {/* SOAP — colapsível discreto */}
+      <div className="border border-gray-100 rounded-xl overflow-hidden">
+        <button
+          onClick={() => setSoapExpanded(!soapExpanded)}
+          className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+        >
+          <div className="flex items-center gap-2">
+            <ClipboardList size={12} className="text-gray-400" />
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              Nota SOAP — prontuário
+            </span>
+            {soap && (
+              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">Gerado</span>
+            )}
+          </div>
+          {soapExpanded ? <ChevronUp size={13} className="text-gray-400" /> : <ChevronDown size={13} className="text-gray-400" />}
+        </button>
+        {soapExpanded && (
+          <div className="p-3">
+            <textarea
+              value={soap}
+              onChange={(e) => setSoap(e.target.value)}
+              rows={7}
+              placeholder="A nota SOAP (S/O/A/P) aparecerá aqui. Não é impressa na guia."
+              className="w-full border border-gray-200 rounded-xl text-xs py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-gray-300 bg-gray-50 resize-none font-mono placeholder:text-gray-400"
+            />
+            <p className="text-[10px] text-gray-400 mt-1.5">Não impresso na guia. Use para o prontuário.</p>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }

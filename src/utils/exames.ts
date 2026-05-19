@@ -1,6 +1,6 @@
 import { CATEGORIAS_EXAMES } from '../types';
 
-export function getExamCode(nomeExame: string, convenio: 'IPM' | 'ISSEC'): string {
+export function getExamCode(nomeExame: string, convenio: 'IPM' | 'ISSEC' | 'TISS' | 'CAMED' | 'AMIL'): string {
   for (const categoria of CATEGORIAS_EXAMES) {
     const exame = categoria.exames.find(e => e.nome === nomeExame);
     if (exame) {
@@ -10,7 +10,7 @@ export function getExamCode(nomeExame: string, convenio: 'IPM' | 'ISSEC'): strin
   return '';
 }
 
-export function formatExamWithCode(nomeExame: string, convenio: 'IPM' | 'ISSEC'): string {
+export function formatExamWithCode(nomeExame: string, convenio: 'IPM' | 'ISSEC' | 'TISS' | 'CAMED' | 'AMIL'): string {
   void convenio;
   // Retorna apenas o nome do exame (sem o código), deixando o espaço no layout
   return nomeExame;
