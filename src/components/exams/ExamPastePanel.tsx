@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
 import { organizarExamesIA, type ExameOrganizado, type ResultadoExamesIA } from '../../services/groqExames';
+import { getErrorMessage } from '../../lib/errors';
+import { toast } from '../../lib/toast';
 import {
   ClipboardPaste, Sparkles, Loader2, CheckCircle2,
   AlertTriangle, ChevronDown, ChevronUp, FileText, Wand2, Trash2
@@ -16,6 +19,7 @@ export default function ExamPastePanel() {
   const [expandido, setExpandido] = useState(true);
 
   const { genero, setExamesSelecionados, setJustificativa } = useAppStore();
+  const elapsed = useElapsedTimer(isLoading);
 
   const handleOrganizar = async () => {
     if (!textoExames.trim()) {
@@ -31,8 +35,10 @@ export default function ExamPastePanel() {
       setResultado(result);
       // Seleciona todos por padrão
       setExamesSelecionadosLocal(new Set(result.exames.map((_, i) => i)));
-    } catch (err: any) {
-      setError(err.message || 'Erro ao processar exames. Tente novamente.');
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, 'Erro ao processar exames. Tente novamente.');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -56,6 +62,7 @@ export default function ExamPastePanel() {
     if (resultado.justificativaGlobal) {
       setJustificativa(resultado.justificativaGlobal);
     }
+    toast.success(`${nomes.length} exame${nomes.length !== 1 ? 's' : ''} aplicado${nomes.length !== 1 ? 's' : ''} na guia`);
     // Limpar estado local
     setTextoExames('');
     setQueixa('');
@@ -142,7 +149,7 @@ export default function ExamPastePanel() {
               {isLoading ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Organizando com IA...
+                  {elapsed ? `Organizando com IA... (${elapsed}s)` : 'Organizando com IA...'}
                 </>
               ) : (
                 <>

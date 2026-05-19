@@ -1,5 +1,6 @@
 import { useAppStore } from '../../../store/useAppStore';
 import { formatExamWithCode } from '../../../utils/exames';
+import { getProcedimentoNome, isProcedimentoCardiologico } from '../../../data/procedimentos';
 import logoIssec from '../../../assets/logo_issec.jpeg';
 import logoIssec2 from '../../../assets/logo_issec_2.jpeg';
 
@@ -37,6 +38,7 @@ export default function GuiaISSEC() {
   };
 
   const isLab = tipoGuia === 'LABORATORIO';
+  void getNomeExame_by_id;
 
   const getLinhas = () => {
     const examesFormatados = examesSelecionados.map(e => formatExamWithCode(e, 'ISSEC'));
@@ -73,7 +75,7 @@ export default function GuiaISSEC() {
         </div>
         <div className="flex p-2 items-center">
           <div className="font-bold w-16 text-center text-sm">EXAME</div>
-          <div className="text-5xl font-light mx-2 leading-none mt-[-10px]">{'\{'}</div>
+          <div className="text-5xl font-light mx-2 leading-none mt-[-10px]">{'{'}</div>
           <div className="flex-1 grid grid-cols-3 gap-8 px-4 text-[10px]">
             <div className="flex flex-col space-y-2">
               <label className="flex items-center justify-between">
@@ -82,7 +84,7 @@ export default function GuiaISSEC() {
               </label>
               <label className="flex items-center justify-between">
                 <span>Cardiológico</span>
-                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{procedimentosSelecionados.some(p => ['ECOCARDIOGRAMA','MAPA','HOLTER','ECG','ECODOPPLER'].includes(p)) ? 'X' : ''}</span>
+                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{procedimentosSelecionados.some(isProcedimentoCardiologico) ? 'X' : ''}</span>
               </label>
             </div>
             <div className="flex flex-col space-y-2">
@@ -139,13 +141,10 @@ export default function GuiaISSEC() {
             </thead>
             <tbody>
                 {[1, 2, 3].map((row) => {
-                  let conteudo = '';
-                  if (isLab) {
-                    conteudo = linhas[row - 1] || '';
-                  } else {
-                    const procs = procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia];
-                    conteudo = row <= procs.length ? (getNomeExame_by_id(procs[row - 1])) : '';
-                  }
+                  const procs = procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia];
+                  const conteudo = isLab
+                    ? linhas[row - 1] || ''
+                    : row <= procs.length ? getProcedimentoNome(procs[row - 1]) : '';
                   return (
                     <tr key={row} className="border-b border-black h-8">
                       <td className="w-8 border-r border-black text-center font-bold">{String(row).padStart(2, '0')}</td>

@@ -1,95 +1,114 @@
+import { Building2, Mars, UserRound, Venus } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
-import type { Convenio } from '../../types';
+import { formatCpf } from '../../lib/formatters';
+import type { Convenio, Genero } from '../../types';
 
 export default function PatientForm() {
-  const {
-    pacienteNome,
-    pacienteCpf,
-    genero,
-    convenio,
-    setPaciente
-  } = useAppStore();
+  const { pacienteNome, pacienteCpf, genero, convenio, setPaciente } = useAppStore();
+
+  const convenioOptions: Array<{ value: Convenio; label: string; hint: string }> = [
+    { value: 'IPM', label: 'IPM', hint: 'guia municipal' },
+    { value: 'ISSEC', label: 'ISSEC', hint: 'guia estadual' },
+    { value: 'PARTICULAR', label: 'Particular', hint: 'sem convênio' },
+  ];
+
+  const generoOptions: Array<{ value: Genero; label: string; icon: typeof Mars }> = [
+    { value: 'M', label: 'Masculino', icon: Mars },
+    { value: 'F', label: 'Feminino', icon: Venus },
+  ];
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-6">Dados do Paciente e Guia</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Convênio</label>
-            <div className="flex space-x-4 flex-wrap gap-y-2">
-              {[
-                { value: 'IPM', label: 'IPM' },
-                { value: 'ISSEC', label: 'ISSEC' },
-                { value: 'PARTICULAR', label: 'Particular' },
-              ].map(({ value, label }) => (
-                <label key={value} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="convenio"
-                    value={value}
-                    checked={convenio === value}
-                    onChange={(e) => setPaciente({ convenio: e.target.value as Convenio })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-gray-700">{label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Gênero</label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="genero"
-                  value="M"
-                  checked={genero === 'M'}
-                  onChange={() => setPaciente({ genero: 'M' })}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                />
-                <span className="ml-2 text-gray-700">Masculino</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="genero"
-                  value="F"
-                  checked={genero === 'F'}
-                  onChange={() => setPaciente({ genero: 'F' })}
-                  className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-500"
-                />
-                <span className="ml-2 text-gray-700">Feminino</span>
-              </label>
-            </div>
-          </div>
+    <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+          <UserRound size={19} />
         </div>
-        
+        <div>
+          <h2 className="text-lg font-bold text-gray-900">Paciente e guia</h2>
+          <p className="text-xs text-gray-500">Dados mínimos para liberar a impressão rapidamente.</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+            Nome completo <span className="text-red-400">*</span>
+          </label>
           <input
             type="text"
             value={pacienteNome}
             onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            autoComplete="name"
+            autoFocus
+            className="w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             placeholder="Nome do paciente"
           />
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">CPF</label>
           <input
             type="text"
             value={pacienteCpf}
-            onChange={(e) => setPaciente({ pacienteCpf: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            onChange={(e) => setPaciente({ pacienteCpf: formatCpf(e.target.value) })}
+            inputMode="numeric"
+            autoComplete="off"
+            className="w-full border border-gray-200 rounded-xl shadow-sm py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             placeholder="000.000.000-00"
           />
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4">
+        <div>
+          <label className="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+            <Building2 size={13} />
+            Convênio
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {convenioOptions.map(({ value, label, hint }) => {
+              const active = convenio === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setPaciente({ convenio: value })}
+                  className={`rounded-xl border px-3 py-3 text-left transition-all ${
+                    active
+                      ? 'border-blue-500 bg-blue-50 text-blue-800 shadow-sm'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-blue-200 hover:bg-blue-50/50'
+                  }`}
+                >
+                  <span className="block text-sm font-bold">{label}</span>
+                  <span className="block text-[11px] text-gray-400 leading-tight">{hint}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Gênero</label>
+          <div className="grid grid-cols-2 gap-2">
+            {generoOptions.map(({ value, label, icon: Icon }) => {
+              const active = genero === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setPaciente({ genero: value })}
+                  className={`flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition-all ${
+                    active
+                      ? 'border-sky-500 bg-sky-50 text-sky-700 shadow-sm'
+                      : 'border-gray-200 bg-white text-gray-600 hover:border-sky-200 hover:bg-sky-50/50'
+                  }`}
+                >
+                  <Icon size={16} />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
-import { groq } from '../../config/groq';
+import { ensureGroqApiKey, groq } from '../../config/groq';
+import { getErrorMessage } from '../../lib/errors';
+import { toast } from '../../lib/toast';
 import { Bot, Loader2, FileText, ClipboardList, Wand2, ChevronDown, ChevronUp } from 'lucide-react';
 
 const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
@@ -40,6 +43,8 @@ export default function SOAPPanel() {
   const [isLoadingSoap, setIsLoadingSoap] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [soapExpanded, setSoapExpanded] = useState(false);
+  const elapsedJust = useElapsedTimer(isLoadingJust);
+  const elapsedSoap = useElapsedTimer(isLoadingSoap);
 
   const {
     pacienteNome, genero, examesSelecionados, procedimentosSelecionados,
@@ -63,6 +68,7 @@ Queixa clínica: "${queixa}"`;
     setIsLoadingJust(true);
     setError(null);
     try {
+      ensureGroqApiKey();
       const msg = await groq.chat.completions.create({
         model: 'llama-3.3-70b-versatile',
         max_tokens: 256,
@@ -73,8 +79,11 @@ Queixa clínica: "${queixa}"`;
       });
       const text = msg.choices[0].message.content ?? '';
       setJustificativa(text.toUpperCase());
-    } catch (err: any) {
-      setError(err.message || 'Erro ao gerar justificativa.');
+      toast.success('Justificativa clínica gerada');
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, 'Erro ao gerar justificativa.');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoadingJust(false);
     }
@@ -85,6 +94,7 @@ Queixa clínica: "${queixa}"`;
     setIsLoadingSoap(true);
     setError(null);
     try {
+      ensureGroqApiKey();
       const msg = await groq.chat.completions.create({
         model: 'llama-3.3-70b-versatile',
         max_tokens: 1024,
@@ -96,8 +106,11 @@ Queixa clínica: "${queixa}"`;
       const text = msg.choices[0].message.content ?? '';
       setSoap(text);
       setSoapExpanded(true);
-    } catch (err: any) {
-      setError(err.message || 'Erro ao gerar SOAP.');
+      toast.success('Nota SOAP gerada');
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, 'Erro ao gerar SOAP.');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoadingSoap(false);
     }
@@ -138,7 +151,7 @@ Queixa clínica: "${queixa}"`;
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
             {isLoadingJust ? <Loader2 className="animate-spin" size={16} /> : <Wand2 size={16} />}
-            Gerar Justificativa (para Guia)
+            {isLoadingJust ? (elapsedJust ? `Gerando... (${elapsedJust}s)` : 'Gerando...') : 'Gerar Justificativa (para Guia)'}
           </button>
           <button
             onClick={gerarSOAP}
@@ -146,7 +159,7 @@ Queixa clínica: "${queixa}"`;
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm border border-gray-200"
           >
             {isLoadingSoap ? <Loader2 className="animate-spin" size={16} /> : <ClipboardList size={16} />}
-            Gerar Nota SOAP (prontuário)
+            {isLoadingSoap ? (elapsedSoap ? `Gerando... (${elapsedSoap}s)` : 'Gerando...') : 'Gerar Nota SOAP (prontuário)'}
           </button>
         </div>
 

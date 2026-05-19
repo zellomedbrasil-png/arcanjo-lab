@@ -10,7 +10,8 @@ export function getExamCode(nomeExame: string, convenio: 'IPM' | 'ISSEC'): strin
   return '';
 }
 
-export function formatExamWithCode(nomeExame: string, _convenio: 'IPM' | 'ISSEC'): string {
+export function formatExamWithCode(nomeExame: string, convenio: 'IPM' | 'ISSEC'): string {
+  void convenio;
   // Retorna apenas o nome do exame (sem o código), deixando o espaço no layout
   return nomeExame;
 }

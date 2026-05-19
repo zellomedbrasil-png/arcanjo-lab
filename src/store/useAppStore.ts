@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Convenio, Genero, Medico, TipoGuia } from '../types';
 
 interface AppState {
@@ -10,8 +11,9 @@ interface AppState {
   tipoGuia: TipoGuia;
   examesSelecionados: string[];
   procedimentosSelecionados: string[];
-  soap: string;          // Nota SOAP completa (uso interno/prontuário)
-  justificativa: string; // Indicação Clínica curta para impressão na guia
+  soap: string;
+  justificativa: string;
+  lastSavedAt: string | null;
 
   setMedico: (medico: Medico | null) => void;
   setPaciente: (dados: Partial<AppState>) => void;
@@ -34,48 +36,68 @@ const initialState = {
   procedimentosSelecionados: [] as string[],
   soap: '',
   justificativa: '',
+  lastSavedAt: null,
 };
 
-export const useAppStore = create<AppState>((set) => ({
-  medico: null,
-  ...initialState,
-  
-  setMedico: (medico) => set({ medico }),
-  setPaciente: (dados) => set((state) => ({ ...state, ...dados })),
-  
-  toggleExame: (exameNome) => set((state) => {
-    const isSelected = state.examesSelecionados.includes(exameNome);
-    if (isSelected) {
-      return { examesSelecionados: state.examesSelecionados.filter(e => e !== exameNome) };
-    } else {
-      return { examesSelecionados: [...state.examesSelecionados, exameNome] };
+const touch = () => new Date().toISOString();
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      medico: null,
+      ...initialState,
+
+      setMedico: (medico) => set({ medico }),
+      setPaciente: (dados) => set((state) => ({ ...state, ...dados, lastSavedAt: touch() })),
+
+      toggleExame: (exameNome) => set((state) => {
+        const isSelected = state.examesSelecionados.includes(exameNome);
+        return {
+          examesSelecionados: isSelected
+            ? state.examesSelecionados.filter((exame) => exame !== exameNome)
+            : [...state.examesSelecionados, exameNome],
+          lastSavedAt: touch(),
+        };
+      }),
+
+      adicionarPainel: (examesPainel) => set((state) => {
+        const exames = [...new Set([...state.examesSelecionados, ...examesPainel])];
+        return { examesSelecionados: exames, lastSavedAt: touch() };
+      }),
+
+      setExamesSelecionados: (exames) => set({ examesSelecionados: exames, lastSavedAt: touch() }),
+
+      toggleProcedimento: (proc) => set((state) => {
+        const selected = state.procedimentosSelecionados;
+        if (selected.includes(proc)) {
+          return { procedimentosSelecionados: selected.filter((item) => item !== proc), lastSavedAt: touch() };
+        }
+        if (selected.length < 3) {
+          return { procedimentosSelecionados: [...selected, proc], lastSavedAt: touch() };
+        }
+        return state;
+      }),
+
+      setSoap: (soap) => set({ soap, lastSavedAt: touch() }),
+      setJustificativa: (justificativa) => set({ justificativa, lastSavedAt: touch() }),
+
+      resetForm: () => set(initialState),
+    }),
+    {
+      name: 'arcanjo-lab-pedido-draft',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        pacienteNome: state.pacienteNome,
+        pacienteCpf: state.pacienteCpf,
+        genero: state.genero,
+        convenio: state.convenio,
+        tipoGuia: state.tipoGuia,
+        examesSelecionados: state.examesSelecionados,
+        procedimentosSelecionados: state.procedimentosSelecionados,
+        soap: state.soap,
+        justificativa: state.justificativa,
+        lastSavedAt: state.lastSavedAt,
+      }),
     }
-  }),
-  
-  adicionarPainel: (examesPainel) => set((state) => {
-    const novosExames = [...state.examesSelecionados];
-    examesPainel.forEach(exame => {
-      if (!novosExames.includes(exame)) {
-        novosExames.push(exame);
-      }
-    });
-    return { examesSelecionados: novosExames };
-  }),
-  
-  setExamesSelecionados: (exames) => set({ examesSelecionados: exames }),
-  
-  toggleProcedimento: (proc) => set((state) => {
-    const selected = state.procedimentosSelecionados;
-    if (selected.includes(proc)) {
-      return { procedimentosSelecionados: selected.filter(p => p !== proc) };
-    } else if (selected.length < 3) {
-      return { procedimentosSelecionados: [...selected, proc] };
-    }
-    return state;
-  }),
-  
-  setSoap: (soap) => set({ soap }),
-  setJustificativa: (justificativa) => set({ justificativa }),
-  
-  resetForm: () => set(initialState),
-}));
+  )
+);

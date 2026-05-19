@@ -1,17 +1,20 @@
+import { useMemo, useState } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
+import { PROCEDIMENTOS as PROCEDIMENTOS_BASE } from '../../data/procedimentos';
 import { Activity, Stethoscope, Beaker, HeartPulse, ScanFace, FileHeart, Search, Scan, Bone, Disc, X, CheckCircle2 } from 'lucide-react';
+import type { ElementType } from 'react';
 
 type ProcDef = {
   id: string;
   nome: string;
-  icon: React.ElementType;
+  icon: ElementType;
   color: string;
   activeColor: string;
   activeBg: string;
 };
 
-const PROCEDIMENTOS: ProcDef[] = [
+const PROCEDIMENTOS_LEGACY: ProcDef[] = [
   // Cardiologia
   { id: 'ECOCARDIOGRAMA',      nome: 'Ecocardiograma Transtorácico',        icon: HeartPulse, color: 'text-red-400',     activeColor: 'text-white', activeBg: 'bg-red-500' },
   { id: 'ECODOPPLER',          nome: 'Ecodopplercardiograma',               icon: Activity,   color: 'text-orange-400',  activeColor: 'text-white', activeBg: 'bg-orange-500' },
@@ -39,13 +42,40 @@ const PROCEDIMENTOS: ProcDef[] = [
   { id: 'DENSITOMETRIA',       nome: 'Densitometria Óssea (DXA)',            icon: Bone,       color: 'text-emerald-400', activeColor: 'text-white', activeBg: 'bg-emerald-500' },
 ];
 
+const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {
+  const ui = PROCEDIMENTOS_LEGACY.find((item) => item.id === procedimento.id);
+  return {
+    id: procedimento.id,
+    nome: procedimento.nomeCurto,
+    icon: ui?.icon ?? Activity,
+    color: ui?.color ?? 'text-gray-400',
+    activeColor: ui?.activeColor ?? 'text-white',
+    activeBg: ui?.activeBg ?? 'bg-gray-500',
+  };
+});
+
 export default function ExamSelector() {
+  const [busca, setBusca] = useState('');
   const {
     tipoGuia, convenio, examesSelecionados, procedimentosSelecionados,
     setExamesSelecionados, setJustificativa, setPaciente, toggleProcedimento
   } = useAppStore();
 
   const isLab = tipoGuia === 'LABORATORIO';
+  const buscaNormalizada = busca.trim().toLowerCase();
+
+  const categoriasFiltradas = useMemo(() => {
+    return CATEGORIAS_EXAMES.map((categoria) => {
+      const exames = categoria.exames.filter((exame) => {
+        if (convenio === 'ISSEC' && exame.marca === '**') return false;
+        if (convenio === 'IPM' && exame.marca === '*') return false;
+        if (!buscaNormalizada) return true;
+        return `${categoria.nome} ${exame.nome}`.toLowerCase().includes(buscaNormalizada);
+      });
+
+      return { ...categoria, exames };
+    }).filter((categoria) => categoria.exames.length > 0);
+  }, [buscaNormalizada, convenio]);
 
   const toggleExame = (exameNome: string) => {
     if (examesSelecionados.includes(exameNome)) {
@@ -59,6 +89,15 @@ export default function ExamSelector() {
     const painel = PAINEIS_MARKDOWN[chave];
     setExamesSelecionados([...new Set(painel.exames)]);
     setJustificativa(painel.justificativa || ''); // Justificativa, não SOAP
+  };
+
+  const selecionarCategoria = (exames: string[]) => {
+    setExamesSelecionados([...new Set([...examesSelecionados, ...exames])]);
+  };
+
+  const limparCategoria = (exames: string[]) => {
+    const examesSet = new Set(exames);
+    setExamesSelecionados(examesSelecionados.filter((exame) => !examesSet.has(exame)));
   };
 
   return (
@@ -100,11 +139,12 @@ export default function ExamSelector() {
         {!isLab ? (
           <div>
             {/* Counter & info */}
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-gray-600">
                   Selecione até <strong>3 procedimentos</strong> por guia.
                 </p>
+                <p className="text-xs text-gray-400 mt-0.5">Limitação da guia oficial — emita guias separadas para mais procedimentos.</p>
               </div>
               <div className="flex items-center gap-2">
                 {[0, 1, 2].map(i => (
@@ -175,6 +215,9 @@ export default function ExamSelector() {
                     )}
                     <Icon size={20} className={isFull && !isSelected ? 'opacity-30' : ''} />
                     <span className="leading-tight">{proc.nome}</span>
+                    {isFull && (
+                      <span className="text-[9px] text-gray-300 font-normal">Limite atingido</span>
+                    )}
                   </button>
                 );
               })}
@@ -215,27 +258,90 @@ export default function ExamSelector() {
               </div>
             </div>
 
+            <div className="mb-5 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 items-start">
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="search"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  placeholder="Buscar exame por nome ou categoria..."
+                  className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent"
+                />
+              </div>
+              <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
+                <strong className="text-blue-700">{examesSelecionados.length}</strong> exame(s) selecionado(s)
+              </div>
+            </div>
+
+            {examesSelecionados.length > 0 && (
+              <div className="mb-5 flex flex-wrap gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
+                {examesSelecionados.slice(0, 12).map((exame) => (
+                  <span key={exame} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 shadow-sm">
+                    {exame}
+                    <button
+                      type="button"
+                      onClick={() => toggleExame(exame)}
+                      className="text-blue-300 hover:text-red-500"
+                      title={`Remover ${exame}`}
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+                {examesSelecionados.length > 12 && (
+                  <span className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-bold text-blue-700">
+                    +{examesSelecionados.length - 12}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Empty state */}
+            {categoriasFiltradas.length === 0 && buscaNormalizada && (
+              <div className="text-center py-12 text-gray-400">
+                <Search size={32} className="mx-auto mb-3 opacity-25" />
+                <p className="text-sm font-medium text-gray-500">Nenhum exame encontrado para "{busca}"</p>
+                <p className="text-xs mt-1 text-gray-400">Tente outro termo ou use a função "Colar Lista" acima para exames não catalogados.</p>
+              </div>
+            )}
+
             {/* Exam categories */}
             <div className="space-y-4">
-              {CATEGORIAS_EXAMES.map((categoria) => {
-                const examesVisiveis = categoria.exames.filter((exame) => {
-                  if (convenio === 'ISSEC' && exame.marca === '**') return false;
-                  if (convenio === 'IPM' && exame.marca === '*') return false;
-                  return true;
-                });
-                if (examesVisiveis.length === 0) return null;
-
+              {categoriasFiltradas.map((categoria) => {
+                const examesVisiveis = categoria.exames;
                 const selectedCount = examesVisiveis.filter(e => examesSelecionados.includes(e.nome)).length;
+                const nomesCategoria = examesVisiveis.map((exame) => exame.nome);
 
                 return (
                   <div key={categoria.nome} className="border border-gray-200 rounded-xl overflow-hidden">
-                    <div className="flex items-center justify-between bg-gray-50 px-4 py-2.5 border-b border-gray-200">
-                      <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wide">{categoria.nome}</h3>
-                      {selectedCount > 0 && (
-                        <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
-                          {selectedCount} selecionado{selectedCount > 1 ? 's' : ''}
-                        </span>
-                      )}
+                    <div className="flex flex-wrap items-center justify-between gap-2 bg-gray-50 px-4 py-2.5 border-b border-gray-200">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wide">{categoria.nome}</h3>
+                        {selectedCount > 0 && (
+                          <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                            {selectedCount}/{examesVisiveis.length}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => selecionarCategoria(nomesCategoria)}
+                          className="text-xs font-semibold text-blue-600 hover:text-blue-800"
+                        >
+                          Selecionar categoria
+                        </button>
+                        {selectedCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => limparCategoria(nomesCategoria)}
+                            className="text-xs font-semibold text-gray-400 hover:text-red-500"
+                          >
+                            Limpar
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 bg-white">
                       {examesVisiveis.map((exame) => {
