@@ -18,6 +18,7 @@ interface AppState {
   soap: string;
   justificativa: string;
   lastSavedAt: string | null;
+  iaModel: string;
 
   setMedico: (medico: Medico | null) => void;
   setPaciente: (dados: Partial<AppState>) => void;
@@ -27,6 +28,7 @@ interface AppState {
   toggleProcedimento: (proc: string) => void;
   setSoap: (soap: string) => void;
   setJustificativa: (justificativa: string) => void;
+  setIaModel: (iaModel: string) => void;
   resetForm: () => void;
 }
 
@@ -44,6 +46,7 @@ const initialState = {
   soap: '',
   justificativa: '',
   lastSavedAt: null,
+  iaModel: '',
 };
 
 const touch = () => new Date().toISOString();
@@ -97,6 +100,7 @@ export const useAppStore = create<AppState>()(
 
       setSoap: (soap) => set({ soap, lastSavedAt: touch() }),
       setJustificativa: (justificativa) => set({ justificativa, lastSavedAt: touch() }),
+      setIaModel: (iaModel) => set({ iaModel }),
 
       resetForm: () => set(initialState),
     }),
@@ -117,6 +121,7 @@ export const useAppStore = create<AppState>()(
         soap: state.soap,
         justificativa: state.justificativa,
         lastSavedAt: state.lastSavedAt,
+        iaModel: state.iaModel,
       }),
     }
   )

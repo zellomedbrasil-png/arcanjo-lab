@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
-import { callGemini } from '../../config/gemini';
+import { callGemini, getLastUsedModel } from '../../config/gemini';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check } from 'lucide-react';
@@ -59,7 +59,7 @@ export default function SOAPPanel() {
     pacienteNome, genero, examesSelecionados, procedimentosSelecionados,
     soap, setSoap,
     justificativa, setJustificativa,
-    tipoGuia,
+    tipoGuia, iaModel, setIaModel,
   } = useAppStore();
 
   const buildContext = () => {
@@ -82,6 +82,7 @@ Queixa clínica: "${queixa}"`;
         systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA,
       });
       setJustificativa(content.toUpperCase());
+      setIaModel(getLastUsedModel());
       toast.success('Justificativa clínica gerada');
     } catch (err: unknown) {
       const msg = getErrorMessage(err, 'Erro ao gerar justificativa.');
@@ -102,6 +103,7 @@ Queixa clínica: "${queixa}"`;
         systemInstruction: SYSTEM_PROMPT_SOAP,
       });
       setSoap(content);
+      setIaModel(getLastUsedModel());
       setSoapExpanded(true);
       toast.success('Nota SOAP gerada');
     } catch (err: unknown) {
@@ -193,7 +195,14 @@ Queixa clínica: "${queixa}"`;
               Nota SOAP — Prontuário Clínico (Fácil Cópia)
             </span>
             {soap && (
-              <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Pronta</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Pronta</span>
+                {iaModel && (
+                  <span className="text-[9px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded font-mono font-medium">
+                    {iaModel}
+                  </span>
+                )}
+              </div>
             )}
           </div>
           {soapExpanded ? <ChevronUp size={13} className="text-indigo-400" /> : <ChevronDown size={13} className="text-indigo-400" />}

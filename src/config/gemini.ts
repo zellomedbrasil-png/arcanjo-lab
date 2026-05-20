@@ -19,7 +19,14 @@ interface GeminiCallParams {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+let lastUsedModel = '';
+
+export function getLastUsedModel(): string {
+  return lastUsedModel;
+}
+
 async function callGroqFallback({ prompt, systemInstruction, jsonMode, temperature }: GeminiCallParams): Promise<string> {
+  lastUsedModel = 'Llama 3.3 70B (Groq)';
   try {
     const completion = await groq.chat.completions.create({
       messages: [
@@ -103,6 +110,7 @@ export async function callGemini({ prompt, systemInstruction, jsonMode, temperat
         throw new Error('O Gemini não retornou nenhum conteúdo de texto válido.');
       }
 
+      lastUsedModel = 'Gemini 3.5 Flash';
       return text.trim();
     } catch (err: any) {
       if (attempts < maxAttempts) {
