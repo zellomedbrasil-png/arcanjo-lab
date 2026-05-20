@@ -512,6 +512,25 @@ export default function NovaReceita() {
     });
   };
 
+  const fetchAddressByCep = async (cepValue: string) => {
+    const rawCep = cepValue.replace(/\D/g, '');
+    if (rawCep.length === 8) {
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${rawCep}/json/`);
+        const data = await res.json();
+        if (!data.erro) {
+          setPacienteReceita({
+            pacienteEndereco: data.logradouro + (data.bairro ? `, ${data.bairro}` : ''),
+            pacienteCidade: data.localidade || 'Fortaleza',
+            pacienteUf: data.uf || 'CE',
+          });
+        }
+      } catch (err) {
+        console.error('Erro ao buscar CEP:', err);
+      }
+    }
+  };
+
   const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
   const temMedicamentos = medsComConteudo.length > 0;
   const podeImprimir = pacienteNome.trim() !== '' && temMedicamentos;
@@ -723,7 +742,18 @@ export default function NovaReceita() {
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
                     CEP {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
                   </label>
-                  <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: formatCep(e.target.value) })} onBlur={handleBlur} placeholder="00000-000" className={inputCls} />
+                  <input
+                    type="text"
+                    value={pacienteCep}
+                    onChange={(e) => {
+                      const formatted = formatCep(e.target.value);
+                      setPacienteReceita({ pacienteCep: formatted });
+                      fetchAddressByCep(formatted);
+                    }}
+                    onBlur={handleBlur}
+                    placeholder="00000-000"
+                    className={inputCls}
+                  />
                 </div>
 
                 <div className="flex gap-3">

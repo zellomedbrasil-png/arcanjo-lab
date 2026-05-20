@@ -4,7 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { callGemini } from '../../config/gemini';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
-import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check } from 'lucide-react';
 
 const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
 Gere UMA ÚNICA FRASE curta e objetiva (máximo 2-3 linhas) de "Indicação Clínica / Justificativa" para o campo obrigatório da guia de exame do convênio.
@@ -43,9 +43,17 @@ export default function SOAPPanel() {
   const [isLoadingJust, setIsLoadingJust] = useState(false);
   const [isLoadingSoap, setIsLoadingSoap] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [soapExpanded, setSoapExpanded] = useState(false);
+  const [soapExpanded, setSoapExpanded] = useState(true);
+  const [copied, setCopied] = useState(false);
   const elapsedJust = useElapsedTimer(isLoadingJust);
   const elapsedSoap = useElapsedTimer(isLoadingSoap);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(soap);
+    setCopied(true);
+    toast.success('Nota SOAP copiada!');
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const {
     pacienteNome, genero, examesSelecionados, procedimentosSelecionados,
@@ -173,32 +181,57 @@ Queixa clínica: "${queixa}"`;
       </div>
 
       {/* SOAP — colapsível discreto */}
-      <div className="border border-gray-100 rounded-xl overflow-hidden">
+      <div className="border border-indigo-100/80 rounded-xl overflow-hidden shadow-sm">
         <button
+          type="button"
           onClick={() => setSoapExpanded(!soapExpanded)}
-          className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+          className="w-full flex items-center justify-between px-3 py-2 bg-indigo-50/40 hover:bg-indigo-50 transition-colors text-left"
         >
           <div className="flex items-center gap-2">
-            <ClipboardList size={12} className="text-gray-400" />
-            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-              Nota SOAP — prontuário
+            <ClipboardList size={12} className="text-indigo-500" />
+            <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider">
+              Nota SOAP — Prontuário Clínico (Fácil Cópia)
             </span>
             {soap && (
-              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">Gerado</span>
+              <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Pronta</span>
             )}
           </div>
-          {soapExpanded ? <ChevronUp size={13} className="text-gray-400" /> : <ChevronDown size={13} className="text-gray-400" />}
+          {soapExpanded ? <ChevronUp size={13} className="text-indigo-400" /> : <ChevronDown size={13} className="text-indigo-400" />}
         </button>
         {soapExpanded && (
-          <div className="p-3">
+          <div className="p-3 bg-white space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] text-gray-400 font-medium">
+                Edite a nota abaixo e clique no botão para copiar com formatação limpa:
+              </span>
+              {soap.trim() && (
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
+                    copied
+                      ? 'bg-green-600 text-white shadow-green-100'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100'
+                  }`}
+                >
+                  {copied ? <Check size={13} /> : <ClipboardList size={13} />}
+                  {copied ? 'Copiado!' : 'Copiar Nota SOAP'}
+                </button>
+              )}
+            </div>
             <textarea
               value={soap}
               onChange={(e) => setSoap(e.target.value)}
-              rows={7}
-              placeholder="A nota SOAP (S/O/A/P) aparecerá aqui. Não é impressa na guia."
-              className="w-full border border-gray-200 rounded-xl text-xs py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-gray-300 bg-gray-50 resize-none font-mono placeholder:text-gray-400"
+              rows={14}
+              placeholder="A nota SOAP (S/O/A/P) aparecerá aqui ao ser gerada pela IA ou digitada..."
+              className="w-full border border-gray-200 rounded-xl text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50/30 resize-y font-sans leading-relaxed text-gray-800 placeholder:text-gray-400 focus:bg-white transition-all"
             />
-            <p className="text-[10px] text-gray-400 mt-1.5">Não impresso na guia. Use para o prontuário.</p>
+            <div className="flex justify-between items-center text-[10px] text-gray-400">
+              <span>Nota clínica no padrão S-O-A-P. Não é impressa na guia de exames.</span>
+              {soap.trim() && (
+                <span className="font-semibold text-indigo-500">Pronta para colar em outros sistemas</span>
+              )}
+            </div>
           </div>
         )}
       </div>
