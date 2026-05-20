@@ -4,6 +4,8 @@ import NovoPedido from './pages/NovoPedido';
 import Imprimir from './pages/Imprimir';
 import NovaReceita from './pages/NovaReceita';
 import ImprimirReceita from './pages/ImprimirReceita';
+import Documentos from './pages/Documentos';
+import ImprimirDocumento from './pages/ImprimirDocumento';
 
 // Um PrivateRoute simples seria adicionado aqui
 // Para o MVP, permitiremos acesso livre ou mockaremos o login
@@ -17,6 +19,8 @@ function App() {
         <Route path="/imprimir" element={<Imprimir />} />
         <Route path="/receita" element={<NovaReceita />} />
         <Route path="/receita/imprimir" element={<ImprimirReceita />} />
+        <Route path="/documentos" element={<Documentos />} />
+        <Route path="/documentos/imprimir" element={<ImprimirDocumento />} />
         <Route path="/" element={<Navigate to="/novo" replace />} />
       </Routes>
     </BrowserRouter>
