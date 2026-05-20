@@ -1,16 +1,57 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useReceitaStore } from '../store/useReceitaStore';
 import { gerarPosologia } from '../services/groqReceita';
 import MedicamentoPastePanel from '../components/receita/MedicamentoPastePanel';
-import { formatCep, formatCpf, formatDraftTime, formatPhone } from '../lib/formatters';
-import { toast } from '../lib/toast';
+import MedicamentoAutocomplete from '../components/receita/MedicamentoAutocomplete';
+import ReceitaBranca from '../components/print/templates/ReceitaBranca';
+import ReceitaControleEspecial from '../components/print/templates/ReceitaControleEspecial';
 import {
   Sparkles, Plus, Trash2, Printer, RotateCcw, FileText, AlertTriangle,
   ChevronDown, ChevronUp, User, Calendar, MapPin, Pill, Loader2,
   CheckCircle2, Eye, ShieldAlert, Info
 } from 'lucide-react';
+
+// Formatação de CPF, CEP e Telefone para UX fluida
+const formatCpf = (v: string) => {
+  const digits = v.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) {
+    return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  }
+  if (digits.length <= 9) {
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  }
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
+
+const formatCep = (v: string) => {
+  const digits = v.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+};
+
+const formatTelefone = (v: string) => {
+  const digits = v.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 6) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
+const PRESETS = [
+  { nome: 'Dipirona 500mg', principioAtivo: 'Dipirona Monoidratada 500mg', formaFarmaceutica: 'Comprimidos', uso: 'Uso oral', posologia: 'Tomar 1 comprimido por via oral de 6 em 6 horas se dor ou febre.', quantidade: '10 comprimidos', duracao: 'Em caso de dor', tipoRecomendado: 'SIMPLES' },
+  { nome: 'Losartana 50mg', principioAtivo: 'Losartana Potássica 50mg', formaFarmaceutica: 'Comprimidos', uso: 'Uso oral', posologia: 'Tomar 1 comprimido por via oral uma vez ao dia, pela manhã.', quantidade: '30 comprimidos', duracao: 'Uso contínuo', tipoRecomendado: 'SIMPLES' },
+  { nome: 'Omeprazol 20mg', principioAtivo: 'Omeprazol 20mg', formaFarmaceutica: 'Cápsulas gastrorresistentes', uso: 'Uso oral', posologia: 'Tomar 1 cápsula por via oral em jejum, 30 minutos antes do café da manhã.', quantidade: '30 cápsulas', duracao: '30 dias', tipoRecomendado: 'SIMPLES' },
+  { nome: 'Metformina 850mg', principioAtivo: 'Metformina Cloridrato 850mg', formaFarmaceutica: 'Comprimidos', uso: 'Uso oral', posologia: 'Tomar 1 comprimido por via oral junto ao jantar.', quantidade: '60 comprimidos', duracao: 'Uso contínuo', tipoRecomendado: 'SIMPLES' },
+  { nome: 'Clonazepam 2mg', principioAtivo: 'Clonazepam 2mg', formaFarmaceutica: 'Comprimidos', uso: 'Uso oral', posologia: 'Tomar 1/2 comprimido (1mg) por via oral à noite, antes de deitar.', quantidade: '30 comprimidos', duracao: '60 dias', tipoRecomendado: 'ESPECIAL' },
+  { nome: 'Sertralina 50mg', principioAtivo: 'Sertralina Cloridrato 50mg', formaFarmaceutica: 'Comprimidos revestidos', uso: 'Uso oral', posologia: 'Tomar 1 comprimido por via oral pela manhã.', quantidade: '30 comprimidos', duracao: 'Uso contínuo', tipoRecomendado: 'ESPECIAL' },
+];
 
 // ─── Card de medicamento ───────────────────────────────────────
 function MedicamentoCard({
@@ -26,7 +67,6 @@ function MedicamentoCard({
 
   const handleNomeChange = (valor: string) => {
     setInputNome(valor);
-    // Persiste imediatamente no store para o footer e botão de imprimir
     updateMedicamento(id, { nomeDigitado: valor });
   };
 
@@ -38,62 +78,68 @@ function MedicamentoCard({
       const resultado = await gerarPosologia(nome);
       updateMedicamento(id, { ...resultado, nomeDigitado: nome, carregando: false });
       setExpandido(true);
-      toast.success(`Posologia gerada para ${nome}`);
     } catch {
-      const errMsg = 'Erro ao gerar posologia. Verifique a conexão ou preencha manualmente.';
-      updateMedicamento(id, { carregando: false, erro: errMsg });
+      updateMedicamento(id, {
+        carregando: false,
+        erro: 'Erro ao gerar posologia com IA. Verifique a conexão ou preencha manualmente.',
+      });
       setExpandido(true);
-      toast.error(errMsg);
     }
   };
 
-  // temConteudo: true se tem nome digitado OU dados da IA
   const temConteudo = !!(med.nomeDigitado.trim() || med.principioAtivo || med.posologia);
 
-
-  const borderClass = temConteudo
-    ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-sm'
-    : 'border-gray-200 bg-white';
+  const borderClass = mismatch
+    ? 'border-red-300 bg-gradient-to-br from-red-50/50 to-orange-50/30 shadow-sm shadow-red-100/50'
+    : temConteudo
+    ? 'border-indigo-100 bg-gradient-to-br from-indigo-50/20 via-blue-50/10 to-white shadow-sm shadow-indigo-100/30'
+    : 'border-gray-200 bg-white hover:border-gray-300';
 
   const fields = [
-    { label: 'Princípio Ativo / Nome', key: 'principioAtivo', full: true, placeholder: 'ex: Omeprazol 20mg' },
-    { label: 'Forma Farmacêutica', key: 'formaFarmaceutica', full: false, placeholder: 'ex: Cápsulas gastrorresistentes' },
-    { label: 'Via de Uso', key: 'uso', full: false, placeholder: 'ex: Uso oral' },
-    { label: 'Posologia', key: 'posologia', full: true, placeholder: 'ex: Tomar 1 cápsula em jejum, 30 min antes do café da manhã' },
-    { label: 'Quantidade', key: 'quantidade', full: false, placeholder: 'ex: 30 cápsulas' },
-    { label: 'Duração do Tratamento', key: 'duracao', full: false, placeholder: 'ex: 30 dias' },
+    { label: 'Princípio Ativo / Nome', key: 'principioAtivo', full: true, placeholder: 'ex: Omeprazol 20mg', icon: Pill },
+    { label: 'Forma Farmacêutica', key: 'formaFarmaceutica', full: false, placeholder: 'ex: Cápsulas gastrorresistentes', icon: FileText },
+    { label: 'Via de Uso', key: 'uso', full: false, placeholder: 'ex: Uso oral', icon: MapPin },
+    { label: 'Posologia', key: 'posologia', full: true, placeholder: 'ex: Tomar 1 cápsula em jejum, 30 min antes do café da manhã', icon: Sparkles },
+    { label: 'Quantidade', key: 'quantidade', full: false, placeholder: 'ex: 30 cápsulas', icon: Plus },
+    { label: 'Duração do Tratamento', key: 'duracao', full: false, placeholder: 'ex: 30 dias', icon: Calendar },
   ];
 
   return (
-    <div className={`rounded-2xl border transition-all ${borderClass}`}>
+    <div className={`rounded-2xl border transition-all duration-300 ${borderClass}`}>
       {/* Header */}
       <div className="flex items-center gap-3 p-4">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-          mismatch ? 'bg-red-500 text-white' : temConteudo ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 shadow-sm ${
+          mismatch ? 'bg-gradient-to-br from-red-500 to-orange-600 text-white' : temConteudo ? 'bg-gradient-to-br from-indigo-600 to-blue-600 text-white' : 'bg-gray-100 text-gray-500 border border-gray-200'
         }`}>
           {mismatch ? <ShieldAlert size={16} /> : temConteudo ? <CheckCircle2 size={16} /> : index + 1}
         </div>
 
-        <input
-          type="text"
-          value={inputNome}
-          onChange={(e) => handleNomeChange(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleGerarIA()}
-          placeholder={`Medicamento ${index + 1} (ex: Clonazepam 2mg)`}
-          className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-gray-800 placeholder-gray-400"
-        />
+        <div className="flex-1 min-w-0">
+          <MedicamentoAutocomplete
+            value={inputNome}
+            onChange={handleNomeChange}
+            onSelect={(sugestao) => {
+              updateMedicamento(id, {
+                ...sugestao,
+                nomeDigitado: inputNome || sugestao.principioAtivo,
+                erro: '',
+              });
+              setExpandido(true);
+            }}
+            onEnterPress={handleGerarIA}
+            placeholder={`Medicamento ${index + 1} (ex: Clonazepam 2mg)`}
+          />
+        </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={handleGerarIA}
             disabled={med.carregando || !inputNome.trim()}
             title="Gerar posologia com IA + avaliar tipo de receita"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
               med.carregando || !inputNome.trim()
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : mismatch
-                  ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-sm'
-                  : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-sm hover:shadow-md'
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200/55'
+                : 'bg-gradient-to-r from-violet-650 to-indigo-600 text-white hover:from-violet-750 hover:to-indigo-750 hover:shadow-md'
             }`}
           >
             {med.carregando ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
@@ -101,57 +147,83 @@ function MedicamentoCard({
           </button>
 
           {temConteudo && (
-            <button onClick={() => setExpandido(!expandido)} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-white transition-all">
+            <button onClick={() => setExpandido(!expandido)} className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all border border-transparent hover:border-gray-200">
               {expandido ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
             </button>
           )}
 
-          <button onClick={() => removeMedicamento(id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all">
+          <button onClick={() => removeMedicamento(id)} className="p-2 rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 hover:border-red-100 transition-all border border-transparent">
             <Trash2 size={15} />
           </button>
         </div>
       </div>
 
+      {/* Alerta de mismatch */}
+      {mismatch && med.tipoRecomendado && (
+        <div className="mx-4 mb-3 flex items-start gap-2.5 text-xs text-red-800 bg-red-50 border border-red-200 rounded-xl p-3.5 shadow-sm">
+          <ShieldAlert size={16} className="shrink-0 mt-0.5 text-red-500" />
+          <div>
+            <p className="font-bold text-red-900">
+              ⚠️ Este medicamento requer Receita de Controle Especial
+            </p>
+            {med.motivoEspecial && (
+              <p className="mt-1 text-red-700 leading-relaxed">{med.motivoEspecial}</p>
+            )}
+            <p className="mt-1.5 text-[10px] text-red-500 font-semibold uppercase tracking-wide">Mude o tipo de receita para prosseguir.</p>
+          </div>
+        </div>
+      )}
+
       {/* Alerta de erro */}
       {med.erro && (
-        <div className="mx-4 mb-3 flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          <AlertTriangle size={13} />
+        <div className="mx-4 mb-3 flex items-center gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2.5 animate-pulse">
+          <AlertTriangle size={14} className="text-amber-500" />
           {med.erro}
         </div>
       )}
 
       {/* Badge tipo recomendado (sem mismatch) */}
       {med.tipoRecomendado && !mismatch && (
-        <div className="mx-4 mb-2 flex items-center gap-1.5 text-[10px] text-green-700">
-          <CheckCircle2 size={11} />
-          <span>IA confirmou: <strong>{med.tipoRecomendado === 'SIMPLES' ? 'Receita Branca Simples ✓' : 'Receita Controle Especial ✓'}</strong></span>
+        <div className="mx-4 mb-3 flex items-center gap-1.5 text-[10px] text-green-700 bg-green-50/50 border border-green-150 rounded-lg px-2.5 py-1 w-fit font-medium">
+          <CheckCircle2 size={12} className="text-green-600" />
+          <span>IA confirmou: <strong className="font-semibold">{med.tipoRecomendado === 'SIMPLES' ? 'Receita Branca Simples ✓' : 'Receita Controle Especial ✓'}</strong></span>
         </div>
       )}
 
       {/* Campos expandidos */}
       {(expandido || med.erro) && (
-        <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-blue-100 pt-4">
-          {fields.map(({ label, key, full, placeholder }) => (
+        <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-indigo-100/50 pt-4 bg-white/50 rounded-b-2xl">
+          {fields.map(({ label, key, full, placeholder, icon: IconField }) => (
             <div key={key} className={full ? 'col-span-full' : ''}>
-              <label className="block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1">{label}</label>
+              <label className="block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1.5 flex items-center gap-1">
+                <IconField size={10} className="text-indigo-400" />
+                {label}
+              </label>
               <input
                 type="text"
                 value={(med as unknown as Record<string, string>)[key] || ''}
                 onChange={(e) => updateMedicamento(id, { [key]: e.target.value })}
                 placeholder={placeholder}
-                className="w-full text-sm bg-white border border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent placeholder-gray-300 transition-all"
+                className="w-full text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent placeholder-gray-300 transition-all shadow-sm"
               />
             </div>
           ))}
         </div>
       )}
 
-      {/* Preview compacto — 1 linha */}
+      {/* Preview compacto */}
       {temConteudo && !expandido && !med.erro && (
-        <div className="px-4 pb-3 pl-12">
-          <p className="text-xs text-gray-500 truncate">
-            {[med.principioAtivo, med.posologia, med.duracao].filter(Boolean).join(' · ')}
-          </p>
+        <div className="px-4 pb-4 pl-15 text-xs text-gray-600 border-t border-dashed border-gray-150 pt-3">
+          <p className="font-bold text-gray-800 text-sm">{med.principioAtivo}</p>
+          {med.formaFarmaceutica && <p className="text-gray-500 italic mt-0.5">{med.formaFarmaceutica}</p>}
+          {med.posologia && <p className="mt-1 text-gray-700 leading-relaxed font-medium bg-gray-50/50 p-2 rounded-lg border border-gray-100">{med.posologia}</p>}
+          {(med.quantidade || med.duracao) && (
+            <div className="mt-2 flex gap-1.5 flex-wrap">
+              {med.quantidade && <span className="bg-indigo-50/50 text-indigo-700 border border-indigo-100 px-2.5 py-0.5 rounded-full text-[10px] font-semibold">Qtd: {med.quantidade}</span>}
+              {med.duracao && <span className="bg-blue-50/50 text-blue-700 border border-blue-100 px-2.5 py-0.5 rounded-full text-[10px] font-semibold">Duração: {med.duracao}</span>}
+              {med.uso && <span className="bg-gray-50 text-gray-600 border border-gray-200 px-2.5 py-0.5 rounded-full text-[10px] font-medium">{med.uso}</span>}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -161,34 +233,16 @@ function MedicamentoCard({
 // ─── Página principal ──────────────────────────────────────────
 export default function NovaReceita() {
   const navigate = useNavigate();
-  const pacienteRef = useRef<HTMLDivElement>(null);
   const {
     tipoReceita, pacienteNome, pacienteCpf,
     pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf, pacienteTelefone,
-    local, data, medicamentos, lastSavedAt,
-    setTipoReceita, setPacienteReceita, addMedicamento, resetReceita,
+    local, data, medicamentos,
+    setTipoReceita, setPacienteReceita, addMedicamento, resetReceita, updateMedicamento,
   } = useReceitaStore();
-
-  useEffect(() => {
-    if (tipoReceita === 'ESPECIAL' && pacienteRef.current) {
-      setTimeout(() => pacienteRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
-    }
-  }, [tipoReceita]);
 
   const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
   const temMedicamentos = medsComConteudo.length > 0;
-  const camposObrigatoriosEspecial = [
-    { label: 'CPF', ok: pacienteCpf.trim().length >= 14 },
-    { label: 'endereço', ok: pacienteEndereco.trim().length > 0 },
-    { label: 'CEP', ok: pacienteCep.trim().length >= 9 },
-    { label: 'cidade', ok: pacienteCidade.trim().length > 0 },
-    { label: 'UF', ok: pacienteUf.trim().length === 2 },
-    { label: 'telefone', ok: pacienteTelefone.trim().length >= 14 },
-  ];
-  const pendenciasEspecial = tipoReceita === 'ESPECIAL'
-    ? camposObrigatoriosEspecial.filter((campo) => !campo.ok).map((campo) => campo.label)
-    : [];
-  const podeImprimir = pacienteNome.trim() !== '' && temMedicamentos && pendenciasEspecial.length === 0;
+  const podeImprimir = pacienteNome.trim() !== '' && temMedicamentos;
 
   // Auditoria: algum med requer ESPECIAL mas tipo está SIMPLES?
   const alertaMismatch = tipoReceita === 'SIMPLES' &&
@@ -197,55 +251,71 @@ export default function NovaReceita() {
   // Auditoria: algum med é SIMPLES mas tipo está ESPECIAL?
   const alertaSimples = tipoReceita === 'ESPECIAL' &&
     medicamentos.every((m) => m.tipoRecomendado === 'SIMPLES');
-  const motivoBloqueio = !pacienteNome.trim()
-    ? 'Informe o paciente'
-    : !temMedicamentos
-      ? 'Adicione medicamento'
-      : alertaMismatch
-        ? 'Tipo incorreto'
-        : pendenciasEspecial.length > 0
-          ? `Falta: ${pendenciasEspecial.join(', ')}`
-          : '';
 
-  const inputCls = "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all";
+  const handleAddPreset = (preset: typeof PRESETS[0]) => {
+    const cardVazio = medicamentos.find((m) => !m.nomeDigitado.trim() && !m.principioAtivo);
+    
+    let targetId: string;
+    if (cardVazio) {
+      targetId = cardVazio.id;
+    } else {
+      addMedicamento();
+      const updatedMeds = useReceitaStore.getState().medicamentos;
+      targetId = updatedMeds[updatedMeds.length - 1].id;
+    }
+
+    updateMedicamento(targetId, {
+      nomeDigitado: preset.nome,
+      principioAtivo: preset.principioAtivo,
+      formaFarmaceutica: preset.formaFarmaceutica,
+      uso: preset.uso,
+      posologia: preset.posologia,
+      quantidade: preset.quantidade,
+      duracao: preset.duracao,
+      tipoRecomendado: preset.tipoRecomendado as any,
+    });
+
+    if (preset.tipoRecomendado === 'ESPECIAL') {
+      setTipoReceita('ESPECIAL');
+    }
+  };
+
+  const inputCls = "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all shadow-sm placeholder-gray-300 bg-white";
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto px-4 py-6 pb-28">
+      <div className="max-w-7xl mx-auto px-4 py-6 pb-28">
 
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Receituário Médico</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Dr. Roberto Arcanjo · CRM/CE 26.155 · Digite o medicamento e clique em <strong>IA</strong>
-            </p>
-            <p className="mt-1 text-xs text-blue-600 font-medium">
-              {formatDraftTime(lastSavedAt)}
+              Dr. Roberto Arcanjo · CRM/CE 26.155 · Digite o medicamento ou selecione um modelo rápido
             </p>
           </div>
           <button
             onClick={() => { if (confirm('Limpar todos os dados da receita?')) resetReceita(); }}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-gray-200"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs text-gray-500 hover:text-red-650 hover:bg-red-50 rounded-xl transition-colors border border-gray-200 bg-white shadow-sm font-medium"
           >
             <RotateCcw size={13} />
-            Limpar
+            Limpar tudo
           </button>
         </div>
 
-        {/* Banner auditoria global */}
+        {/* Global warnings / banners */}
         {alertaMismatch && (
-          <div className="mb-5 flex items-start gap-3 bg-red-50 border border-red-300 rounded-2xl px-5 py-4">
-            <ShieldAlert size={20} className="text-red-500 shrink-0 mt-0.5" />
+          <div className="mb-5 flex items-start gap-3 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-2xl px-5 py-4 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
+            <ShieldAlert size={22} className="text-red-500 shrink-0 mt-0.5 animate-bounce" />
             <div>
-              <p className="text-sm font-bold text-red-700">⚠️ Atenção: tipo de receita incorreto</p>
-              <p className="text-xs text-red-600 mt-0.5">
+              <p className="text-sm font-bold text-red-800">⚠️ Atenção: Tipo de receita incorreto</p>
+              <p className="text-xs text-red-700 mt-1 leading-relaxed">
                 Um ou mais medicamentos exigem <strong>Receita de Controle Especial</strong> (Portaria SVS/MS 344/98),
-                mas você selecionou "Receita Branca Simples". Altere o tipo abaixo.
+                mas você selecionou "Receita Branca Simples". Altere o tipo de receita para habilitar a impressão.
               </p>
               <button
                 onClick={() => setTipoReceita('ESPECIAL')}
-                className="mt-2 text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors"
+                className="mt-3 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 px-4 py-2 rounded-xl transition-all shadow-md shadow-red-200 hover:scale-[1.01]"
               >
                 Mudar para Controle Especial
               </button>
@@ -254,113 +324,115 @@ export default function NovaReceita() {
         )}
 
         {alertaSimples && (
-          <div className="mb-5 flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl px-5 py-4">
-            <Info size={18} className="text-blue-500 shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-700">
-              A IA identificou que todos os medicamentos são de <strong>venda livre / Receita Branca Simples</strong>.
-              Você pode usar o tipo "Receita Simples" para este caso.
-            </p>
+          <div className="mb-5 flex items-start gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl px-5 py-4 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
+            <Info size={20} className="text-indigo-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-indigo-800">Aviso: Tipo Recomendado Diferente</p>
+              <p className="text-xs text-indigo-700 mt-1 leading-relaxed">
+                A IA identificou que todos os medicamentos na lista são de venda livre ou exigem apenas <strong>Receita Branca Simples</strong>.
+                Você pode alternar o tipo de receita abaixo caso queira evitar vias extras desnecessárias.
+              </p>
+            </div>
           </div>
         )}
 
-        {/* Tipo de Receita */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
-          <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Tipo de Receita</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setTipoReceita('SIMPLES')}
-              className={`relative flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all text-left ${
-                tipoReceita === 'SIMPLES' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-gray-300'
-              }`}
-            >
-              {tipoReceita === 'SIMPLES' && (
-                <div className="absolute top-3 right-3 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                  <CheckCircle2 size={12} className="text-white" />
-                </div>
-              )}
-              <div className={`p-2 rounded-lg ${tipoReceita === 'SIMPLES' ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                <FileText size={20} className={tipoReceita === 'SIMPLES' ? 'text-blue-600' : 'text-gray-500'} />
-              </div>
-              <div>
-                <p className={`font-bold text-sm ${tipoReceita === 'SIMPLES' ? 'text-blue-700' : 'text-gray-700'}`}>Receita Branca Simples</p>
-                <p className="text-xs text-gray-500 mt-0.5">Medicamentos comuns, não controlados · 1 via</p>
-              </div>
-            </button>
+        {/* Split Screen Layout */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          
+          {/* Coluna Esquerda: Edição */}
+          <div className="flex-1 w-full space-y-6">
+            
+            {/* Tipo de Receita */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Tipo de Receita</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setTipoReceita('SIMPLES')}
+                  className={`relative flex flex-col items-start gap-2.5 p-4 rounded-xl border-2 transition-all text-left shadow-sm ${
+                    tipoReceita === 'SIMPLES' 
+                      ? 'border-indigo-600 bg-indigo-50/20' 
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  {tipoReceita === 'SIMPLES' && (
+                    <div className="absolute top-3 right-3 w-5 h-5 bg-indigo-655 rounded-full flex items-center justify-center shadow-sm">
+                      <CheckCircle2 size={12} className="text-white" />
+                    </div>
+                  )}
+                  <div className={`p-2 rounded-lg ${tipoReceita === 'SIMPLES' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <p className={`font-bold text-sm ${tipoReceita === 'SIMPLES' ? 'text-indigo-900' : 'text-gray-700'}`}>Receita Branca Simples</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Medicamentos comuns, não controlados · 1 via</p>
+                  </div>
+                </button>
 
-            <button
-              onClick={() => setTipoReceita('ESPECIAL')}
-              className={`relative flex flex-col items-start gap-2 p-4 rounded-xl border-2 transition-all text-left ${
-                tipoReceita === 'ESPECIAL' ? 'border-amber-500 bg-amber-50' : 'border-gray-200 bg-white hover:border-gray-300'
-              }`}
-            >
+                <button
+                  onClick={() => setTipoReceita('ESPECIAL')}
+                  className={`relative flex flex-col items-start gap-2.5 p-4 rounded-xl border-2 transition-all text-left shadow-sm ${
+                    tipoReceita === 'ESPECIAL' 
+                      ? 'border-amber-500 bg-amber-50/20' 
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  {tipoReceita === 'ESPECIAL' && (
+                    <div className="absolute top-3 right-3 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center shadow-sm">
+                      <CheckCircle2 size={12} className="text-white" />
+                    </div>
+                  )}
+                  <div className={`p-2 rounded-lg ${tipoReceita === 'ESPECIAL' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>
+                    <AlertTriangle size={20} />
+                  </div>
+                  <div>
+                    <p className={`font-bold text-sm ${tipoReceita === 'ESPECIAL' ? 'text-amber-900' : 'text-gray-700'}`}>Receita Controle Especial</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Psicotrópicos, benzodiazepínicos · 2 vias (ANVISA)</p>
+                  </div>
+                </button>
+              </div>
+
               {tipoReceita === 'ESPECIAL' && (
-                <div className="absolute top-3 right-3 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
-                  <CheckCircle2 size={12} className="text-white" />
+                <div className="mt-4 flex items-start gap-2.5 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3 shadow-sm animate-in fade-in duration-350">
+                  <AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-500" />
+                  <span className="leading-relaxed"><strong>ANVISA Exige:</strong> CPF, RG, endereço com CEP, cidade, UF e telefone do paciente são necessários para validar a receita de controle especial.</span>
                 </div>
               )}
-              <div className={`p-2 rounded-lg ${tipoReceita === 'ESPECIAL' ? 'bg-amber-100' : 'bg-gray-100'}`}>
-                <AlertTriangle size={20} className={tipoReceita === 'ESPECIAL' ? 'text-amber-600' : 'text-gray-500'} />
+            </div>
+
+            {/* Dados do Paciente */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-50">
+                <User size={18} className="text-indigo-500" />
+                <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Dados do Paciente</h2>
               </div>
-              <div>
-                <p className={`font-bold text-sm ${tipoReceita === 'ESPECIAL' ? 'text-amber-700' : 'text-gray-700'}`}>Receita Controle Especial</p>
-                <p className="text-xs text-gray-500 mt-0.5">Psicotrópicos, benzodiazepínicos, opioides · 2 vias ANVISA</p>
-                {tipoReceita !== 'ESPECIAL' && (
-                  <span className="inline-block mt-1 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
-                    Requer 7 campos adicionais
-                  </span>
-                )}
-              </div>
-            </button>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          {tipoReceita === 'ESPECIAL' && (
-            <div className="mt-3 flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-              <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-              <span>CPF, endereço completo com CEP, cidade, UF e telefone do paciente são obrigatórios (ANVISA).</span>
-            </div>
-          )}
-          {pendenciasEspecial.length > 0 && (
-            <div className="mt-2 flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              <ShieldAlert size={13} className="mt-0.5 shrink-0" />
-              <span>Antes de imprimir, complete: <strong>{pendenciasEspecial.join(', ')}</strong>.</span>
-            </div>
-          )}
-        </div>
-        {/* Dados do Paciente */}
-        <div ref={pacienteRef} className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
-          <div className="flex items-center gap-2 mb-5">
-            <User size={16} className="text-blue-500" />
-            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Dados do Paciente</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Nome Completo <span className="text-red-400">*</span></label>
+                  <input type="text" value={pacienteNome} onChange={(e) => setPacienteReceita({ pacienteNome: e.target.value })} placeholder="Nome completo do paciente" className={inputCls} />
+                </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Nome Completo <span className="text-red-400">*</span></label>
-              <input type="text" value={pacienteNome} onChange={(e) => setPacienteReceita({ pacienteNome: e.target.value })} placeholder="Nome completo do paciente" className={inputCls} />
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                    CPF {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
+                  </label>
+                  <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} placeholder="000.000.000-00" className={inputCls} />
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                CPF {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-              </label>
-              <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} placeholder="000.000.000-00" className={inputCls} inputMode="numeric" />
-            </div>
 
-            {/* Campos só obrigatórios no Controle Especial */}
-            {tipoReceita === 'ESPECIAL' && (
-              <>
+
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    Endereço (Rua, Nº, Bairro) <span className="text-red-400">*</span>
+                    Endereço (Rua, Nº, Bairro) {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
                   </label>
                   <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} placeholder="Rua, número, bairro" className={inputCls} />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    CEP <span className="text-red-400">*</span>
+                    CEP {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
                   </label>
-                  <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: formatCep(e.target.value) })} placeholder="00000-000" className={inputCls} inputMode="numeric" />
+                  <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: formatCep(e.target.value) })} placeholder="00000-000" className={inputCls} />
                 </div>
 
                 <div className="flex gap-3">
@@ -370,99 +442,167 @@ export default function NovaReceita() {
                   </div>
                   <div style={{ width: '80px' }}>
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">UF</label>
-                    <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value.toUpperCase().slice(0, 2) })} placeholder="CE" maxLength={2} className={inputCls} />
+                    <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value })} placeholder="CE" maxLength={2} className={inputCls} />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    Telefone <span className="text-red-400">*</span>
+                    Telefone {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
                   </label>
-                  <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatPhone(e.target.value) })} placeholder="(85) 00000-0000" className={inputCls} inputMode="tel" />
+                  <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatTelefone(e.target.value) })} placeholder="(85) 00000-0000" className={inputCls} />
                 </div>
-              </>
+
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                      <Calendar size={11} className="inline mr-1" />Data
+                    </label>
+                    <input type="text" value={data} onChange={(e) => setPacienteReceita({ data: e.target.value })} className={inputCls} />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                      <MapPin size={11} className="inline mr-1" />Local
+                    </label>
+                    <input type="text" value={local} onChange={(e) => setPacienteReceita({ local: e.target.value })} className={inputCls} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Medicamentos */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-50">
+                <div className="flex items-center gap-2">
+                  <Pill size={18} className="text-indigo-500" />
+                  <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Medicamentos</h2>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold tracking-wider">
+                  <Sparkles size={12} className="text-violet-500 animate-pulse" />
+                  <span>IA AUTO-PREENCHE POSOLOGIA</span>
+                </div>
+              </div>
+
+              {/* Modelos de Medicamentos Frequentes */}
+              <div className="mb-6 bg-gradient-to-br from-indigo-50/20 via-indigo-50/10 to-transparent border border-indigo-100/50 rounded-2xl p-4.5">
+                <span className="block text-[10px] font-bold uppercase text-indigo-500 tracking-wider mb-2.5">Prescrever Rápido (Favoritos)</span>
+                <div className="flex gap-2 flex-wrap">
+                  {PRESETS.map((preset) => {
+                    const isEspecial = preset.tipoRecomendado === 'ESPECIAL';
+                    return (
+                      <button
+                        key={preset.nome}
+                        type="button"
+                        onClick={() => handleAddPreset(preset)}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all hover:scale-[1.02] shadow-sm ${
+                          isEspecial
+                            ? 'bg-amber-50/75 text-amber-700 border-amber-200 hover:bg-amber-100/60'
+                            : 'bg-indigo-50/40 text-indigo-700 border-indigo-100 hover:bg-indigo-100/40'
+                        }`}
+                      >
+                        <Plus size={11} />
+                        {preset.nome}
+                        {isEspecial && <span className="text-[8px] bg-amber-200 px-1 rounded font-bold uppercase shrink-0 text-amber-800 scale-90">C344</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <MedicamentoPastePanel />
+
+              <div className="space-y-4">
+                {medicamentos.map((med, idx) => (
+                  <MedicamentoCard key={med.id} id={med.id} index={idx} tipoAtual={tipoReceita} />
+                ))}
+              </div>
+
+              <button
+                onClick={addMedicamento}
+                className="mt-5 w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-dashed border-gray-200 text-sm font-semibold text-gray-400 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50/40 hover:shadow-sm transition-all"
+              >
+                <Plus size={16} />
+                Adicionar Medicamento
+              </button>
+            </div>
+
+            {/* Card pronto para Impressão */}
+            {podeImprimir && !alertaMismatch && (
+              <div className="bg-gradient-to-br from-green-50/60 to-emerald-50/30 border border-green-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm shadow-green-150/30 animate-in fade-in duration-300">
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-3 shadow text-white shrink-0">
+                  <Eye size={20} />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-green-900">Receituário validado e pronto!</p>
+                  <p className="text-xs text-green-700 mt-1 leading-relaxed">
+                    {medsComConteudo.length} medicamento(s) configurado(s) · {tipoReceita === 'SIMPLES' ? 'Receita Branca Simples' : 'Controle Especial (2 vias)'}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => navigate('/receita/imprimir')} 
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-sm hover:from-green-700 hover:to-emerald-700 transition-all shadow-md shadow-green-200 hover:scale-[1.01]"
+                >
+                  <Eye size={15} />
+                  Visualizar Impressão
+                </button>
+              </div>
             )}
+          </div>
 
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                  <Calendar size={11} className="inline mr-1" />Data
-                </label>
-                <input type="text" value={data} onChange={(e) => setPacienteReceita({ data: e.target.value })} className={inputCls} />
+          {/* Coluna Direita: Live Preview A4 */}
+          <div className="sticky top-6 hidden lg:block w-[380px] shrink-0">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-md p-4">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
+                <div className="flex items-center gap-1.5">
+                  <Eye size={14} className="text-indigo-500" />
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Visualização A4</span>
+                </div>
+                <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                  tipoReceita === 'ESPECIAL' 
+                    ? 'bg-amber-100 text-amber-800 border border-amber-200' 
+                    : 'bg-indigo-100 text-indigo-800 border border-indigo-200'
+                }`}>
+                  {tipoReceita === 'SIMPLES' ? '1 Via Simples' : '2 Vias C344'}
+                </span>
               </div>
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                  <MapPin size={11} className="inline mr-1" />Local
-                </label>
-                <input type="text" value={local} onChange={(e) => setPacienteReceita({ local: e.target.value })} className={inputCls} />
+              
+              <div className="bg-gray-100 rounded-xl p-3 flex justify-center items-start overflow-hidden h-[540px] border border-gray-200/50 shadow-inner relative">
+                <div 
+                  className="origin-top transition-transform duration-300 rounded shadow-md border border-gray-300"
+                  style={{
+                    transform: 'scale(0.38)',
+                    width: '21cm',
+                    height: '29.7cm',
+                    minWidth: '21cm',
+                    minHeight: '29.7cm',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  {tipoReceita === 'SIMPLES' ? <ReceitaBranca /> : <ReceitaControleEspecial />}
+                </div>
+                <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl p-2 text-center text-[10px] text-gray-500 font-semibold shadow-sm">
+                  Atualizado em tempo real
+                </div>
               </div>
             </div>
           </div>
+          
         </div>
-
-        {/* Medicamentos */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <Pill size={16} className="text-blue-500" />
-              <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Medicamentos</h2>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <Sparkles size={12} className="text-violet-400" />
-              <span>IA gera posologia <strong className="text-violet-600">e avalia o tipo de receita</strong></span>
-            </div>
-          </div>
-
-          <MedicamentoPastePanel />
-
-          <div className="space-y-3">
-            {medicamentos.map((med, idx) => (
-              <MedicamentoCard key={med.id} id={med.id} index={idx} tipoAtual={tipoReceita} />
-            ))}
-          </div>
-
-          <button
-            onClick={addMedicamento}
-            className="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-gray-200 text-sm font-medium text-gray-400 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50 transition-all"
-          >
-            <Plus size={16} />
-            Adicionar Medicamento
-          </button>
-        </div>
-
-        {/* Card pronto */}
-        {podeImprimir && !alertaMismatch && (
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 mb-4 flex items-center gap-4">
-            <div className="bg-green-100 rounded-xl p-3">
-              <Eye size={20} className="text-green-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-green-800">Receita pronta para imprimir!</p>
-              <p className="text-xs text-green-600 mt-0.5">
-                {medsComConteudo.length} medicamento(s) · {tipoReceita === 'SIMPLES' ? 'Receita Branca Simples' : 'Controle Especial (2 vias)'}
-              </p>
-            </div>
-            <button onClick={() => navigate('/receita/imprimir')} className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl font-semibold text-sm hover:bg-green-700 transition-colors shadow-sm">
-              <Eye size={15} />
-              Visualizar
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg px-4 py-3 no-print">
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl px-4 py-4 no-print">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-sm">
             <div className={`flex items-center gap-1.5 ${pacienteNome ? 'text-green-600' : 'text-gray-400'}`}>
-              <CheckCircle2 size={14} />
-              <span className="font-medium">{pacienteNome || 'Sem paciente'}</span>
+              <CheckCircle2 size={15} />
+              <span className="font-semibold">{pacienteNome || 'Sem paciente identificado'}</span>
             </div>
             {temMedicamentos && (
               <>
                 <span className="text-gray-300">·</span>
-                <span className={`font-semibold text-xs ${motivoBloqueio ? 'text-red-500' : 'text-blue-600'}`}>
-                  {motivoBloqueio || `${medsComConteudo.length} medicamento(s)`}
+                <span className={`font-bold text-xs ${alertaMismatch ? 'text-red-500' : 'text-indigo-600'}`}>
+                  {alertaMismatch ? '⚠️ Ajuste o tipo da receita' : `${medsComConteudo.length} medicamento(s)`}
                 </span>
               </>
             )}
@@ -471,13 +611,13 @@ export default function NovaReceita() {
           <button
             onClick={() => navigate('/receita/imprimir')}
             disabled={!podeImprimir || alertaMismatch}
-            title={motivoBloqueio || ''}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm ${
+            title={alertaMismatch ? 'Corrija o tipo de receita antes de imprimir' : ''}
+            className={`flex items-center gap-2 px-7 py-3 rounded-2xl font-bold text-sm transition-all shadow-md ${
               !podeImprimir || alertaMismatch
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200/50 shadow-none'
                 : tipoReceita === 'ESPECIAL'
-                ? 'bg-amber-500 text-white hover:bg-amber-600 hover:shadow-md'
-                : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 hover:shadow-lg shadow-amber-200'
+                : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-lg shadow-indigo-200'
             }`}
           >
             <Printer size={16} />

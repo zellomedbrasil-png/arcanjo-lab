@@ -24,7 +24,7 @@ const borda = '1px solid #000';
 
 /** Célula com label numerado e valor. */
 function C({
-  n, label, value = '', flex, w, borderRight = true, minH = 22, style = {},
+  n, label, value = '', flex, w, borderRight = true, minH = 19, style = {},
 }: {
   n?: string | number;
   label: string;
@@ -40,7 +40,7 @@ function C({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        padding: '1px 4px 2px',
+        padding: '0.5px 3px 1.5px',
         minHeight: `${minH}px`,
         flex: flex ?? (w ? undefined : 1),
         width: w,
@@ -66,7 +66,7 @@ function Secao({ label, cor }: { label: string; cor?: string }) {
     <div style={{
       backgroundColor: cor ?? '#d9d9d9',
       borderBottom: borda,
-      padding: '1px 5px',
+      padding: '0px 4px',
       fontSize: '7px',
       fontWeight: 700,
     }}>
@@ -100,7 +100,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
     <>
       <style>{`
         @media print {
-          @page { size: A4 landscape; margin: 5mm; }
+          @page { size: A4 landscape; margin: 0; }
           body { margin: 0; }
         }
       `}</style>
@@ -108,7 +108,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
       <div style={{
         width: '100%',
         height: '100%',
-        padding: '6px 8px',
+        padding: '4mm',
         fontFamily: 'Arial, Helvetica, sans-serif',
         fontSize: '7px',
         color: '#000',
@@ -156,7 +156,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
             <C n={9}  label="Validade da Carteira"                                          w="100px" />
             <C n={10} label="Nome"                       value={pacienteNome.toUpperCase()} flex={2} />
             <C n={11} label="Cartão Nacional de Saúde"                                      w="160px" />
-            <C n={12} label="Atendimento a RN"           value="N"                          w="80px" borderRight={false} />
+            <C n={12} label="Atendimento a RN"           value=""                           w="80px" borderRight={false} />
           </div>
         </div>
 
@@ -201,19 +201,19 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
             <div key={seq} style={{
               display: 'flex',
               borderBottom: idx < 4 ? borda : undefined,
-              minHeight: '18px',
-              fontSize: '8px',
+              minHeight: '15px',
+              fontSize: '7.5px',
             }}>
-              <div style={{ width: '18px', padding: '2px 2px', borderRight: borda, textAlign: 'center', fontWeight: 700 }}>{seq}-</div>
-              <div style={{ width: '54px', padding: '2px 3px', borderRight: borda }}>&nbsp;</div>
-              <div style={{ width: '160px', padding: '2px 3px', borderRight: borda, fontFamily: 'monospace' }}>&nbsp;</div>
-              <div style={{ flex: 1, padding: '2px 3px', borderRight: borda, textTransform: 'uppercase', fontWeight: 600 }}>
+              <div style={{ width: '18px', padding: '1px 2px', borderRight: borda, textAlign: 'center', fontWeight: 700 }}>{seq}-</div>
+              <div style={{ width: '54px', padding: '1px 3px', borderRight: borda }}>&nbsp;</div>
+              <div style={{ width: '160px', padding: '1px 3px', borderRight: borda, fontFamily: 'monospace' }}>&nbsp;</div>
+              <div style={{ flex: 1, padding: '1px 3px', borderRight: borda, textTransform: 'uppercase', fontWeight: 600 }}>
                 {linhasProcedimentos[idx]}
               </div>
-              <div style={{ width: '58px', padding: '2px 3px', borderRight: borda, textAlign: 'center', fontWeight: 600 }}>
-                {linhasProcedimentos[idx] ? '1' : ''}
+              <div style={{ width: '58px', padding: '1px 3px', borderRight: borda, textAlign: 'center', fontWeight: 600 }}>
+                &nbsp;
               </div>
-              <div style={{ width: '58px', padding: '2px 3px' }}>&nbsp;</div>
+              <div style={{ width: '58px', padding: '1px 3px' }}>&nbsp;</div>
             </div>
           ))}
         </div>
@@ -261,7 +261,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
             <div key={seq} style={{
               display: 'flex',
               borderBottom: idx < 4 ? borda : undefined,
-              minHeight: '16px',
+              minHeight: '13px',
               fontSize: '7.5px',
             }}>
               <div style={{ width: '14px', padding: '1px 2px', borderRight: borda, textAlign: 'center', fontWeight: 700 }}>{seq}-</div>
@@ -295,7 +295,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
             <div style={{ width: '80px', padding: '1px 2px' }}>55 - Código CBO</div>
           </div>
           {[1,2,3].map((seq, idx) => (
-            <div key={seq} style={{ display: 'flex', borderBottom: idx < 2 ? borda : undefined, minHeight: '16px' }}>
+            <div key={seq} style={{ display: 'flex', borderBottom: idx < 2 ? borda : undefined, minHeight: '13px' }}>
               <div style={{ width: '40px', padding: '1px 2px', borderRight: borda }}>&nbsp;</div>
               <div style={{ width: '50px', padding: '1px 2px', borderRight: borda }}>&nbsp;</div>
               <div style={{ width: '140px', padding: '1px 2px', borderRight: borda }}>&nbsp;</div>
@@ -322,12 +322,12 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
                 ))}
               </div>
             </div>
-            <div style={{ width: '320px', minHeight: '32px' }}>&nbsp;</div>
+            <div style={{ width: '320px', minHeight: '22px' }}>&nbsp;</div>
           </div>
         </div>
 
         {/* ══ 58 - OBSERVAÇÃO ══ */}
-        <div style={{ border: borda, flex: 1, marginBottom: '-1px', minHeight: '38px' }}>
+        <div style={{ border: borda, flex: 1, marginBottom: '-1px', minHeight: '24px' }}>
           <Secao label="58 - Observação / Justificativa" cor={corSec} />
           <div style={{ padding: '3px 5px', fontSize: '8px', lineHeight: 1.35, textTransform: 'uppercase', fontWeight: 600 }}>
             {justificativa}
@@ -345,7 +345,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
             { n: 64, t: 'Total de Gases Medicinais (R$)' },
             { n: 65, t: 'Total Geral (R$)' },
           ].map(({ n, t }, i, arr) => (
-            <div key={n} style={{ flex: 1, padding: '2px 4px', borderRight: i < arr.length - 1 ? borda : undefined, minHeight: '24px' }}>
+            <div key={n} style={{ flex: 1, padding: '2px 4px', borderRight: i < arr.length - 1 ? borda : undefined, minHeight: '18px' }}>
               <div>{n} - {t}</div>
               <div>&nbsp;</div>
             </div>
@@ -353,7 +353,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
         </div>
 
         {/* ══ ASSINATURAS 66-68 ══ */}
-        <div style={{ display: 'flex', border: borda, minHeight: '32px' }}>
+        <div style={{ display: 'flex', border: borda, minHeight: '26px' }}>
           <div style={{ flex: 1, padding: '2px 4px', borderRight: borda, fontSize: '6.5px', fontWeight: 600 }}>
             66 - Assinatura do Responsável pela Autorização
           </div>
