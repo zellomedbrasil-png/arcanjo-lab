@@ -51,7 +51,7 @@ export default function NovoPedido() {
         {/* ── Linha de cabeçalho ── */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-lg font-bold text-gray-900">Novo Pedido</h1>
+            <h1 className="text-lg font-bold text-gray-900">Prontuário</h1>
             <span className="text-xs text-gray-400">{formatDraftTime(lastSavedAt)}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -72,12 +72,12 @@ export default function NovoPedido() {
         {/* ── 1. Paciente — barra compacta ── */}
         <PatientForm />
 
-        {/* ── 2. Exames — conteúdo principal ── */}
+        {/* ── 2. Assistente clínico IA ── */}
+        <SOAPPanel />
+
+        {/* ── 3. Exames — conteúdo principal ── */}
         <ExamPastePanel />
         <ExamSelector />
-
-        {/* ── 3. Assistente clínico IA ── */}
-        <SOAPPanel />
 
       </div>
 
