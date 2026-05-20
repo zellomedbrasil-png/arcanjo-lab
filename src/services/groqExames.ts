@@ -1,4 +1,4 @@
-import { groq } from '../config/groq';
+import { callGemini } from '../config/gemini';
 
 export interface ExameOrganizado {
   nomeOriginal: string;
@@ -64,17 +64,12 @@ ${contextoPaciente ? `PACIENTE: ${contextoPaciente}` : ''}
 
 Organize os exames e retorne apenas o JSON.`;
 
-  const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
-    max_tokens: 2048,
-    temperature: 0.1,
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: userMessage },
-    ],
+  const raw = await callGemini({
+    prompt: userMessage,
+    systemInstruction: SYSTEM_PROMPT,
+    jsonMode: true
   });
 
-  const raw = response.choices[0]?.message?.content?.trim() ?? '';
   const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
   let parsed: ResultadoExamesIA;

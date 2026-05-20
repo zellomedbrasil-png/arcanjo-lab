@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
-import { ensureGroqApiKey, groq } from '../../config/groq';
+import { callGemini } from '../../config/gemini';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X } from 'lucide-react';
@@ -67,16 +67,11 @@ Queixa clínica: "${queixa}"`;
     setIsLoadingJust(true);
     setError(null);
     try {
-      ensureGroqApiKey();
-      const msg = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 256,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT_JUSTIFICATIVA },
-          { role: 'user', content: buildContext() },
-        ],
+      const content = await callGemini({
+        prompt: buildContext(),
+        systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA,
       });
-      setJustificativa((msg.choices[0].message.content ?? '').toUpperCase());
+      setJustificativa(content.toUpperCase());
       toast.success('Justificativa clínica gerada');
     } catch (err: unknown) {
       const msg = getErrorMessage(err, 'Erro ao gerar justificativa.');
@@ -92,16 +87,11 @@ Queixa clínica: "${queixa}"`;
     setIsLoadingSoap(true);
     setError(null);
     try {
-      ensureGroqApiKey();
-      const msg = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 1024,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT_SOAP },
-          { role: 'user', content: buildContext() },
-        ],
+      const content = await callGemini({
+        prompt: buildContext(),
+        systemInstruction: SYSTEM_PROMPT_SOAP,
       });
-      setSoap(msg.choices[0].message.content ?? '');
+      setSoap(content);
       setSoapExpanded(true);
       toast.success('Nota SOAP gerada');
     } catch (err: unknown) {

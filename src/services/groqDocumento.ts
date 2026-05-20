@@ -1,6 +1,4 @@
-import { getRequiredEnv } from '../config/env';
-
-const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
+import { callGemini } from '../config/gemini';
 
 export interface IaLaudoResponse {
   laudoDiagnostico: string;
@@ -39,33 +37,12 @@ Retorne APENAS um JSON válido (sem markdown, sem explicações adicionais) com 
 Evite termos informais e mantenha a redação profissional e segura.`;
 
 export async function gerarLaudoIA(prompt: string): Promise<IaLaudoResponse> {
-  const groqApiKey = getRequiredEnv('VITE_GROQ_API_KEY');
-  const response = await fetch(GROQ_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${groqApiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: LAUDO_SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Descrição do Caso: "${prompt}"\n\nRetorne apenas o JSON.`,
-        },
-      ],
-      temperature: 0.2,
-      max_tokens: 1000,
-    }),
+  const raw = await callGemini({
+    prompt: `Descrição do Caso: "${prompt}"\n\nRetorne apenas o JSON.`,
+    systemInstruction: LAUDO_SYSTEM_PROMPT,
+    jsonMode: true
   });
 
-  if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const raw = data.choices?.[0]?.message?.content?.trim() ?? '';
   const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
   try {
@@ -76,33 +53,12 @@ export async function gerarLaudoIA(prompt: string): Promise<IaLaudoResponse> {
 }
 
 export async function gerarAtestadoIA(prompt: string): Promise<IaAtestadoResponse> {
-  const groqApiKey = getRequiredEnv('VITE_GROQ_API_KEY');
-  const response = await fetch(GROQ_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${groqApiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: ATESTADO_SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Descrição do Afastamento: "${prompt}"\n\nRetorne apenas o JSON.`,
-        },
-      ],
-      temperature: 0.2,
-      max_tokens: 600,
-    }),
+  const raw = await callGemini({
+    prompt: `Descrição do Afastamento: "${prompt}"\n\nRetorne apenas o JSON.`,
+    systemInstruction: ATESTADO_SYSTEM_PROMPT,
+    jsonMode: true
   });
 
-  if (!response.ok) {
-    throw new Error(`Groq API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const raw = data.choices?.[0]?.message?.content?.trim() ?? '';
   const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
   try {

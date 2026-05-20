@@ -364,7 +364,7 @@ export default function Documentos() {
                     className="w-full px-4 py-3 bg-white/10 hover:bg-white/12 focus:bg-white/15 text-white placeholder-indigo-300/60 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-none border border-white/10 font-medium"
                   />
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-indigo-300 font-semibold">Groq Llama-3.3 70B</span>
+                    <span className="text-[10px] text-indigo-300 font-semibold">Google Gemini IA</span>
                     <button
                       onClick={handleIA}
                       disabled={loadingAi || !aiPrompt.trim()}
