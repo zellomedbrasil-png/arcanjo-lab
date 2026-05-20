@@ -127,6 +127,7 @@ export default function Documentos() {
   const [aiPrompt, setAiPrompt] = useState('');
   const [loadingAi, setLoadingAi] = useState(false);
   const [erroAi, setErroAi] = useState('');
+  const [showFullPreview, setShowFullPreview] = useState(false);
 
   const inputCls = "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 focus:bg-white focus:border-indigo-500 rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-100 font-medium text-gray-800 placeholder-gray-400";
   const labelCls = "block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5";
@@ -282,7 +283,7 @@ export default function Documentos() {
         </div>
 
         {/* Split Screen Layout */}
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 items-start pb-32">
           
           {/* Coluna Esquerda: Edição */}
           <div className="flex-1 w-full space-y-6">
@@ -789,29 +790,109 @@ export default function Documentos() {
                 </span>
               </div>
               
-              <div className="bg-gray-100 rounded-xl p-3 flex justify-center items-start overflow-hidden h-[540px] border border-gray-200/50 shadow-inner relative">
+              <div 
+                onClick={() => setShowFullPreview(true)}
+                className="bg-gray-100 rounded-xl p-4 flex justify-center items-center overflow-hidden h-[490px] border border-gray-200/50 shadow-inner relative cursor-pointer group transition-all hover:border-indigo-300"
+              >
                 <div 
-                  className="origin-top transition-transform duration-300 rounded shadow-md border border-gray-300"
                   style={{
-                    transform: 'scale(0.38)',
-                    width: '21cm',
-                    height: '29.7cm',
-                    minWidth: '21cm',
-                    minHeight: '29.7cm',
-                    backgroundColor: '#fff',
+                    width: '318px', // 794 * 0.40
+                    height: '450px', // 1123 * 0.40
+                    position: 'relative',
                   }}
                 >
-                  <DocumentoTemplate />
+                  <div 
+                    className="origin-top-left transition-transform duration-300 rounded shadow-md border border-gray-300"
+                    style={{
+                      transform: 'scale(0.40)',
+                      width: '794px',
+                      height: '1123px',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      backgroundColor: '#fff',
+                    }}
+                  >
+                    <DocumentoTemplate />
+                  </div>
                 </div>
-                <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl p-2 text-center text-[10px] text-gray-500 font-semibold shadow-sm">
-                  Atualizado em tempo real
+
+                {/* Hover overlay para ampliação */}
+                <div className="absolute inset-0 bg-indigo-950/20 backdrop-blur-[1px] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200 rounded-xl">
+                  <span className="bg-white/95 text-indigo-950 text-xs font-bold px-4 py-2 rounded-xl shadow-lg border border-indigo-100 flex items-center gap-1.5 scale-95 group-hover:scale-100 transition-transform duration-200">
+                    <Eye size={14} />
+                    Clique para Ampliar (A4)
+                  </span>
                 </div>
               </div>
+              
+              <p className="text-[10px] text-center text-gray-400 mt-2 font-medium">
+                Pressione a folha para abrir a visualização em tamanho legível.
+              </p>
             </div>
           </div>
           
         </div>
       </div>
+
+      {/* Fullscreen Preview Lightbox Modal */}
+      {showFullPreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-gray-50 border-b border-gray-150 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Pré-visualização do Documento</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Confirme o conteúdo e layout antes de realizar a impressão física ou salvar em PDF.</p>
+              </div>
+              <button 
+                onClick={() => setShowFullPreview(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 hover:bg-gray-200/50 rounded-xl"
+              >
+                <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="flex-1 overflow-y-auto bg-gray-100 p-8 flex justify-center items-start scrollbar-thin">
+              <div 
+                className="bg-white shadow-xl border border-gray-300 rounded overflow-hidden"
+                style={{
+                  width: '21cm',
+                  minWidth: '21cm',
+                  height: '29.7cm',
+                  minHeight: '29.7cm',
+                }}
+              >
+                <DocumentoTemplate />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-150 flex justify-end gap-3">
+              <button
+                onClick={() => setShowFullPreview(false)}
+                className="px-5 py-2 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-xl text-xs font-bold transition-all"
+              >
+                Fechar
+              </button>
+              <button
+                onClick={() => {
+                  setShowFullPreview(false);
+                  navigate('/documentos/imprimir');
+                }}
+                disabled={!doc.pacienteNome}
+                className="flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-md"
+              >
+                <Printer size={14} />
+                Confirmar e Imprimir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Sticky bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl px-4 py-4 no-print">
