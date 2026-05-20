@@ -1,4 +1,5 @@
 import { getRequiredEnv } from './env';
+import { groq } from './groq';
 
 export function getGeminiApiKey(): string {
   return getRequiredEnv('VITE_GEMINI_API_KEY');
@@ -17,6 +18,27 @@ interface GeminiCallParams {
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function callGroqFallback({ prompt, systemInstruction, jsonMode, temperature }: GeminiCallParams): Promise<string> {
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [
+        ...(systemInstruction ? [{ role: 'system' as const, content: systemInstruction }] : []),
+        { role: 'user' as const, content: prompt }
+      ],
+      model: 'llama-3.3-70b-versatile',
+      temperature: typeof temperature === 'number' ? temperature : 0.1,
+      response_format: jsonMode ? { type: 'json_object' } : undefined,
+    });
+    const text = completion.choices[0]?.message?.content || '';
+    if (!text.trim()) {
+      throw new Error('Groq retornou uma resposta vazia.');
+    }
+    return text.trim();
+  } catch (err: any) {
+    throw new Error(`Falha no fallback para Groq: ${err.message || err}`);
+  }
+}
 
 export async function callGemini({ prompt, systemInstruction, jsonMode, temperature }: GeminiCallParams): Promise<string> {
   const apiKey = getGeminiApiKey();
@@ -49,7 +71,7 @@ export async function callGemini({ prompt, systemInstruction, jsonMode, temperat
   }
 
   let attempts = 0;
-  const maxAttempts = 3;
+  const maxAttempts = 2;
 
   while (attempts < maxAttempts) {
     attempts++;
@@ -62,27 +84,16 @@ export async function callGemini({ prompt, systemInstruction, jsonMode, temperat
         body: JSON.stringify(payload)
       });
 
-      if (response.status === 429) {
+      if (response.status === 429 || !response.ok) {
         if (attempts < maxAttempts) {
-          // Exceeded quota/rate limit. Wait and retry (3s, 6s)
-          const delay = attempts * 3000;
-          await sleep(delay);
+          // If Gemini fails, try once more after a small delay
+          await sleep(1500);
           continue;
         }
-        throw new Error(
-          'Limite de requisições excedido na IA (Erro 429). Por favor, aguarde alguns segundos antes de tentar novamente.'
-        );
-      }
-
-      if (!response.ok) {
-        let errorText = '';
-        try {
-          const errObj = await response.json();
-          errorText = errObj.error?.message || JSON.stringify(errObj);
-        } catch {
-          errorText = await response.text();
-        }
-        throw new Error(`Erro na API do Gemini (${response.status}): ${errorText}`);
+        
+        // If we ran out of attempts, fallback to Groq immediately!
+        console.warn(`Gemini falhou com status ${response.status}. Iniciando fallback para Groq...`);
+        return await callGroqFallback({ prompt, systemInstruction, jsonMode, temperature });
       }
 
       const data = await response.json();
@@ -94,11 +105,13 @@ export async function callGemini({ prompt, systemInstruction, jsonMode, temperat
 
       return text.trim();
     } catch (err: any) {
-      if (attempts >= maxAttempts) {
-        throw err;
+      if (attempts < maxAttempts) {
+        await sleep(1000);
+        continue;
       }
-      // Wait and retry for 429 or network errors
-      await sleep(attempts * 2000);
+      // Network/other error fallback to Groq
+      console.warn('Gemini falhou por erro de rede/desconhecido. Iniciando fallback para Groq...', err);
+      return await callGroqFallback({ prompt, systemInstruction, jsonMode, temperature });
     }
   }
 
