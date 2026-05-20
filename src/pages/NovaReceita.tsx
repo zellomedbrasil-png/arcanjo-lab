@@ -10,8 +10,10 @@ import ReceitaControleEspecial from '../components/print/templates/ReceitaContro
 import {
   Sparkles, Plus, Trash2, Printer, RotateCcw, FileText, AlertTriangle,
   ChevronDown, ChevronUp, User, Calendar, MapPin, Pill, Loader2,
-  CheckCircle2, Eye, ShieldAlert, Info
+  CheckCircle2, Eye, ShieldAlert, Info, History
 } from 'lucide-react';
+import { useRecentPatientsStore } from '../store/useRecentPatientsStore';
+import { savePatientToHistory } from '../store/patientSync';
 
 // Formatação de CPF, CEP e Telefone para UX fluida
 const formatCpf = (v: string) => {
@@ -331,6 +333,8 @@ function MedicamentoCard({
     { label: 'Posologia', key: 'posologia', full: true, placeholder: 'ex: Tomar 1 cápsula em jejum, 30 min antes do café da manhã', icon: Sparkles },
     { label: 'Quantidade', key: 'quantidade', full: false, placeholder: 'ex: 30 cápsulas', icon: Plus },
     { label: 'Duração do Tratamento', key: 'duracao', full: false, placeholder: 'ex: 30 dias', icon: Calendar },
+    { label: 'Indicação Clínica', key: 'indicacao', full: true, placeholder: 'ex: Tratamento de refluxo gastroesofágico (indicação clínica)', icon: Info },
+    { label: 'Observações / Instruções Adicionais', key: 'observacoes', full: true, placeholder: 'ex: Tomar em jejum pela manhã / Pode causar sonolência', icon: AlertTriangle },
   ];
 
   return (
@@ -442,10 +446,20 @@ function MedicamentoCard({
 
       {/* Preview compacto */}
       {temConteudo && !expandido && !med.erro && (
-        <div className="px-4 pb-4 pl-15 text-xs text-gray-600 border-t border-dashed border-gray-150 pt-3">
+        <div className="px-4 pb-4 pl-15 text-xs text-gray-600 border-t border-dashed border-gray-150 pt-3 space-y-1">
           <p className="font-bold text-gray-800 text-sm">{med.principioAtivo}</p>
-          {med.formaFarmaceutica && <p className="text-gray-500 italic mt-0.5">{med.formaFarmaceutica}</p>}
-          {med.posologia && <p className="mt-1 text-gray-700 leading-relaxed font-medium bg-gray-50/50 p-2 rounded-lg border border-gray-100">{med.posologia}</p>}
+          {med.formaFarmaceutica && <p className="text-gray-500 italic">{med.formaFarmaceutica}</p>}
+          {med.posologia && <p className="text-gray-700 leading-relaxed font-medium bg-gray-50/50 p-2 rounded-lg border border-gray-100">{med.posologia}</p>}
+          {med.indicacao && (
+            <p className="text-gray-700 leading-relaxed bg-indigo-50/30 p-2 rounded-lg border border-indigo-100/50">
+              <strong className="text-indigo-700">Indicação:</strong> {med.indicacao}
+            </p>
+          )}
+          {med.observacoes && (
+            <p className="text-gray-700 leading-relaxed bg-amber-50/30 p-2 rounded-lg border border-amber-100/50">
+              <strong className="text-amber-700">Observações:</strong> {med.observacoes}
+            </p>
+          )}
           {(med.quantidade || med.duracao) && (
             <div className="mt-2 flex gap-1.5 flex-wrap">
               {med.quantidade && <span className="bg-indigo-50/50 text-indigo-700 border border-indigo-100 px-2.5 py-0.5 rounded-full text-[10px] font-semibold">Qtd: {med.quantidade}</span>}
@@ -469,6 +483,34 @@ export default function NovaReceita() {
     local, data, medicamentos,
     setTipoReceita, setPacienteReceita, addMedicamento, resetReceita, updateMedicamento,
   } = useReceitaStore();
+
+  const { pacientes: pacientesRecentes } = useRecentPatientsStore();
+
+  const handleBlur = () => {
+    if (pacienteNome && pacienteNome.trim().length >= 3) {
+      savePatientToHistory({
+        nome: pacienteNome.trim(),
+        cpf: pacienteCpf,
+        endereco: pacienteEndereco,
+        cep: pacienteCep,
+        cidade: pacienteCidade,
+        uf: pacienteUf,
+        telefone: pacienteTelefone,
+      });
+    }
+  };
+
+  const handleSelectRecent = (p: any) => {
+    setPacienteReceita({
+      pacienteNome: p.nome,
+      pacienteCpf: p.cpf || '',
+      pacienteEndereco: p.endereco || '',
+      pacienteCep: p.cep || '',
+      pacienteCidade: p.cidade || 'Fortaleza',
+      pacienteUf: p.uf || 'CE',
+      pacienteTelefone: p.telefone || '',
+    });
+  };
 
   const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
   const temMedicamentos = medsComConteudo.length > 0;
@@ -639,14 +681,33 @@ export default function NovaReceita() {
 
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Nome Completo <span className="text-red-400">*</span></label>
-                  <input type="text" value={pacienteNome} onChange={(e) => setPacienteReceita({ pacienteNome: e.target.value })} placeholder="Nome completo do paciente" className={inputCls} />
+                  <input type="text" value={pacienteNome} onChange={(e) => setPacienteReceita({ pacienteNome: e.target.value })} onBlur={handleBlur} placeholder="Nome completo do paciente" className={inputCls} />
+                  {pacientesRecentes.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2 animate-in fade-in duration-300">
+                      <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider flex items-center gap-1 mr-1">
+                        <History size={12} className="text-gray-400" />
+                        Recentes:
+                      </span>
+                      {pacientesRecentes.map((p) => (
+                        <button
+                          key={p.nome}
+                          type="button"
+                          onClick={() => handleSelectRecent(p)}
+                          title={`CPF: ${p.cpf || 'Não informado'} | Endereço: ${p.endereco || 'Não informado'}`}
+                          className="px-2.5 py-1 bg-gray-50/70 hover:bg-indigo-50 border border-gray-200/80 hover:border-indigo-200 rounded-full text-xs font-semibold text-gray-600 hover:text-indigo-655 hover:shadow-sm transition-all"
+                        >
+                          {p.nome}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
                     CPF {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
                   </label>
-                  <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} placeholder="000.000.000-00" className={inputCls} />
+                  <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} onBlur={handleBlur} placeholder="000.000.000-00" className={inputCls} />
                 </div>
 
 
@@ -655,24 +716,24 @@ export default function NovaReceita() {
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
                     Endereço (Rua, Nº, Bairro) {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
                   </label>
-                  <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} placeholder="Rua, número, bairro" className={inputCls} />
+                  <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} onBlur={handleBlur} placeholder="Rua, número, bairro" className={inputCls} />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
                     CEP {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
                   </label>
-                  <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: formatCep(e.target.value) })} placeholder="00000-000" className={inputCls} />
+                  <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: formatCep(e.target.value) })} onBlur={handleBlur} placeholder="00000-000" className={inputCls} />
                 </div>
 
                 <div className="flex gap-3">
                   <div className="flex-1">
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Cidade</label>
-                    <input type="text" value={pacienteCidade} onChange={(e) => setPacienteReceita({ pacienteCidade: e.target.value })} placeholder="Fortaleza" className={inputCls} />
+                    <input type="text" value={pacienteCidade} onChange={(e) => setPacienteReceita({ pacienteCidade: e.target.value })} onBlur={handleBlur} placeholder="Fortaleza" className={inputCls} />
                   </div>
                   <div style={{ width: '80px' }}>
                     <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">UF</label>
-                    <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value })} placeholder="CE" maxLength={2} className={inputCls} />
+                    <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value })} onBlur={handleBlur} placeholder="CE" maxLength={2} className={inputCls} />
                   </div>
                 </div>
 
@@ -680,7 +741,7 @@ export default function NovaReceita() {
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
                     Telefone {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
                   </label>
-                  <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatTelefone(e.target.value) })} placeholder="(85) 00000-0000" className={inputCls} />
+                  <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatTelefone(e.target.value) })} onBlur={handleBlur} placeholder="(85) 00000-0000" className={inputCls} />
                 </div>
 
                 <div className="flex gap-3">

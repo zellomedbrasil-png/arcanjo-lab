@@ -8,8 +8,10 @@ import DocumentoTemplate from '../components/print/templates/DocumentoTemplate';
 import {
   FileText, ShieldAlert, Sparkles, Printer, User,
   Clock, Dumbbell, ShieldCheck, HeartHandshake, FileSpreadsheet, RotateCcw,
-  CheckCircle2, Loader2, Eye
+  CheckCircle2, Loader2, Eye, History
 } from 'lucide-react';
+import { useRecentPatientsStore } from '../store/useRecentPatientsStore';
+import { savePatientToHistory } from '../store/patientSync';
 
 const formatCpf = (v: string) => {
   const digits = v.replace(/\D/g, '').slice(0, 11);
@@ -123,6 +125,26 @@ const PRESETS = {
 export default function Documentos() {
   const navigate = useNavigate();
   const doc = useDocumentStore();
+
+  const { pacientes: pacientesRecentes } = useRecentPatientsStore();
+
+  const handleBlur = () => {
+    if (doc.pacienteNome && doc.pacienteNome.trim().length >= 3) {
+      savePatientToHistory({
+        nome: doc.pacienteNome.trim(),
+        cpf: doc.pacienteCpf,
+        dataNascimento: doc.pacienteDataNascimento,
+      });
+    }
+  };
+
+  const handleSelectRecent = (p: any) => {
+    doc.setDocumento({
+      pacienteNome: p.nome,
+      pacienteCpf: p.cpf || '',
+      pacienteDataNascimento: p.dataNascimento || '',
+    });
+  };
   
   const [aiPrompt, setAiPrompt] = useState('');
   const [loadingAi, setLoadingAi] = useState(false);
@@ -397,9 +419,29 @@ export default function Documentos() {
                     type="text"
                     value={doc.pacienteNome}
                     onChange={(e) => doc.setDocumento({ pacienteNome: e.target.value })}
+                    onBlur={handleBlur}
                     placeholder="Nome completo do paciente"
                     className={inputCls}
                   />
+                  {pacientesRecentes.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2 animate-in fade-in duration-300">
+                      <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider flex items-center gap-1 mr-1">
+                        <History size={12} className="text-gray-400" />
+                        Recentes:
+                      </span>
+                      {pacientesRecentes.map((p) => (
+                        <button
+                          key={p.nome}
+                          type="button"
+                          onClick={() => handleSelectRecent(p)}
+                          title={`CPF: ${p.cpf || 'Não informado'} | Nascimento: ${p.dataNascimento || 'Não informado'}`}
+                          className="px-2.5 py-1 bg-gray-50/70 hover:bg-indigo-50 border border-gray-200/80 hover:border-indigo-200 rounded-full text-xs font-semibold text-gray-600 hover:text-indigo-655 hover:shadow-sm transition-all"
+                        >
+                          {p.nome}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className={labelCls}>CPF do Paciente</label>
@@ -407,6 +449,7 @@ export default function Documentos() {
                     type="text"
                     value={doc.pacienteCpf}
                     onChange={(e) => doc.setDocumento({ pacienteCpf: formatCpf(e.target.value) })}
+                    onBlur={handleBlur}
                     placeholder="000.000.000-00"
                     className={inputCls}
                   />
@@ -417,6 +460,7 @@ export default function Documentos() {
                     type="date"
                     value={doc.pacienteDataNascimento}
                     onChange={(e) => doc.setDocumento({ pacienteDataNascimento: e.target.value })}
+                    onBlur={handleBlur}
                     className={inputCls}
                   />
                 </div>

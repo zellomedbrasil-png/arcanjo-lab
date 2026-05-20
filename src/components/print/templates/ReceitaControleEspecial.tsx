@@ -84,11 +84,13 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
                   {med.quantidade && <span className="text-[8px] font-semibold shrink-0 ml-2">Qtd.: {med.quantidade}</span>}
                 </div>
                 {/* Posologia — largura total, logo abaixo */}
-                {med.posologia && (
+                {(med.posologia || med.indicacao || med.observacoes) && (
                   <div className="text-[8px] text-gray-800 pt-0.5 pb-1 border-b border-black w-full" style={{ minHeight: '13px' }}>
                     {med.uso && <span className="italic">{med.uso}. </span>}
-                    <span>{med.posologia}</span>
+                    {med.posologia && <span>{med.posologia}</span>}
                     {med.duracao && <span> — {med.duracao}</span>}
+                    {med.indicacao && <span className="block font-semibold">Indicação: {med.indicacao}</span>}
+                    {med.observacoes && <span className="block font-semibold">Obs.: {med.observacoes}</span>}
                   </div>
                 )}
               </div>

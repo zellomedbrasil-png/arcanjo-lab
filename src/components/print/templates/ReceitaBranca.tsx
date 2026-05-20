@@ -93,6 +93,16 @@ export default function ReceitaBranca() {
                     <span className="font-semibold">Duração:</span> {med.duracao}
                   </p>
                 )}
+                {med.indicacao && (
+                  <p className="text-[9px] text-gray-600 mt-0.5">
+                    <span className="font-semibold">Indicação:</span> {med.indicacao}
+                  </p>
+                )}
+                {med.observacoes && (
+                  <p className="text-[9px] text-gray-600 mt-0.5">
+                    <span className="font-semibold">Obs.:</span> {med.observacoes}
+                  </p>
+                )}
               </div>
             </div>
           ))}

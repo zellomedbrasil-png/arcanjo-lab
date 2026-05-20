@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { publishPatientSync, subscribePatientSync } from './patientSync';
 
 export type TipoReceita = 'SIMPLES' | 'ESPECIAL';
 export type TipoRecomendado = 'SIMPLES' | 'ESPECIAL' | '';
@@ -13,6 +14,8 @@ export interface MedicamentoReceita {
   quantidade: string;
   duracao: string;
   uso: string;
+  indicacao: string;
+  observacoes: string;
   carregando: boolean;
   erro: string;
   tipoRecomendado: TipoRecomendado;
@@ -50,6 +53,8 @@ const novoMedicamento = (): MedicamentoReceita => ({
   quantidade: '',
   duracao: '',
   uso: 'Uso oral',
+  indicacao: '',
+  observacoes: '',
   carregando: false,
   erro: '',
   tipoRecomendado: '',
@@ -80,7 +85,19 @@ export const useReceitaStore = create<ReceitaState>()(
       ...initialState,
 
       setTipoReceita: (tipo) => set({ tipoReceita: tipo, lastSavedAt: touch() }),
-      setPacienteReceita: (dados) => set((state) => ({ ...state, ...dados, lastSavedAt: touch() })),
+      setPacienteReceita: (dados) => set((state) => {
+        const next = { ...state, ...dados, lastSavedAt: touch() };
+        publishPatientSync('receita', {
+          pacienteNome: next.pacienteNome,
+          pacienteCpf: next.pacienteCpf,
+          pacienteEndereco: next.pacienteEndereco,
+          pacienteCep: next.pacienteCep,
+          pacienteCidade: next.pacienteCidade,
+          pacienteUf: next.pacienteUf,
+          pacienteTelefone: next.pacienteTelefone,
+        });
+        return next;
+      }),
 
       addMedicamento: () =>
         set((state) => ({
@@ -132,3 +149,34 @@ export const useReceitaStore = create<ReceitaState>()(
     }
   )
 );
+
+subscribePatientSync((senderId, data) => {
+  if (senderId === 'receita') return;
+  const state = useReceitaStore.getState();
+  const updates: Partial<ReceitaState> = {};
+  if (data.pacienteNome !== undefined && data.pacienteNome !== state.pacienteNome) {
+    updates.pacienteNome = data.pacienteNome;
+  }
+  if (data.pacienteCpf !== undefined && data.pacienteCpf !== state.pacienteCpf) {
+    updates.pacienteCpf = data.pacienteCpf;
+  }
+  if (data.pacienteEndereco !== undefined && data.pacienteEndereco !== state.pacienteEndereco) {
+    updates.pacienteEndereco = data.pacienteEndereco;
+  }
+  if (data.pacienteCep !== undefined && data.pacienteCep !== state.pacienteCep) {
+    updates.pacienteCep = data.pacienteCep;
+  }
+  if (data.pacienteCidade !== undefined && data.pacienteCidade !== state.pacienteCidade) {
+    updates.pacienteCidade = data.pacienteCidade;
+  }
+  if (data.pacienteUf !== undefined && data.pacienteUf !== state.pacienteUf) {
+    updates.pacienteUf = data.pacienteUf;
+  }
+  if (data.pacienteTelefone !== undefined && data.pacienteTelefone !== state.pacienteTelefone) {
+    updates.pacienteTelefone = data.pacienteTelefone;
+  }
+  if (Object.keys(updates).length > 0) {
+    useReceitaStore.setState(updates);
+  }
+});
+

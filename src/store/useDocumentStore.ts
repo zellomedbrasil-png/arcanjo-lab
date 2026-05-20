@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { publishPatientSync, subscribePatientSync } from './patientSync';
 
 export type TipoDocumento = 'LAUDO' | 'ATESTADO' | 'COMPARECIMENTO' | 'APTIDAO' | 'ASO';
 export type AsoTipoExame = 'ADMISSIONAL' | 'PERIODICO' | 'RETORNO_TRABALHO' | 'MUDANCA_FUNCAO' | 'DEMISSIONAL';
@@ -98,7 +99,15 @@ export const useDocumentStore = create<DocumentState>()(
       ...initialState,
 
       setTipoDocumento: (tipo) => set({ tipoDocumento: tipo }),
-      setDocumento: (dados) => set((state) => ({ ...state, ...dados })),
+      setDocumento: (dados) => set((state) => {
+        const next = { ...state, ...dados };
+        publishPatientSync('document', {
+          pacienteNome: next.pacienteNome,
+          pacienteCpf: next.pacienteCpf,
+          pacienteDataNascimento: next.pacienteDataNascimento,
+        });
+        return next;
+      }),
       resetDocumento: () => set({ ...initialState, data: hoje() }),
     }),
     {
@@ -107,3 +116,22 @@ export const useDocumentStore = create<DocumentState>()(
     }
   )
 );
+
+subscribePatientSync((senderId, data) => {
+  if (senderId === 'document') return;
+  const state = useDocumentStore.getState();
+  const updates: Partial<DocumentState> = {};
+  if (data.pacienteNome !== undefined && data.pacienteNome !== state.pacienteNome) {
+    updates.pacienteNome = data.pacienteNome;
+  }
+  if (data.pacienteCpf !== undefined && data.pacienteCpf !== state.pacienteCpf) {
+    updates.pacienteCpf = data.pacienteCpf;
+  }
+  if (data.pacienteDataNascimento !== undefined && data.pacienteDataNascimento !== state.pacienteDataNascimento) {
+    updates.pacienteDataNascimento = data.pacienteDataNascimento;
+  }
+  if (Object.keys(updates).length > 0) {
+    useDocumentStore.setState(updates);
+  }
+});
+

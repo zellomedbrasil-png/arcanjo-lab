@@ -1,8 +1,10 @@
-import { Building2, Mars, Venus } from 'lucide-react';
+import { Building2, Mars, Venus, History } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { formatCpf } from '../../lib/formatters';
 import { OPERADORAS } from '../../data/operadoras';
 import type { Convenio, Genero } from '../../types';
+import { useRecentPatientsStore } from '../../store/useRecentPatientsStore';
+import { savePatientToHistory } from '../../store/patientSync';
 
 export default function PatientForm() {
   const {
@@ -10,6 +12,8 @@ export default function PatientForm() {
     sadtOperadora, sadtRegistroAns,
     genero, convenio, setPaciente,
   } = useAppStore();
+
+  const { pacientes: pacientesRecentes } = useRecentPatientsStore();
 
   const convenios: Array<{ value: Convenio; label: string }> = [
     { value: 'IPM',        label: 'IPM' },
@@ -37,6 +41,28 @@ export default function PatientForm() {
     });
   };
 
+  const handleBlur = () => {
+    if (pacienteNome && pacienteNome.trim().length >= 3) {
+      savePatientToHistory({
+        nome: pacienteNome.trim(),
+        cpf: pacienteCpf,
+        genero,
+        convenio,
+        numeroBeneficiario,
+      });
+    }
+  };
+
+  const handleSelectRecent = (p: any) => {
+    setPaciente({
+      pacienteNome: p.nome,
+      pacienteCpf: p.cpf || '',
+      genero: p.genero || 'M',
+      convenio: p.convenio || 'PARTICULAR',
+      numeroBeneficiario: p.numeroBeneficiario || '',
+    });
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -46,6 +72,7 @@ export default function PatientForm() {
           type="text"
           value={pacienteNome}
           onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
+          onBlur={handleBlur}
           autoFocus
           autoComplete="name"
           placeholder="Nome do paciente *"
@@ -57,6 +84,7 @@ export default function PatientForm() {
           type="text"
           value={pacienteCpf}
           onChange={(e) => setPaciente({ pacienteCpf: formatCpf(e.target.value) })}
+          onBlur={handleBlur}
           inputMode="numeric"
           autoComplete="off"
           placeholder="CPF"
@@ -69,6 +97,7 @@ export default function PatientForm() {
             type="text"
             value={numeroBeneficiario}
             onChange={(e) => setPaciente({ numeroBeneficiario: e.target.value })}
+            onBlur={handleBlur}
             autoComplete="off"
             placeholder={labelBeneficiario[convenio] ?? 'Nº Cartão'}
             className="w-36 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
@@ -104,6 +133,7 @@ export default function PatientForm() {
               list="operadoras-list"
               value={sadtOperadora}
               onChange={(e) => handleOperadoraChange(e.target.value)}
+              onBlur={handleBlur}
               placeholder="Operadora (digite ou deixe vazio = guia limpa)"
               className="w-64 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
             />
@@ -142,6 +172,27 @@ export default function PatientForm() {
         </div>
 
       </div>
+
+      {/* Seção Pacientes Recentes */}
+      {pacientesRecentes.length > 0 && (
+        <div className="mt-3.5 pt-3.5 border-t border-gray-100 flex flex-wrap items-center gap-2 animate-in fade-in duration-300">
+          <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider flex items-center gap-1 mr-1">
+            <History size={12} className="text-gray-400" />
+            Recentes:
+          </span>
+          {pacientesRecentes.map((p) => (
+            <button
+              key={p.nome}
+              type="button"
+              onClick={() => handleSelectRecent(p)}
+              title={`CPF: ${p.cpf || 'Não informado'} | Convênio: ${p.convenio || 'Particular'}`}
+              className="px-2.5 py-1 bg-gray-50/70 hover:bg-indigo-50 border border-gray-200/80 hover:border-indigo-200 rounded-full text-xs font-semibold text-gray-600 hover:text-indigo-650 hover:shadow-sm transition-all"
+            >
+              {p.nome}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

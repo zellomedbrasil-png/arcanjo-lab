@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Convenio, Genero, Medico, TipoGuia } from '../types';
+import { publishPatientSync, subscribePatientSync } from './patientSync';
 
 interface AppState {
   medico: Medico | null;
@@ -54,7 +55,17 @@ export const useAppStore = create<AppState>()(
       ...initialState,
 
       setMedico: (medico) => set({ medico }),
-      setPaciente: (dados) => set((state) => ({ ...state, ...dados, lastSavedAt: touch() })),
+      setPaciente: (dados) => set((state) => {
+        const next = { ...state, ...dados, lastSavedAt: touch() };
+        publishPatientSync('app', {
+          pacienteNome: next.pacienteNome,
+          pacienteCpf: next.pacienteCpf,
+          numeroBeneficiario: next.numeroBeneficiario,
+          genero: next.genero,
+          convenio: next.convenio,
+        });
+        return next;
+      }),
 
       toggleExame: (exameNome) => set((state) => {
         const isSelected = state.examesSelecionados.includes(exameNome);
@@ -110,3 +121,28 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
+
+subscribePatientSync((senderId, data) => {
+  if (senderId === 'app') return;
+  const state = useAppStore.getState();
+  const updates: Partial<AppState> = {};
+  if (data.pacienteNome !== undefined && data.pacienteNome !== state.pacienteNome) {
+    updates.pacienteNome = data.pacienteNome;
+  }
+  if (data.pacienteCpf !== undefined && data.pacienteCpf !== state.pacienteCpf) {
+    updates.pacienteCpf = data.pacienteCpf;
+  }
+  if (data.numeroBeneficiario !== undefined && data.numeroBeneficiario !== state.numeroBeneficiario) {
+    updates.numeroBeneficiario = data.numeroBeneficiario;
+  }
+  if (data.genero !== undefined && data.genero !== state.genero) {
+    updates.genero = data.genero;
+  }
+  if (data.convenio !== undefined && data.convenio !== state.convenio) {
+    updates.convenio = data.convenio;
+  }
+  if (Object.keys(updates).length > 0) {
+    useAppStore.setState(updates);
+  }
+});
+

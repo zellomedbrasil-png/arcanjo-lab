@@ -91,6 +91,8 @@ Dado o nome de um medicamento, retorne APENAS um JSON válido (sem markdown, sem
   "posologia": "Instrução completa em português brasileiro claro e formal para o paciente. Para idosos (≥60 anos), prefira doses mais baixas quando aplicável e inclua orientações especiais (ex: tomar com água, evitar jejum prolongado).",
   "quantidade": "Quantidade total com unidade (ex: 30 cápsulas, 1 frasco de 120ml)",
   "duracao": "Duração do tratamento (ex: 30 dias, uso contínuo, 7 dias)",
+  "indicacao": "Indicação clínica ou finalidade de uso do medicamento (ex: Tratamento de refluxo gastroesofágico, controle de HAS, prevenção de osteoporose, etc.)",
+  "observacoes": "Observações adicionais pertinentes sobre cuidados, horários ou interações (ex: tomar em jejum pela manhã, pode causar sonolência, não ingerir com leite, etc.)",
   "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL somente para: psicotrópicos (benzodiazepínicos como Clonazepam, Diazepam, Alprazolam; anfetamínicos; barbitúricos), opioides controlados (morfina, codeína acima de 30mg, tramadol em algumas apresentações), e demais sujeitos à Portaria SVS/MS 344/98 e suas locais B1, B2, A1-A5. Todos os demais são SIMPLES.",
   "motivoTipo": "Se ESPECIAL: explique brevemente qual lista da Portaria 344/98 enquadra o medicamento (ex: 'Benzodiazepínico — Lista B1 da Portaria SVS/MS 344/98'). Se SIMPLES: deixe vazio."
 }
@@ -111,6 +113,8 @@ TAREFA: Receba uma lista de medicamentos e retorne APENAS um JSON válido com o 
       "posologia": "Instrução completa e clara para o paciente, com horários quando relevante. Para idosos, prefira doses conservadoras.",
       "quantidade": "Quantidade total (ex: 30 comprimidos)",
       "duracao": "Duração (ex: 30 dias, uso contínuo)",
+      "indicacao": "Indicação clínica ou finalidade de uso do medicamento",
+      "observacoes": "Observações adicionais pertinentes de cuidados, horários ou interações",
       "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL somente para psicotrópicos, benzodiazepínicos, opioides controlados, antidepressivos, antipsicóticos, anticonvulsivantes/estabilizadores de humor e outros sujeitos à Portaria SVS/MS 344/98. Todos os demais medicamentos comuns (como anti-hipertensivos, antidiabéticos, estatinas, protetores gástricos, analgésicos e anti-inflamatórios comuns) são estritamente SIMPLES.",
       "motivoTipo": "Se ESPECIAL: qual lista da Portaria 344/98 enquadra o medicamento. Se SIMPLES: vazio."
     }
@@ -136,6 +140,8 @@ interface GeminiMedResponse {
   posologia: string;
   quantidade: string;
   duracao: string;
+  indicacao: string;
+  observacoes: string;
   tipoReceita: string;
   motivoTipo: string;
 }
@@ -148,6 +154,8 @@ interface GeminiBatchMedItem {
   posologia: string;
   quantidade: string;
   duracao: string;
+  indicacao: string;
+  observacoes: string;
   tipoReceita: string;
   motivoTipo: string;
 }
@@ -165,6 +173,8 @@ export interface MedProcessado {
   posologia: string;
   quantidade: string;
   duracao: string;
+  indicacao: string;
+  observacoes: string;
   tipoRecomendado: TipoRecomendado;
   motivoEspecial: string;
 }
@@ -204,6 +214,8 @@ export async function gerarPosologia(
     posologia: parsed.posologia || '',
     quantidade: parsed.quantidade || '',
     duracao: parsed.duracao || '',
+    indicacao: parsed.indicacao || '',
+    observacoes: parsed.observacoes || '',
     tipoRecomendado,
     motivoEspecial: tipoRecomendado === 'ESPECIAL' ? (parsed.motivoTipo || 'Medicamento de Controle Especial') : '',
   };
@@ -243,6 +255,8 @@ export async function processarListaMedicamentos(
       posologia: m.posologia || '',
       quantidade: m.quantidade || '',
       duracao: m.duracao || '',
+      indicacao: m.indicacao || '',
+      observacoes: m.observacoes || '',
       tipoRecomendado,
       motivoEspecial: tipoRecomendado === 'ESPECIAL' ? (m.motivoTipo || 'Medicamento de Controle Especial') : '',
     };
