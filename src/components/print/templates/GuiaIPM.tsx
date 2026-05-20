@@ -1,35 +1,12 @@
 import { useAppStore } from '../../../store/useAppStore';
 import { formatExamWithCode } from '../../../utils/exames';
+import { getProcedimentoNome } from '../../../data/procedimentos';
 import logoIpm from '../../../assets/logo_ipm.jpeg';
 
 export default function GuiaIPM() {
   const { pacienteNome, examesSelecionados, procedimentosSelecionados, tipoGuia, justificativa, genero } = useAppStore();
 
   const isLab = tipoGuia === 'LABORATORIO';
-
-  const PROC_NOMES: Record<string, string> = {
-    ECOCARDIOGRAMA:      'Ecocardiograma Transtorácico',
-    ECODOPPLER:          'Ecodopplercardiograma',
-    MAPA:                'MAPA - Monitoramento Ambulatorial da Pressão Arterial 24h',
-    HOLTER:              'Holter - Eletrocardiografia de Longa Duração 24h',
-    ECG:                 'Eletrocardiograma (ECG)',
-    US_ABD_TOTAL:        'Ultrassonografia do Abdome Total',
-    US_PELVICO:          'Ultrassonografia Pélvica',
-    US_TRANSVAGINAL:     'Ultrassonografia Transvaginal',
-    US_PROSTATA:         'Ultrassonografia de Próstata e Vias Urinárias',
-    US_TIREOIDE:         'Ultrassonografia de Tireoide',
-    US_VIAS_BILIARES:    'Ultrassonografia de Vias Biliares e Fígado',
-    EDA:                 'Esofagogastroduodenoscopia (EDA)',
-    COLONOSCOPIA:        'Colonoscopia',
-    RETOSSIGMOIDOSCOPIA: 'Retossigmoidoscopia',
-    RX_TORAX:            'Radiografia de Tórax (PA e Perfil)',
-    RX_COLUNA:           'Radiografia de Coluna',
-    TC_ABD:              'Tomografia Computadorizada de Abdome e Pelve com Contraste',
-    TC_CRANIO:           'Tomografia Computadorizada de Crânio',
-    RM_ABD:              'Ressonância Magnética de Abdome e Pelve',
-    RM_CRANIO:           'Ressonância Magnética de Crânio',
-    DENSITOMETRIA:       'Densitometria Óssea (DXA)',
-  };
 
   const getLinhas = () => {
     // Aplica o formato Nome (Código) para todos os exames
@@ -178,7 +155,7 @@ export default function GuiaIPM() {
               <div className="space-y-2 mt-2">
                 {(procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia]).map((id, idx) => (
                   <div key={idx} className="font-bold text-sm">
-                    {idx + 1}. {PROC_NOMES[id] || id}
+                    {idx + 1}. {getProcedimentoNome(id)}
                   </div>
                 ))}
               </div>

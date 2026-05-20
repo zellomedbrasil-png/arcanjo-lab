@@ -1,96 +1,146 @@
+import { Building2, Mars, Venus } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
-import type { Convenio } from '../../types';
+import { formatCpf } from '../../lib/formatters';
+import { OPERADORAS } from '../../data/operadoras';
+import type { Convenio, Genero } from '../../types';
 
 export default function PatientForm() {
   const {
-    pacienteNome,
-    pacienteCpf,
-    genero,
-    convenio,
-    setPaciente
+    pacienteNome, pacienteCpf, numeroBeneficiario,
+    sadtOperadora, sadtRegistroAns,
+    genero, convenio, setPaciente,
   } = useAppStore();
 
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-      <h2 className="text-xl font-semibold text-gray-800 mb-6">Dados do Paciente e Guia</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Convênio</label>
-            <div className="flex space-x-4 flex-wrap gap-y-2">
-              {[
-                { value: 'IPM', label: 'IPM' },
-                { value: 'ISSEC', label: 'ISSEC' },
-                { value: 'PARTICULAR', label: 'Particular' },
-              ].map(({ value, label }) => (
-                <label key={value} className="flex items-center">
-                  <input
-                    type="radio"
-                    name="convenio"
-                    value={value}
-                    checked={convenio === value}
-                    onChange={(e) => setPaciente({ convenio: e.target.value as Convenio })}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                  <span className="ml-2 text-gray-700">{label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Gênero</label>
-            <div className="flex space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="genero"
-                  value="M"
-                  checked={genero === 'M'}
-                  onChange={() => setPaciente({ genero: 'M' })}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                />
-                <span className="ml-2 text-gray-700">Masculino</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="genero"
-                  value="F"
-                  checked={genero === 'F'}
-                  onChange={() => setPaciente({ genero: 'F' })}
-                  className="w-4 h-4 text-pink-600 border-gray-300 focus:ring-pink-500"
-                />
-                <span className="ml-2 text-gray-700">Feminino</span>
-              </label>
-            </div>
-          </div>
-        </div>
-        
-      </div>
+  const convenios: Array<{ value: Convenio; label: string }> = [
+    { value: 'IPM',        label: 'IPM' },
+    { value: 'ISSEC',      label: 'ISSEC' },
+    { value: 'SADT',       label: 'SADT' },
+    { value: 'PARTICULAR', label: 'Particular' },
+  ];
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
+  const labelBeneficiario: Partial<Record<Convenio, string>> = {
+    IPM:   'Matrícula IPM',
+    ISSEC: 'Cartão ISSEC',
+    SADT:  'Nº Cartão',
+  };
+
+  const generos: Array<{ value: Genero; label: string; icon: typeof Mars }> = [
+    { value: 'M', label: 'M', icon: Mars },
+    { value: 'F', label: 'F', icon: Venus },
+  ];
+
+  const handleOperadoraChange = (nome: string) => {
+    const op = OPERADORAS.find((o) => o.nome.toLowerCase() === nome.toLowerCase());
+    setPaciente({
+      sadtOperadora: nome,
+      sadtRegistroAns: op?.registroAns ?? '',
+    });
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+
+        {/* Nome */}
+        <input
+          type="text"
+          value={pacienteNome}
+          onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
+          autoFocus
+          autoComplete="name"
+          placeholder="Nome do paciente *"
+          className="flex-1 min-w-[180px] text-sm font-semibold text-gray-800 placeholder:font-normal placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
+        />
+
+        {/* CPF */}
+        <input
+          type="text"
+          value={pacienteCpf}
+          onChange={(e) => setPaciente({ pacienteCpf: formatCpf(e.target.value) })}
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder="CPF"
+          className="w-32 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
+        />
+
+        {/* Nº Beneficiário */}
+        {convenio !== 'PARTICULAR' && (
           <input
             type="text"
-            value={pacienteNome}
-            onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Nome do paciente"
+            value={numeroBeneficiario}
+            onChange={(e) => setPaciente({ numeroBeneficiario: e.target.value })}
+            autoComplete="off"
+            placeholder={labelBeneficiario[convenio] ?? 'Nº Cartão'}
+            className="w-36 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
           />
+        )}
+
+        {/* Separador */}
+        <div className="hidden sm:block w-px h-5 bg-gray-200" />
+
+        {/* Convênio */}
+        <div className="flex items-center gap-1">
+          <Building2 size={13} className="text-gray-400 shrink-0" />
+          {convenios.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPaciente({ convenio: value })}
+              className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+                convenio === value
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">CPF</label>
-          <input
-            type="text"
-            value={pacienteCpf}
-            onChange={(e) => setPaciente({ pacienteCpf: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="000.000.000-00"
-          />
+
+        {/* Combobox de operadora SADT */}
+        {convenio === 'SADT' && (
+          <div className="flex items-center gap-2">
+            <input
+              list="operadoras-list"
+              value={sadtOperadora}
+              onChange={(e) => handleOperadoraChange(e.target.value)}
+              placeholder="Operadora (digite ou deixe vazio = guia limpa)"
+              className="w-64 text-sm text-gray-700 placeholder:text-gray-400 bg-transparent border-b border-gray-200 focus:border-indigo-400 focus:outline-none py-1 transition-colors"
+            />
+            <datalist id="operadoras-list">
+              {OPERADORAS.map((o) => (
+                <option key={o.nome} value={o.nome}>
+                  {o.registroAns} — {o.grupo}
+                </option>
+              ))}
+            </datalist>
+            {sadtRegistroAns && (
+              <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+                ANS: <span className="text-gray-800">{sadtRegistroAns}</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Gênero */}
+        <div className="flex gap-1">
+          {generos.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPaciente({ genero: value })}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all ${
+                genero === value
+                  ? 'bg-sky-500 text-white border-sky-500'
+                  : 'border-gray-200 text-gray-600 hover:border-sky-300 hover:text-sky-600'
+              }`}
+            >
+              <Icon size={11} />
+              {label}
+            </button>
+          ))}
         </div>
+
       </div>
     </div>
   );

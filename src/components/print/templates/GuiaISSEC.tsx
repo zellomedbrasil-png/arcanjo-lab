@@ -1,5 +1,12 @@
 import { useAppStore } from '../../../store/useAppStore';
 import { formatExamWithCode } from '../../../utils/exames';
+import {
+  getProcedimentoNome,
+  isProcedimentoCardiologico,
+  isProcedimentoUltrassom,
+  isProcedimentoEndoscopico,
+  isProcedimentoImagem,
+} from '../../../data/procedimentos';
 import logoIssec from '../../../assets/logo_issec.jpeg';
 import logoIssec2 from '../../../assets/logo_issec_2.jpeg';
 
@@ -9,34 +16,13 @@ export default function GuiaISSEC() {
   // getNomeExame is kept for fallback when procedimentosSelecionados is empty
   // (uses getNomeExame_by_id for the actual rendering)
 
-  const getNomeExame_by_id = (id: string) => {
-    const PROC_NOMES: Record<string, string> = {
-      ECOCARDIOGRAMA:      'Ecocardiograma Transtorácico',
-      ECODOPPLER:          'Ecodopplercardiograma',
-      MAPA:                'MAPA - Monitoramento Ambulatorial da Pressão Arterial 24h',
-      HOLTER:              'Holter - Eletrocardiografia de Longa Duração 24h',
-      ECG:                 'Eletrocardiograma (ECG)',
-      US_ABD_TOTAL:        'Ultrassonografia do Abdome Total',
-      US_PELVICO:          'Ultrassonografia Pélvica',
-      US_TRANSVAGINAL:     'Ultrassonografia Transvaginal',
-      US_PROSTATA:         'Ultrassonografia de Próstata e Vias Urinárias',
-      US_TIREOIDE:         'Ultrassonografia de Tireoide',
-      US_VIAS_BILIARES:    'Ultrassonografia de Vias Biliares e Fígado',
-      EDA:                 'Esofagogastroduodenoscopia (EDA)',
-      COLONOSCOPIA:        'Colonoscopia',
-      RETOSSIGMOIDOSCOPIA: 'Retossigmoidoscopia',
-      RX_TORAX:            'Radiografia de Tórax (PA e Perfil)',
-      RX_COLUNA:           'Radiografia de Coluna',
-      TC_ABD:              'Tomografia Computadorizada de Abdome e Pelve com Contraste',
-      TC_CRANIO:           'Tomografia Computadorizada de Crânio',
-      RM_ABD:              'Ressonância Magnética de Abdome e Pelve',
-      RM_CRANIO:           'Ressonância Magnética de Crânio',
-      DENSITOMETRIA:       'Densitometria Óssea (DXA)',
-    };
-    return PROC_NOMES[id] || id;
-  };
-
   const isLab = tipoGuia === 'LABORATORIO';
+
+  const isUltrassom = procedimentosSelecionados.some(isProcedimentoUltrassom);
+  const isEndoscopico = procedimentosSelecionados.some(isProcedimentoEndoscopico);
+  const isRadiologico = procedimentosSelecionados.some(isProcedimentoImagem) &&
+    procedimentosSelecionados.some(id => id !== 'DENSITOMETRIA' && isProcedimentoImagem(id));
+  const isOutros = procedimentosSelecionados.includes('DENSITOMETRIA');
 
   const getLinhas = () => {
     const examesFormatados = examesSelecionados.map(e => formatExamWithCode(e, 'ISSEC'));
@@ -73,7 +59,7 @@ export default function GuiaISSEC() {
         </div>
         <div className="flex p-2 items-center">
           <div className="font-bold w-16 text-center text-sm">EXAME</div>
-          <div className="text-5xl font-light mx-2 leading-none mt-[-10px]">{'\{'}</div>
+          <div className="text-5xl font-light mx-2 leading-none mt-[-10px]">{'{'}</div>
           <div className="flex-1 grid grid-cols-3 gap-8 px-4 text-[10px]">
             <div className="flex flex-col space-y-2">
               <label className="flex items-center justify-between">
@@ -82,27 +68,27 @@ export default function GuiaISSEC() {
               </label>
               <label className="flex items-center justify-between">
                 <span>Cardiológico</span>
-                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{procedimentosSelecionados.some(p => ['ECOCARDIOGRAMA','MAPA','HOLTER','ECG','ECODOPPLER'].includes(p)) ? 'X' : ''}</span>
+                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{procedimentosSelecionados.some(isProcedimentoCardiologico) ? 'X' : ''}</span>
               </label>
             </div>
             <div className="flex flex-col space-y-2">
               <label className="flex items-center justify-between">
                 <span>Ultra-som</span>
-                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{tipoGuia.includes('US_') ? 'X' : ''}</span>
+                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{isUltrassom ? 'X' : ''}</span>
               </label>
               <label className="flex items-center justify-between">
                 <span>Radiológico</span>
-                <span className="w-8 h-4 border border-black inline-block text-center font-bold"></span>
+                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{isRadiologico ? 'X' : ''}</span>
               </label>
             </div>
             <div className="flex flex-col space-y-2">
               <label className="flex items-center justify-between">
                 <span>Endoscópico</span>
-                <span className="w-8 h-4 border border-black inline-block text-center font-bold"></span>
+                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{isEndoscopico ? 'X' : ''}</span>
               </label>
               <label className="flex items-center justify-between">
                 <span>Outros</span>
-                <span className="w-8 h-4 border border-black inline-block text-center font-bold"></span>
+                <span className="w-8 h-4 border border-black inline-block text-center font-bold">{isOutros ? 'X' : ''}</span>
               </label>
             </div>
           </div>
@@ -139,13 +125,10 @@ export default function GuiaISSEC() {
             </thead>
             <tbody>
                 {[1, 2, 3].map((row) => {
-                  let conteudo = '';
-                  if (isLab) {
-                    conteudo = linhas[row - 1] || '';
-                  } else {
-                    const procs = procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia];
-                    conteudo = row <= procs.length ? (getNomeExame_by_id(procs[row - 1])) : '';
-                  }
+                  const procs = procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia];
+                  const conteudo = isLab
+                    ? linhas[row - 1] || ''
+                    : row <= procs.length ? getProcedimentoNome(procs[row - 1]) : '';
                   return (
                     <tr key={row} className="border-b border-black h-8">
                       <td className="w-8 border-r border-black text-center font-bold">{String(row).padStart(2, '0')}</td>

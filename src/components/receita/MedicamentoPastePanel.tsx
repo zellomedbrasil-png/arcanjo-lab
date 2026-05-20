@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useReceitaStore } from '../../store/useReceitaStore';
 import { processarListaMedicamentos, type MedProcessado, type ResultadoListaMedicamentos } from '../../services/groqReceita';
+import { getErrorMessage } from '../../lib/errors';
+import { toast } from '../../lib/toast';
 import {
   ClipboardPaste, Sparkles, Loader2, CheckCircle2,
   AlertTriangle, ChevronDown, ChevronUp, Pill, Trash2,
@@ -16,6 +19,7 @@ export default function MedicamentoPastePanel() {
   const [expandido, setExpandido] = useState(true);
 
   const { setTipoReceita, addMedicamento, updateMedicamento, medicamentos } = useReceitaStore();
+  const elapsed = useElapsedTimer(isLoading);
 
   const handleProcessar = async () => {
     if (!textoMedicamentos.trim()) {
@@ -30,8 +34,10 @@ export default function MedicamentoPastePanel() {
       const result = await processarListaMedicamentos(textoMedicamentos);
       setResultado(result);
       setSelecionados(new Set(result.medicamentos.map((_, i) => i)));
-    } catch (err: any) {
-      setError(err.message || 'Erro ao processar medicamentos. Tente novamente.');
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, 'Erro ao processar medicamentos. Tente novamente.');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -83,6 +89,9 @@ export default function MedicamentoPastePanel() {
     if (temEspecial) {
       setTipoReceita('ESPECIAL');
     }
+
+    const count = medsParaAplicar.length;
+    toast.success(`${count} medicamento${count !== 1 ? 's' : ''} aplicado${count !== 1 ? 's' : ''} na receita${temEspecial ? ' (Controle Especial detectado)' : ''}`);
 
     // Limpar estado
     setTextoMedicamentos('');
@@ -155,7 +164,7 @@ export default function MedicamentoPastePanel() {
               {isLoading ? (
                 <>
                   <Loader2 size={16} className="animate-spin" />
-                  Processando com IA...
+                  {elapsed ? `Processando com IA... (${elapsed}s)` : 'Processando com IA...'}
                 </>
               ) : (
                 <>

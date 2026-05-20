@@ -1,6 +1,6 @@
 import type { MedicamentoReceita, TipoRecomendado } from '../store/useReceitaStore';
+import { getRequiredEnv } from '../config/env';
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY as string;
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
 // ─── Auditor Clínico Determinístico (Evita Falsos Positivos da IA) ───
@@ -178,11 +178,12 @@ export interface ResultadoListaMedicamentos {
 export async function gerarPosologia(
   nomeMedicamento: string
 ): Promise<Omit<MedicamentoReceita, 'id' | 'nomeDigitado' | 'carregando' | 'erro'>> {
+  const groqApiKey = getRequiredEnv('VITE_GROQ_API_KEY');
   const response = await fetch(GROQ_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${GROQ_API_KEY}`,
+      Authorization: `Bearer ${groqApiKey}`,
     },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
@@ -236,11 +237,12 @@ export async function gerarPosologia(
 export async function processarListaMedicamentos(
   textoMedicamentos: string
 ): Promise<ResultadoListaMedicamentos> {
+  const groqApiKey = getRequiredEnv('VITE_GROQ_API_KEY');
   const response = await fetch(GROQ_ENDPOINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${GROQ_API_KEY}`,
+      Authorization: `Bearer ${groqApiKey}`,
     },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
@@ -296,4 +298,3 @@ export async function processarListaMedicamentos(
     alertas: parsed.alertas || [],
   };
 }
-

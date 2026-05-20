@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useReceitaStore } from '../store/useReceitaStore';
 import { gerarPosologia } from '../services/groqReceita';
 import MedicamentoPastePanel from '../components/receita/MedicamentoPastePanel';
+import { formatCep, formatCpf, formatDraftTime, formatPhone } from '../lib/formatters';
+import { toast } from '../lib/toast';
 import {
   Sparkles, Plus, Trash2, Printer, RotateCcw, FileText, AlertTriangle,
   ChevronDown, ChevronUp, User, Calendar, MapPin, Pill, Loader2,
@@ -36,12 +38,12 @@ function MedicamentoCard({
       const resultado = await gerarPosologia(nome);
       updateMedicamento(id, { ...resultado, nomeDigitado: nome, carregando: false });
       setExpandido(true);
+      toast.success(`Posologia gerada para ${nome}`);
     } catch {
-      updateMedicamento(id, {
-        carregando: false,
-        erro: 'Erro ao gerar posologia. Verifique a conexão ou preencha manualmente.',
-      });
+      const errMsg = 'Erro ao gerar posologia. Verifique a conexão ou preencha manualmente.';
+      updateMedicamento(id, { carregando: false, erro: errMsg });
       setExpandido(true);
+      toast.error(errMsg);
     }
   };
 
@@ -49,9 +51,7 @@ function MedicamentoCard({
   const temConteudo = !!(med.nomeDigitado.trim() || med.principioAtivo || med.posologia);
 
 
-  const borderClass = mismatch
-    ? 'border-red-300 bg-red-50'
-    : temConteudo
+  const borderClass = temConteudo
     ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-sm'
     : 'border-gray-200 bg-white';
 
@@ -91,7 +91,9 @@ function MedicamentoCard({
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               med.carregando || !inputNome.trim()
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-sm hover:shadow-md'
+                : mismatch
+                  ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-sm'
+                  : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-sm hover:shadow-md'
             }`}
           >
             {med.carregando ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
@@ -109,22 +111,6 @@ function MedicamentoCard({
           </button>
         </div>
       </div>
-
-      {/* Alerta de mismatch */}
-      {mismatch && med.tipoRecomendado && (
-        <div className="mx-4 mb-3 flex items-start gap-2 text-xs text-red-700 bg-red-100 border border-red-300 rounded-lg px-3 py-2.5">
-          <ShieldAlert size={14} className="shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold">
-              ⚠️ Este medicamento requer <strong>Receita de Controle Especial</strong>
-            </p>
-            {med.motivoEspecial && (
-              <p className="mt-0.5 text-red-600">{med.motivoEspecial}</p>
-            )}
-            <p className="mt-1 text-red-500">Você selecionou "Receita Branca Simples". Altere o tipo de receita.</p>
-          </div>
-        </div>
-      )}
 
       {/* Alerta de erro */}
       {med.erro && (
@@ -160,15 +146,12 @@ function MedicamentoCard({
         </div>
       )}
 
-      {/* Preview compacto */}
+      {/* Preview compacto — 1 linha */}
       {temConteudo && !expandido && !med.erro && (
-        <div className="px-4 pb-4 pl-12 text-xs text-gray-600 border-t border-blue-100 pt-3">
-          <p className="font-semibold text-gray-800">{med.principioAtivo}</p>
-          {med.formaFarmaceutica && <p className="text-gray-500 italic">{med.formaFarmaceutica}</p>}
-          {med.posologia && <p className="mt-0.5">{med.posologia}</p>}
-          {(med.quantidade || med.duracao) && (
-            <p className="mt-0.5 text-gray-500">{[med.quantidade, med.duracao].filter(Boolean).join(' · ')}</p>
-          )}
+        <div className="px-4 pb-3 pl-12">
+          <p className="text-xs text-gray-500 truncate">
+            {[med.principioAtivo, med.posologia, med.duracao].filter(Boolean).join(' · ')}
+          </p>
         </div>
       )}
     </div>
@@ -178,16 +161,34 @@ function MedicamentoCard({
 // ─── Página principal ──────────────────────────────────────────
 export default function NovaReceita() {
   const navigate = useNavigate();
+  const pacienteRef = useRef<HTMLDivElement>(null);
   const {
-    tipoReceita, pacienteNome, pacienteCpf, pacienteRg,
+    tipoReceita, pacienteNome, pacienteCpf,
     pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf, pacienteTelefone,
-    local, data, medicamentos,
+    local, data, medicamentos, lastSavedAt,
     setTipoReceita, setPacienteReceita, addMedicamento, resetReceita,
   } = useReceitaStore();
 
+  useEffect(() => {
+    if (tipoReceita === 'ESPECIAL' && pacienteRef.current) {
+      setTimeout(() => pacienteRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  }, [tipoReceita]);
+
   const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
   const temMedicamentos = medsComConteudo.length > 0;
-  const podeImprimir = pacienteNome.trim() !== '' && temMedicamentos;
+  const camposObrigatoriosEspecial = [
+    { label: 'CPF', ok: pacienteCpf.trim().length >= 14 },
+    { label: 'endereço', ok: pacienteEndereco.trim().length > 0 },
+    { label: 'CEP', ok: pacienteCep.trim().length >= 9 },
+    { label: 'cidade', ok: pacienteCidade.trim().length > 0 },
+    { label: 'UF', ok: pacienteUf.trim().length === 2 },
+    { label: 'telefone', ok: pacienteTelefone.trim().length >= 14 },
+  ];
+  const pendenciasEspecial = tipoReceita === 'ESPECIAL'
+    ? camposObrigatoriosEspecial.filter((campo) => !campo.ok).map((campo) => campo.label)
+    : [];
+  const podeImprimir = pacienteNome.trim() !== '' && temMedicamentos && pendenciasEspecial.length === 0;
 
   // Auditoria: algum med requer ESPECIAL mas tipo está SIMPLES?
   const alertaMismatch = tipoReceita === 'SIMPLES' &&
@@ -196,6 +197,15 @@ export default function NovaReceita() {
   // Auditoria: algum med é SIMPLES mas tipo está ESPECIAL?
   const alertaSimples = tipoReceita === 'ESPECIAL' &&
     medicamentos.every((m) => m.tipoRecomendado === 'SIMPLES');
+  const motivoBloqueio = !pacienteNome.trim()
+    ? 'Informe o paciente'
+    : !temMedicamentos
+      ? 'Adicione medicamento'
+      : alertaMismatch
+        ? 'Tipo incorreto'
+        : pendenciasEspecial.length > 0
+          ? `Falta: ${pendenciasEspecial.join(', ')}`
+          : '';
 
   const inputCls = "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all";
 
@@ -209,6 +219,9 @@ export default function NovaReceita() {
             <h1 className="text-2xl font-bold text-gray-900">Receituário Médico</h1>
             <p className="mt-1 text-sm text-gray-500">
               Dr. Roberto Arcanjo · CRM/CE 26.155 · Digite o medicamento e clique em <strong>IA</strong>
+            </p>
+            <p className="mt-1 text-xs text-blue-600 font-medium">
+              {formatDraftTime(lastSavedAt)}
             </p>
           </div>
           <button
@@ -291,6 +304,11 @@ export default function NovaReceita() {
               <div>
                 <p className={`font-bold text-sm ${tipoReceita === 'ESPECIAL' ? 'text-amber-700' : 'text-gray-700'}`}>Receita Controle Especial</p>
                 <p className="text-xs text-gray-500 mt-0.5">Psicotrópicos, benzodiazepínicos, opioides · 2 vias ANVISA</p>
+                {tipoReceita !== 'ESPECIAL' && (
+                  <span className="inline-block mt-1 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                    Requer 7 campos adicionais
+                  </span>
+                )}
               </div>
             </button>
           </div>
@@ -298,13 +316,18 @@ export default function NovaReceita() {
           {tipoReceita === 'ESPECIAL' && (
             <div className="mt-3 flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
               <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-              <span>CPF, RG, endereço completo com CEP, cidade, UF e telefone do paciente são obrigatórios (ANVISA).</span>
+              <span>CPF, endereço completo com CEP, cidade, UF e telefone do paciente são obrigatórios (ANVISA).</span>
+            </div>
+          )}
+          {pendenciasEspecial.length > 0 && (
+            <div className="mt-2 flex items-start gap-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+              <ShieldAlert size={13} className="mt-0.5 shrink-0" />
+              <span>Antes de imprimir, complete: <strong>{pendenciasEspecial.join(', ')}</strong>.</span>
             </div>
           )}
         </div>
-
         {/* Dados do Paciente */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
+        <div ref={pacienteRef} className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
           <div className="flex items-center gap-2 mb-5">
             <User size={16} className="text-blue-500" />
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Dados do Paciente</h2>
@@ -320,47 +343,45 @@ export default function NovaReceita() {
               <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
                 CPF {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
               </label>
-              <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: e.target.value })} placeholder="000.000.000-00" className={inputCls} />
+              <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} placeholder="000.000.000-00" className={inputCls} inputMode="numeric" />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                RG / Identidade {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-              </label>
-              <input type="text" value={pacienteRg} onChange={(e) => setPacienteReceita({ pacienteRg: e.target.value })} placeholder="0000000" className={inputCls} />
-            </div>
+            {/* Campos só obrigatórios no Controle Especial */}
+            {tipoReceita === 'ESPECIAL' && (
+              <>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                    Endereço (Rua, Nº, Bairro) <span className="text-red-400">*</span>
+                  </label>
+                  <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} placeholder="Rua, número, bairro" className={inputCls} />
+                </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                Endereço (Rua, Nº, Bairro) {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-              </label>
-              <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} placeholder="Rua, número, bairro" className={inputCls} />
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                    CEP <span className="text-red-400">*</span>
+                  </label>
+                  <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: formatCep(e.target.value) })} placeholder="00000-000" className={inputCls} inputMode="numeric" />
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                CEP {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-              </label>
-              <input type="text" value={pacienteCep} onChange={(e) => setPacienteReceita({ pacienteCep: e.target.value })} placeholder="00000-000" className={inputCls} />
-            </div>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Cidade</label>
+                    <input type="text" value={pacienteCidade} onChange={(e) => setPacienteReceita({ pacienteCidade: e.target.value })} placeholder="Fortaleza" className={inputCls} />
+                  </div>
+                  <div style={{ width: '80px' }}>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">UF</label>
+                    <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value.toUpperCase().slice(0, 2) })} placeholder="CE" maxLength={2} className={inputCls} />
+                  </div>
+                </div>
 
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Cidade</label>
-                <input type="text" value={pacienteCidade} onChange={(e) => setPacienteReceita({ pacienteCidade: e.target.value })} placeholder="Fortaleza" className={inputCls} />
-              </div>
-              <div style={{ width: '80px' }}>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">UF</label>
-                <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value })} placeholder="CE" maxLength={2} className={inputCls} />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                Telefone {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-              </label>
-              <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: e.target.value })} placeholder="(85) 00000-0000" className={inputCls} />
-            </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                    Telefone <span className="text-red-400">*</span>
+                  </label>
+                  <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatPhone(e.target.value) })} placeholder="(85) 00000-0000" className={inputCls} inputMode="tel" />
+                </div>
+              </>
+            )}
 
             <div className="flex gap-3">
               <div className="flex-1">
@@ -440,8 +461,8 @@ export default function NovaReceita() {
             {temMedicamentos && (
               <>
                 <span className="text-gray-300">·</span>
-                <span className={`font-semibold text-xs ${alertaMismatch ? 'text-red-500' : 'text-blue-600'}`}>
-                  {alertaMismatch ? '⚠️ Tipo incorreto' : `${medsComConteudo.length} medicamento(s)`}
+                <span className={`font-semibold text-xs ${motivoBloqueio ? 'text-red-500' : 'text-blue-600'}`}>
+                  {motivoBloqueio || `${medsComConteudo.length} medicamento(s)`}
                 </span>
               </>
             )}
@@ -450,7 +471,7 @@ export default function NovaReceita() {
           <button
             onClick={() => navigate('/receita/imprimir')}
             disabled={!podeImprimir || alertaMismatch}
-            title={alertaMismatch ? 'Corrija o tipo de receita antes de imprimir' : ''}
+            title={motivoBloqueio || ''}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm ${
               !podeImprimir || alertaMismatch
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
