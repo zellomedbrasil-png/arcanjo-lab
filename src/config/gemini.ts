@@ -16,6 +16,8 @@ interface GeminiCallParams {
   temperature?: number;
 }
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export async function callGemini({ prompt, systemInstruction, jsonMode, temperature }: GeminiCallParams): Promise<string> {
   const apiKey = getGeminiApiKey();
   const model = getGeminiModel();
@@ -46,25 +48,59 @@ export async function callGemini({ prompt, systemInstruction, jsonMode, temperat
     payload.generationConfig.responseMimeType = 'application/json';
   }
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  });
+  let attempts = 0;
+  const maxAttempts = 3;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Erro na API do Gemini (${response.status}): ${errorText}`);
+  while (attempts < maxAttempts) {
+    attempts++;
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.status === 429) {
+        if (attempts < maxAttempts) {
+          // Exceeded quota/rate limit. Wait and retry (3s, 6s)
+          const delay = attempts * 3000;
+          await sleep(delay);
+          continue;
+        }
+        throw new Error(
+          'Limite de requisições excedido na IA (Erro 429). Por favor, aguarde alguns segundos antes de tentar novamente.'
+        );
+      }
+
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          const errObj = await response.json();
+          errorText = errObj.error?.message || JSON.stringify(errObj);
+        } catch {
+          errorText = await response.text();
+        }
+        throw new Error(`Erro na API do Gemini (${response.status}): ${errorText}`);
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (typeof text !== 'string') {
+        throw new Error('O Gemini não retornou nenhum conteúdo de texto válido.');
+      }
+
+      return text.trim();
+    } catch (err: any) {
+      if (attempts >= maxAttempts) {
+        throw err;
+      }
+      // Wait and retry for 429 or network errors
+      await sleep(attempts * 2000);
+    }
   }
 
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-  if (typeof text !== 'string') {
-    throw new Error('O Gemini não retornou nenhum conteúdo de texto válido.');
-  }
-
-  return text.trim();
+  throw new Error('Falha ao obter resposta da IA após várias tentativas.');
 }
