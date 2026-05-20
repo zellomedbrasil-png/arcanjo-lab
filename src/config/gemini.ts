@@ -13,9 +13,10 @@ interface GeminiCallParams {
   prompt: string;
   systemInstruction?: string;
   jsonMode?: boolean;
+  temperature?: number;
 }
 
-export async function callGemini({ prompt, systemInstruction, jsonMode }: GeminiCallParams): Promise<string> {
+export async function callGemini({ prompt, systemInstruction, jsonMode, temperature }: GeminiCallParams): Promise<string> {
   const apiKey = getGeminiApiKey();
   const model = getGeminiModel();
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
@@ -28,7 +29,9 @@ export async function callGemini({ prompt, systemInstruction, jsonMode }: Gemini
         ]
       }
     ],
-    generationConfig: {}
+    generationConfig: {
+      temperature: typeof temperature === 'number' ? temperature : 0.1
+    }
   };
 
   if (systemInstruction) {

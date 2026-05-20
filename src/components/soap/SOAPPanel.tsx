@@ -15,7 +15,8 @@ FORMATO OBRIGATÓRIO:
 REGRAS:
 - Tudo em MAIÚSCULAS
 - Inclua SEMPRE o CID-10 mais adequado ao final
-- Se houver comorbidades (HAS, DM2, dislipidemia), mencione-as
+- Se houver comorbidades (HAS, DM2, dislipidemia), mencione-as APENAS se estiverem citadas explicitamente no caso do paciente.
+- REGRA ABSOLUTA DE SEGURANÇA: NÃO invente comorbidades, sintomas secundários ou histórico médico fictício na indicação clínica. Baseie-se unicamente nas informações de entrada fornecidas.
 - Para idosos, mencione "PACIENTE IDOSO" ou "PACIENTE GERIÁTRICO"
 - Seja profissional e objetivo — esta justificativa será auditada pelo convênio
 - NÃO use formato SOAP, NÃO use bullet points
@@ -34,6 +35,7 @@ REGRAS:
 - Para pacientes idosos (≥60 anos), considere polifarmácia, risco de queda, Critérios de Beers
 - Inclua CID-10 nas hipóteses diagnósticas
 - Mencione interações medicamentosas relevantes se houver
+- REGRA ABSOLUTA DE SEGURANÇA: NÃO invente comorbidades (ex: diabetes, hipertensão), sintomas adicionais ou dados vitais que não foram relatados na queixa de entrada. O prontuário deve ser conciso e fiel apenas às informações fornecidas.
 - Seja conciso mas completo`;
 
 export default function SOAPPanel() {

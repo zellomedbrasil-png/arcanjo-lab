@@ -94,6 +94,7 @@ Dado o nome de um medicamento, retorne APENAS um JSON válido (sem markdown, sem
   "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL somente para: psicotrópicos (benzodiazepínicos como Clonazepam, Diazepam, Alprazolam; anfetamínicos; barbitúricos), opioides controlados (morfina, codeína acima de 30mg, tramadol em algumas apresentações), e demais sujeitos à Portaria SVS/MS 344/98 e suas locais B1, B2, A1-A5. Todos os demais são SIMPLES.",
   "motivoTipo": "Se ESPECIAL: explique brevemente qual lista da Portaria 344/98 enquadra o medicamento (ex: 'Benzodiazepínico — Lista B1 da Portaria SVS/MS 344/98'). Se SIMPLES: deixe vazio."
 }
+REGRA ABSOLUTA DE SEGURANÇA: Não adicione medicamentos adicionais na posologia ou nas orientações. Limite-se estritamente ao princípio ativo informado. Não invente dosagens ou frequências se forem omitidas e não houver um padrão seguro óbvio.
 Use a posologia padrão mais comum e segura para adultos/idosos. Seja preciso e profissional.`;
 
 // ─── Prompt para processar listas inteiras ──────────────────────
@@ -120,13 +121,13 @@ TAREFA: Receba uma lista de medicamentos e retorne APENAS um JSON válido com o 
 }
 
 REGRAS IMPORTANTES:
-- Se o médico escreveu abreviações ou nomes comerciais, expanda para princípio ativo + dosagem
-- Inclua alertas de interação medicamentosa entre os medicamentos da lista
-- Alerte sobre duplicidades terapêuticas (mesma classe)
-- Para perfil geriátrico, alerte sobre medicamentos potencialmente inapropriados (Critérios de Beers)
-- NÃO invente medicamentos que não estão na lista
-- Mantenha a ordem original
-- Retorne APENAS JSON válido, sem markdown`;
+- Se o médico escreveu abreviações ou nomes comerciais, expanda para princípio ativo + dosagem.
+- Inclua alertas de interação medicamentosa entre os medicamentos da lista.
+- Alerte sobre duplicidades terapêuticas (mesma classe).
+- Para perfil geriátrico, alerte sobre medicamentos potencialmente inapropriados (Critérios de Beers).
+- REGRA ABSOLUTA DE SEGURANÇA: NÃO adicione medicamentos adicionais que não foram descritos pelo médico na lista de entrada. Se a lista de entrada contiver apenas N medicamentos, a lista final de medicamentos do JSON deve conter exatamente N itens. A invenção de medicamentos adicionais é estritamente proibida.
+- Mantenha a ordem original.
+- Retorne APENAS JSON válido, sem markdown.`;
 
 interface GeminiMedResponse {
   principioAtivo: string;

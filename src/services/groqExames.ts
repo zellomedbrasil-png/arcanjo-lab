@@ -36,9 +36,10 @@ REGRAS:
 - Se o médico escreveu abreviações (HMG, GJ, TGO, TGP, etc.), expanda para o nome oficial
 - Se não reconhecer um exame, mantenha o nome original e marque com "(verificar)"
 - A justificativa global deve ser profissional, adequada para auditoria de convênio
-- Se a queixa for fornecida, use-a para gerar justificativas contextualmente relevantes
-- Se não houver queixa, gere justificativas genéricas baseadas nos exames solicitados
-- Retorne exames na mesma ordem em que foram fornecidos
+- Se a queixa for fornecida, use-a para gerar justificativas contextualmente relevantes. Não invente doenças secundárias ou históricos fictícios.
+- Se não houver queixa, gere justificativas genéricas baseadas nos exames solicitados, sem alucinar diagnósticos do paciente.
+- Retorne exames na mesma ordem em que foram fornecidos.
+- REGRA ABSOLUTA DE SEGURANÇA: NÃO adicione novos exames que não foram explicitados na lista bruta fornecida. A quantidade de exames retornada deve ser exatamente igual à quantidade de exames identificáveis na entrada.
 - Inclua o CID-10 mais adequado na justificativa global`;
 
 export async function organizarExamesIA(
