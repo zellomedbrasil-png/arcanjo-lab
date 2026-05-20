@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
 import { PROCEDIMENTOS as PROCEDIMENTOS_BASE, PROCEDIMENTOS_POR_GRUPO } from '../../data/procedimentos';
 import type { ProcedimentoGrupo, ProcedimentoDef } from '../../data/procedimentos';
-import { Activity, Stethoscope, Beaker, HeartPulse, ScanFace, FileHeart, Search, Scan, Bone, Disc, X, CheckCircle2 } from 'lucide-react';
+import { Activity, Stethoscope, Beaker, HeartPulse, ScanFace, FileHeart, Search, Scan, Bone, Disc, X, CheckCircle2, Moon, Ear, Wind, Brain } from 'lucide-react';
 import type { ElementType } from 'react';
 
 type ProcDef = {
@@ -46,7 +46,14 @@ const PROCEDIMENTOS_LEGACY: ProcDef[] = [
   { id: 'TC_CRANIO',           nome: 'TC Crânio',                             icon: Scan,       color: 'text-indigo-400',  activeColor: 'text-white', activeBg: 'bg-indigo-600' },
   { id: 'RM_ABD',              nome: 'RM Abdome e Pelve',                    icon: Disc,       color: 'text-violet-400',  activeColor: 'text-white', activeBg: 'bg-violet-500' },
   { id: 'RM_CRANIO',           nome: 'RM Crânio',                             icon: Disc,       color: 'text-violet-400',  activeColor: 'text-white', activeBg: 'bg-violet-600' },
+  // Geriatria / Funcionais
   { id: 'DENSITOMETRIA',       nome: 'Densitometria Óssea (DXA)',            icon: Bone,       color: 'text-emerald-400', activeColor: 'text-white', activeBg: 'bg-emerald-500' },
+  { id: 'POLISSONOGRAFIA',     nome: 'Polissonografia',                      icon: Moon,       color: 'text-indigo-400',  activeColor: 'text-white', activeBg: 'bg-indigo-500' },
+  { id: 'DOPPLER_TRANSCRANIANO', nome: 'Doppler Transcraniano',               icon: Activity,   color: 'text-sky-400',     activeColor: 'text-white', activeBg: 'bg-sky-500' },
+  { id: 'ELETRONEUROMIOGRAFIA', nome: 'Eletroneuromiografia',                icon: Activity,   color: 'text-pink-400',    activeColor: 'text-white', activeBg: 'bg-pink-500' },
+  { id: 'AUDIOMETRIA',         nome: 'Audiometria',                          icon: Ear,        color: 'text-teal-400',    activeColor: 'text-white', activeBg: 'bg-teal-500' },
+  { id: 'ESPIROMETRIA',        nome: 'Espirometria',                         icon: Wind,       color: 'text-blue-400',    activeColor: 'text-white', activeBg: 'bg-blue-500' },
+  { id: 'EEG_MAPEAMENTO',      nome: 'EEG Mapeamento',                       icon: Brain,      color: 'text-purple-400',  activeColor: 'text-white', activeBg: 'bg-purple-500' },
 ];
 
 const GRUPO_LABELS: Record<ProcedimentoGrupo, string> = {
@@ -54,6 +61,7 @@ const GRUPO_LABELS: Record<ProcedimentoGrupo, string> = {
   ULTRASSONOGRAFIA: 'Ultrassonografia',
   ENDOSCOPIA: 'Endoscopia',
   IMAGEM: 'Imagem (Rx / TC / RM)',
+  GERIATRIA: 'Geriatria / Funcionais',
 };
 
 const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {

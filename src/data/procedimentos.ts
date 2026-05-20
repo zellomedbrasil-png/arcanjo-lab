@@ -2,7 +2,7 @@ import type { TipoGuia } from '../types';
 
 export type ProcedimentoId = Exclude<TipoGuia, 'LABORATORIO'>;
 
-export type ProcedimentoGrupo = 'CARDIOLOGIA' | 'ULTRASSONOGRAFIA' | 'ENDOSCOPIA' | 'IMAGEM';
+export type ProcedimentoGrupo = 'CARDIOLOGIA' | 'ULTRASSONOGRAFIA' | 'ENDOSCOPIA' | 'IMAGEM' | 'GERIATRIA';
 
 export interface ProcedimentoDef {
   id: ProcedimentoId;
@@ -38,7 +38,13 @@ export const PROCEDIMENTOS: ProcedimentoDef[] = [
   { id: 'TC_CRANIO', nome: 'Tomografia Computadorizada de Crânio', nomeCurto: 'TC Crânio', grupo: 'IMAGEM' },
   { id: 'RM_ABD', nome: 'Ressonância Magnética de Abdome e Pelve', nomeCurto: 'RM Abdome e Pelve', grupo: 'IMAGEM' },
   { id: 'RM_CRANIO', nome: 'Ressonância Magnética de Crânio', nomeCurto: 'RM Crânio', grupo: 'IMAGEM' },
-  { id: 'DENSITOMETRIA', nome: 'Densitometria Óssea (DXA)', nomeCurto: 'Densitometria Óssea', grupo: 'IMAGEM' },
+  { id: 'DENSITOMETRIA', nome: 'Densitometria Óssea (DXA)', nomeCurto: 'Densitometria Óssea', grupo: 'GERIATRIA' },
+  { id: 'POLISSONOGRAFIA', nome: 'Polissonografia Completa (com ou sem CPAP)', nomeCurto: 'Polissonografia', grupo: 'GERIATRIA' },
+  { id: 'DOPPLER_TRANSCRANIANO', nome: 'Doppler Transcraniano fluxo-estudo', nomeCurto: 'Doppler Transcraniano', grupo: 'GERIATRIA' },
+  { id: 'ELETRONEUROMIOGRAFIA', nome: 'Eletroneuromiografia de MMSS e MMII', nomeCurto: 'Eletroneuromiografia', grupo: 'GERIATRIA' },
+  { id: 'AUDIOMETRIA', nome: 'Audiometria Tonal e Vocal com Impedanciometria', nomeCurto: 'Audiometria', grupo: 'GERIATRIA' },
+  { id: 'ESPIROMETRIA', nome: 'Espirometria com Prova de Função Pulmonar', nomeCurto: 'Espirometria', grupo: 'GERIATRIA' },
+  { id: 'EEG_MAPEAMENTO', nome: 'Eletroencefalograma com Mapeamento Cerebral', nomeCurto: 'EEG Mapeamento', grupo: 'GERIATRIA' },
 ];
 
 export const PROCEDIMENTO_POR_ID = Object.fromEntries(
@@ -65,8 +71,12 @@ export function isProcedimentoImagem(id: string): boolean {
   return PROCEDIMENTO_POR_ID[id as ProcedimentoId]?.grupo === 'IMAGEM';
 }
 
+export function isProcedimentoGeriatrico(id: string): boolean {
+  return PROCEDIMENTO_POR_ID[id as ProcedimentoId]?.grupo === 'GERIATRIA';
+}
+
 export const PROCEDIMENTOS_POR_GRUPO = (
-  ['CARDIOLOGIA', 'ULTRASSONOGRAFIA', 'ENDOSCOPIA', 'IMAGEM'] as ProcedimentoGrupo[]
+  ['CARDIOLOGIA', 'ULTRASSONOGRAFIA', 'ENDOSCOPIA', 'IMAGEM', 'GERIATRIA'] as ProcedimentoGrupo[]
 ).reduce((acc, grupo) => {
   acc[grupo] = PROCEDIMENTOS.filter((p) => p.grupo === grupo);
   return acc;

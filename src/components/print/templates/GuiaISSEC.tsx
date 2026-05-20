@@ -6,6 +6,7 @@ import {
   isProcedimentoUltrassom,
   isProcedimentoEndoscopico,
   isProcedimentoImagem,
+  isProcedimentoGeriatrico,
 } from '../../../data/procedimentos';
 import logoIssec from '../../../assets/logo_issec.jpeg';
 import logoIssec2 from '../../../assets/logo_issec_2.jpeg';
@@ -20,9 +21,8 @@ export default function GuiaISSEC() {
 
   const isUltrassom = procedimentosSelecionados.some(isProcedimentoUltrassom);
   const isEndoscopico = procedimentosSelecionados.some(isProcedimentoEndoscopico);
-  const isRadiologico = procedimentosSelecionados.some(isProcedimentoImagem) &&
-    procedimentosSelecionados.some(id => id !== 'DENSITOMETRIA' && isProcedimentoImagem(id));
-  const isOutros = procedimentosSelecionados.includes('DENSITOMETRIA');
+  const isRadiologico = procedimentosSelecionados.some(isProcedimentoImagem);
+  const isOutros = procedimentosSelecionados.some(isProcedimentoGeriatrico);
 
   const getLinhas = () => {
     const examesFormatados = examesSelecionados.map(e => formatExamWithCode(e, 'ISSEC'));
