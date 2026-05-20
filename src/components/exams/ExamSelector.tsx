@@ -31,8 +31,14 @@ const PROCEDIMENTOS_LEGACY: ProcDef[] = [
   { id: 'US_VIAS_BILIARES',    nome: 'US Vias Biliares e Fígado',            icon: ScanFace,   color: 'text-amber-400',   activeColor: 'text-white', activeBg: 'bg-amber-500' },
   // Endoscopia
   { id: 'EDA',                 nome: 'Esofagogastroduodenoscopia (EDA)',     icon: Search,     color: 'text-amber-400',   activeColor: 'text-white', activeBg: 'bg-amber-600' },
+  { id: 'EDA_BIOPSIA_HPYLORI', nome: 'EDA + Biópsia H. pylori',               icon: Search,     color: 'text-amber-500',   activeColor: 'text-white', activeBg: 'bg-amber-600' },
   { id: 'COLONOSCOPIA',        nome: 'Colonoscopia',                         icon: Search,     color: 'text-stone-400',   activeColor: 'text-white', activeBg: 'bg-stone-500' },
+  { id: 'COLONOSCOPIA_BIOPSIA',nome: 'Colonoscopia + Biópsia',                icon: Search,     color: 'text-stone-500',   activeColor: 'text-white', activeBg: 'bg-stone-600' },
   { id: 'RETOSSIGMOIDOSCOPIA', nome: 'Retossigmoidoscopia',                  icon: Search,     color: 'text-stone-400',   activeColor: 'text-white', activeBg: 'bg-stone-600' },
+  { id: 'RETOSSIGMOIDOSCOPIA_BIOPSIA', nome: 'Retossigmoidoscopia + Biópsia', icon: Search,     color: 'text-stone-500',   activeColor: 'text-white', activeBg: 'bg-stone-700' },
+  { id: 'PHMETRIA_ESOFAGICA',  nome: 'pHmetria Esofágica',                   icon: Activity,   color: 'text-emerald-500', activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  { id: 'MANOMETRIA_ESOFAGICA',nome: 'Manometria Esofágica',                 icon: Activity,   color: 'text-teal-500',    activeColor: 'text-white', activeBg: 'bg-teal-600' },
+  { id: 'ECOENDOSCOPIA',       nome: 'Ecoendoscopia',                        icon: Search,     color: 'text-yellow-500',  activeColor: 'text-white', activeBg: 'bg-yellow-600' },
   // Imagem
   { id: 'RX_TORAX',            nome: 'Radiografia de Tórax PA+Perfil',       icon: Bone,       color: 'text-slate-400',   activeColor: 'text-white', activeBg: 'bg-slate-500' },
   { id: 'RX_COLUNA',           nome: 'Radiografia de Coluna',                icon: Bone,       color: 'text-slate-400',   activeColor: 'text-white', activeBg: 'bg-slate-600' },
