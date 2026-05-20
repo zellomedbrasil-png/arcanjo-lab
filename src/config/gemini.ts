@@ -6,7 +6,7 @@ export function getGeminiApiKey(): string {
 
 export function getGeminiModel(): string {
   const model = import.meta.env.VITE_GEMINI_MODEL;
-  return typeof model === 'string' && model.trim() ? model.trim() : 'gemini-1.5-flash';
+  return typeof model === 'string' && model.trim() ? model.trim() : 'gemini-3.5-flash';
 }
 
 interface GeminiCallParams {
