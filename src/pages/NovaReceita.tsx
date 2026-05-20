@@ -44,13 +44,242 @@ const formatTelefone = (v: string) => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 };
 
-const PRESETS = [
-  { nome: 'Dipirona 500mg', principioAtivo: 'Dipirona Monoidratada 500mg', formaFarmaceutica: 'Comprimidos', uso: 'Uso oral', posologia: 'Tomar 1 comprimido por via oral de 6 em 6 horas se dor ou febre.', quantidade: '10 comprimidos', duracao: 'Em caso de dor', tipoRecomendado: 'SIMPLES' },
-  { nome: 'Losartana 50mg', principioAtivo: 'Losartana Potássica 50mg', formaFarmaceutica: 'Comprimidos', uso: 'Uso oral', posologia: 'Tomar 1 comprimido por via oral uma vez ao dia, pela manhã.', quantidade: '30 comprimidos', duracao: 'Uso contínuo', tipoRecomendado: 'SIMPLES' },
-  { nome: 'Omeprazol 20mg', principioAtivo: 'Omeprazol 20mg', formaFarmaceutica: 'Cápsulas gastrorresistentes', uso: 'Uso oral', posologia: 'Tomar 1 cápsula por via oral em jejum, 30 minutos antes do café da manhã.', quantidade: '30 cápsulas', duracao: '30 dias', tipoRecomendado: 'SIMPLES' },
-  { nome: 'Metformina 850mg', principioAtivo: 'Metformina Cloridrato 850mg', formaFarmaceutica: 'Comprimidos', uso: 'Uso oral', posologia: 'Tomar 1 comprimido por via oral junto ao jantar.', quantidade: '60 comprimidos', duracao: 'Uso contínuo', tipoRecomendado: 'SIMPLES' },
-  { nome: 'Clonazepam 2mg', principioAtivo: 'Clonazepam 2mg', formaFarmaceutica: 'Comprimidos', uso: 'Uso oral', posologia: 'Tomar 1/2 comprimido (1mg) por via oral à noite, antes de deitar.', quantidade: '30 comprimidos', duracao: '60 dias', tipoRecomendado: 'ESPECIAL' },
-  { nome: 'Sertralina 50mg', principioAtivo: 'Sertralina Cloridrato 50mg', formaFarmaceutica: 'Comprimidos revestidos', uso: 'Uso oral', posologia: 'Tomar 1 comprimido por via oral pela manhã.', quantidade: '30 comprimidos', duracao: 'Uso contínuo', tipoRecomendado: 'ESPECIAL' },
+interface MedicamentoPreset {
+  nome: string;
+  principioAtivo: string;
+  formaFarmaceutica: string;
+  uso: string;
+  posologia: string;
+  quantidade: string;
+  duracao: string;
+  tipoRecomendado: string;
+  explicacao: string;
+}
+
+const GERIATRICO_PRESETS: MedicamentoPreset[] = [
+  {
+    nome: 'Losartana 50mg',
+    principioAtivo: 'Losartana Potássica 50mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral uma vez ao dia, pela manhã.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Anti-hipertensivo de primeira escolha em idosos. Poupa a função renal e apresenta baixíssimo risco de efeitos colaterais graves.'
+  },
+  {
+    nome: 'Metformina 850mg',
+    principioAtivo: 'Metformina Cloridrato 850mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral ao dia, imediatamente após o jantar.',
+    quantidade: '60 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Tratamento padrão-ouro para Diabetes Mellitus tipo 2. Excelente perfil de segurança cardiovascular. Monitorar função renal (ClCr).'
+  },
+  {
+    nome: 'Sertralina 50mg',
+    principioAtivo: 'Sertralina Cloridrato 50mg',
+    formaFarmaceutica: 'Comprimidos revestidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral pela manhã.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'ESPECIAL',
+    explicacao: 'Antidepressivo (ISRS) mais seguro e estudado para idosos. Baixa interação medicamentosa, bem tolerado e não causa sedação.'
+  },
+  {
+    nome: 'Donepezila 5mg',
+    principioAtivo: 'Donepezila Cloridrato 5mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral à noite, antes de deitar.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'ESPECIAL',
+    explicacao: 'Inibidor da acetilcolinesterase indicado para demência de Alzheimer leve a moderada. Melhora cognitiva e funcional.'
+  },
+  {
+    nome: 'Memantina 10mg',
+    principioAtivo: 'Memantina Cloridrato 10mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral pela manhã.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'ESPECIAL',
+    explicacao: 'Antagonista NMDA para demência de Alzheimer moderada a grave. Pode ser associado à Donepezila para maior eficácia.'
+  },
+  {
+    nome: 'Carbonato de Cálcio + Vit. D3',
+    principioAtivo: 'Carbonato de Cálcio 1250mg (500mg Ca elementar) + Colecalciferol (Vit. D3) 400 UI',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral ao dia, durante uma refeição principal.',
+    quantidade: '60 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Suplementação mineral e vitamínica essencial na prevenção e tratamento de osteopenia e osteoporose senil.'
+  },
+  {
+    nome: 'Anlodipino 5mg',
+    principioAtivo: 'Anlodipino Besilato 5mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral ao dia, pela manhã.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Vasodilatador de canal de cálcio potente para controle da HAS sistólica isolada no idoso. Atenção a edemas de MMII.'
+  },
+  {
+    nome: 'Atorvastatina 20mg',
+    principioAtivo: 'Atorvastatina Cálcica 20mg',
+    formaFarmaceutica: 'Comprimidos revestidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral à noite.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Estatina de alta potência indicada para prevenção secundária de eventos cardiovasculares (IAM, AVC).'
+  },
+  {
+    nome: 'AAS Infantil 100mg',
+    principioAtivo: 'Ácido Acetilsalicílico 100mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral após o almoço.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Antiagregante plaquetário de baixo custo amplamente utilizado na prevenção de eventos trombóticos em idosos de alto risco.'
+  },
+  {
+    nome: 'Pramipexol 0,25mg',
+    principioAtivo: 'Pramipexol Dicloridrato 0,25mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral à noite.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'ESPECIAL',
+    explicacao: 'Agonista dopaminérgico indicado para Doença de Parkinson e Síndrome das Pernas Inquietas. Iniciar com doses baixas.'
+  }
+];
+
+const GASTRO_PRESETS: MedicamentoPreset[] = [
+  {
+    nome: 'Omeprazol 20mg',
+    principioAtivo: 'Omeprazol 20mg',
+    formaFarmaceutica: 'Cápsulas gastrorresistentes',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 cápsula por via oral em jejum, de 20 a 30 minutos antes do café da manhã.',
+    quantidade: '30 cápsulas',
+    duracao: '28 dias',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Inibidor da Bomba de Prótons (IBP) indicado para tratamento de DRGE, gastrite, úlceras pépticas e profilaxia gástrica.'
+  },
+  {
+    nome: 'Pantoprazol 40mg',
+    principioAtivo: 'Pantoprazol Sódico Sesqui-hidratado 40mg',
+    formaFarmaceutica: 'Comprimidos gastrorresistentes',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral em jejum, pela manhã.',
+    quantidade: '28 comprimidos',
+    duracao: '28 dias',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'IBP potente com menor taxa de interação medicamentosa sistêmica. Ideal para pacientes em polifarmácia.'
+  },
+  {
+    nome: 'Domperidona 10mg',
+    principioAtivo: 'Domperidona 10mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral 15 minutos antes do almoço e do jantar.',
+    quantidade: '30 comprimidos',
+    duracao: '15 dias',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Antagonista dopaminérgico pró-cinético. Indicado para refluxo gastroesofágico, dispepsia funcional e esvaziamento retardado.'
+  },
+  {
+    nome: 'Bromoprida 10mg',
+    principioAtivo: 'Bromoprida 10mg',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral de 8 em 8 horas (se náuseas ou dor).',
+    quantidade: '20 comprimidos',
+    duracao: 'Em caso de sintomas',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Excelente antiemético e regulador da motilidade gastrointestinal. Alivia náuseas, vômitos e soluços.'
+  },
+  {
+    nome: 'Buscopan Composto',
+    principioAtivo: 'Butilbrometo de Escopolamina 10mg + Dipirona Monoidratada 500mg',
+    formaFarmaceutica: 'Comprimidos revestidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral de 6 em 6 horas ou de 8 em 8 horas se dor ou cólica.',
+    quantidade: '20 comprimidos',
+    duracao: 'Em caso de dor',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Combinação potente de antiespasmódico com analgésico. Alivia cólicas biliares, intestinais e renais.'
+  },
+  {
+    nome: 'Simeticona 75mg/ml',
+    principioAtivo: 'Simeticona 75mg/ml',
+    formaFarmaceutica: 'Frasco gotejador (gotas)',
+    uso: 'Uso oral',
+    posologia: 'Tomar 30 gotas por via oral de 8 em 8 horas se excesso de gases ou distensão.',
+    quantidade: '1 frasco',
+    duracao: 'Em caso de sintomas',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Dispersa as bolhas de gás no trato gastrointestinal, aliviando o estufamento e dores causadas por flatulência.'
+  },
+  {
+    nome: 'Lactulose 667mg/ml',
+    principioAtivo: 'Lactulose 667mg/ml',
+    formaFarmaceutica: 'Xarope (frasco)',
+    uso: 'Uso oral',
+    posologia: 'Tomar 15ml por via oral ao dia, de preferência em dose única pela manhã.',
+    quantidade: '1 frasco de 120ml',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Laxante osmótico fisiológico. Não causa dependência de trânsito intestinal e é seguro para uso prolongado e em idosos.'
+  },
+  {
+    nome: 'Macrogol 3350',
+    principioAtivo: 'Macrogol 3350 puro',
+    formaFarmaceutica: 'Sachê em pó',
+    uso: 'Uso oral',
+    posologia: 'Diluir 1 sachê em um copo d\'água (200ml) e tomar uma vez ao dia, pela manhã.',
+    quantidade: '30 sachês',
+    duracao: '30 dias',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Laxante osmótico moderno padrão-ouro. Sem sabor, bem tolerado e altamente recomendado para idosos com constipação.'
+  },
+  {
+    nome: 'Floratil 200mg',
+    principioAtivo: 'Saccharomyces boulardii 200mg',
+    formaFarmaceutica: 'Cápsulas',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 cápsula por via oral de 12 em 12 horas.',
+    quantidade: '10 cápsulas',
+    duracao: '5 dias',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Probiótico composto por leveduras benéficas. Trata e previne diarreias agudas induzidas por antibióticos ou infecções.'
+  },
+  {
+    nome: 'Mesalazina 800mg',
+    principioAtivo: 'Mesalazina 800mg',
+    formaFarmaceutica: 'Comprimidos de liberação prolongada',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral de 8 em 8 horas.',
+    quantidade: '90 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    explicacao: 'Anti-inflamatório de ação local no cólon, indicado para tratamento e manutenção da Retocolite Ulcerativa e Doença de Crohn.'
+  }
 ];
 
 // ─── Card de medicamento ───────────────────────────────────────
@@ -233,6 +462,7 @@ function MedicamentoCard({
 // ─── Página principal ──────────────────────────────────────────
 export default function NovaReceita() {
   const navigate = useNavigate();
+  const [activeTabGuias, setActiveTabGuias] = useState<'geriatria' | 'gastro'>('geriatria');
   const {
     tipoReceita, pacienteNome, pacienteCpf,
     pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf, pacienteTelefone,
@@ -252,7 +482,7 @@ export default function NovaReceita() {
   const alertaSimples = tipoReceita === 'ESPECIAL' &&
     medicamentos.every((m) => m.tipoRecomendado === 'SIMPLES');
 
-  const handleAddPreset = (preset: typeof PRESETS[0]) => {
+  const handleAddPreset = (preset: MedicamentoPreset) => {
     const cardVazio = medicamentos.find((m) => !m.nomeDigitado.trim() && !m.principioAtivo);
     
     let targetId: string;
@@ -483,27 +713,84 @@ export default function NovaReceita() {
                 </div>
               </div>
 
-              {/* Modelos de Medicamentos Frequentes */}
-              <div className="mb-6 bg-gradient-to-br from-indigo-50/20 via-indigo-50/10 to-transparent border border-indigo-100/50 rounded-2xl p-4.5">
-                <span className="block text-[10px] font-bold uppercase text-indigo-500 tracking-wider mb-2.5">Prescrever Rápido (Favoritos)</span>
-                <div className="flex gap-2 flex-wrap">
-                  {PRESETS.map((preset) => {
+              {/* Modelos de Medicamentos Frequentes (Abas Geriátricos & Gastro) */}
+              <div className="mb-6 bg-gradient-to-br from-indigo-50/20 via-indigo-50/10 to-transparent border border-indigo-100/50 rounded-2xl p-5 shadow-sm">
+                <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
+                  <span className="block text-xs font-bold uppercase text-indigo-700 tracking-wider">
+                    Guia Clínico de Prescrição Rápida
+                  </span>
+                  
+                  {/* Abas */}
+                  <div className="flex bg-gray-100/80 p-1 rounded-xl border border-gray-200/50">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTabGuias('geriatria')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        activeTabGuias === 'geriatria'
+                          ? 'bg-white text-indigo-700 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-800'
+                      }`}
+                    >
+                      Geriátricos (10)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTabGuias('gastro')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        activeTabGuias === 'gastro'
+                          ? 'bg-white text-indigo-700 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-800'
+                      }`}
+                    >
+                      Gastroenterologia (10)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Lista de Medicamentos da Aba Ativa */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1">
+                  {(activeTabGuias === 'geriatria' ? GERIATRICO_PRESETS : GASTRO_PRESETS).map((preset) => {
                     const isEspecial = preset.tipoRecomendado === 'ESPECIAL';
                     return (
-                      <button
+                      <div
                         key={preset.nome}
-                        type="button"
-                        onClick={() => handleAddPreset(preset)}
-                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all hover:scale-[1.02] shadow-sm ${
-                          isEspecial
-                            ? 'bg-amber-50/75 text-amber-700 border-amber-200 hover:bg-amber-100/60'
-                            : 'bg-indigo-50/40 text-indigo-700 border-indigo-100 hover:bg-indigo-100/40'
-                        }`}
+                        className="group flex flex-col justify-between p-3.5 rounded-xl border border-gray-200/80 bg-white hover:border-indigo-300 hover:shadow-md transition-all duration-200"
                       >
-                        <Plus size={11} />
-                        {preset.nome}
-                        {isEspecial && <span className="text-[8px] bg-amber-200 px-1 rounded font-bold uppercase shrink-0 text-amber-800 scale-90">C344</span>}
-                      </button>
+                        <div>
+                          <div className="flex items-center justify-between gap-1.5">
+                            <span className="font-bold text-gray-800 text-sm">
+                              {preset.nome}
+                            </span>
+                            {isEspecial && (
+                              <span className="text-[9px] bg-amber-100 border border-amber-250 px-1.5 py-0.5 rounded font-bold uppercase text-amber-800 scale-90 shrink-0">
+                                C344
+                              </span>
+                            )}
+                          </div>
+                          
+                          <span className="block text-[10px] text-gray-400 font-semibold mt-0.5">
+                            {preset.principioAtivo} · {preset.formaFarmaceutica}
+                          </span>
+
+                          <p className="text-[11px] text-gray-500 mt-2 leading-relaxed font-normal italic">
+                            {preset.explicacao}
+                          </p>
+                        </div>
+
+                        <div className="mt-3.5 pt-2.5 border-t border-dashed border-gray-100 flex items-center justify-between gap-2">
+                          <span className="text-[9px] text-indigo-500/80 font-bold bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                            {preset.uso}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleAddPreset(preset)}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm group-hover:shadow hover:scale-[1.02]"
+                          >
+                            <Plus size={11} />
+                            Prescrever
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
