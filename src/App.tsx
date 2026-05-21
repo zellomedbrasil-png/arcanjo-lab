@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-import NovoPedido from './pages/NovoPedido';
+import Prontuario from './pages/Prontuario';
+import ExamesLaboratoriais from './pages/ExamesLaboratoriais';
+import ProcedimentosEletivos from './pages/ProcedimentosEletivos';
 import Imprimir from './pages/Imprimir';
 import NovaReceita from './pages/NovaReceita';
 import ImprimirReceita from './pages/ImprimirReceita';
@@ -15,13 +17,16 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/novo" element={<NovoPedido />} />
+        <Route path="/prontuario" element={<Prontuario />} />
+        <Route path="/exames" element={<ExamesLaboratoriais />} />
+        <Route path="/procedimentos" element={<ProcedimentosEletivos />} />
+        <Route path="/novo" element={<Navigate to="/prontuario" replace />} />
         <Route path="/imprimir" element={<Imprimir />} />
         <Route path="/receita" element={<NovaReceita />} />
         <Route path="/receita/imprimir" element={<ImprimirReceita />} />
         <Route path="/documentos" element={<Documentos />} />
         <Route path="/documentos/imprimir" element={<ImprimirDocumento />} />
-        <Route path="/" element={<Navigate to="/novo" replace />} />
+        <Route path="/" element={<Navigate to="/prontuario" replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -9,20 +9,21 @@ export interface ProcedimentoDef {
   nome: string;
   nomeCurto: string;
   grupo: ProcedimentoGrupo;
+  hasAsterisk?: boolean;
 }
 
 export const PROCEDIMENTOS: ProcedimentoDef[] = [
-  { id: 'ECOCARDIOGRAMA', nome: 'Ecocardiograma Transtorácico', nomeCurto: 'Ecocardiograma', grupo: 'CARDIOLOGIA' },
-  { id: 'ECODOPPLER', nome: 'Ecodopplercardiograma', nomeCurto: 'Ecodoppler', grupo: 'CARDIOLOGIA' },
-  { id: 'MAPA', nome: 'MAPA - Monitoramento Ambulatorial da Pressão Arterial 24h', nomeCurto: 'MAPA 24h', grupo: 'CARDIOLOGIA' },
-  { id: 'HOLTER', nome: 'Holter - Eletrocardiografia de Longa Duração 24h', nomeCurto: 'Holter 24h', grupo: 'CARDIOLOGIA' },
-  { id: 'ECG', nome: 'Eletrocardiograma (ECG)', nomeCurto: 'ECG', grupo: 'CARDIOLOGIA' },
-  { id: 'US_ABD_TOTAL', nome: 'Ultrassonografia do Abdome Total', nomeCurto: 'US Abdome Total', grupo: 'ULTRASSONOGRAFIA' },
-  { id: 'US_PELVICO', nome: 'Ultrassonografia Pélvica', nomeCurto: 'US Pélvico', grupo: 'ULTRASSONOGRAFIA' },
-  { id: 'US_TRANSVAGINAL', nome: 'Ultrassonografia Transvaginal', nomeCurto: 'US Transvaginal', grupo: 'ULTRASSONOGRAFIA' },
-  { id: 'US_PROSTATA', nome: 'Ultrassonografia de Próstata e Vias Urinárias', nomeCurto: 'US Próstata e Vias Urinárias', grupo: 'ULTRASSONOGRAFIA' },
-  { id: 'US_TIREOIDE', nome: 'Ultrassonografia de Tireoide', nomeCurto: 'US Tireoide', grupo: 'ULTRASSONOGRAFIA' },
-  { id: 'US_VIAS_BILIARES', nome: 'Ultrassonografia de Vias Biliares e Fígado', nomeCurto: 'US Vias Biliares e Fígado', grupo: 'ULTRASSONOGRAFIA' },
+  { id: 'ECOCARDIOGRAMA', nome: 'Ecocardiograma Transtorácico', nomeCurto: 'Ecocardiograma', grupo: 'CARDIOLOGIA', hasAsterisk: true },
+  { id: 'ECODOPPLER', nome: 'Ecodopplercardiograma', nomeCurto: 'Ecodoppler', grupo: 'CARDIOLOGIA', hasAsterisk: true },
+  { id: 'MAPA', nome: 'MAPA - Monitoramento Ambulatorial da Pressão Arterial 24h', nomeCurto: 'MAPA 24h', grupo: 'CARDIOLOGIA', hasAsterisk: true },
+  { id: 'HOLTER', nome: 'Holter - Eletrocardiografia de Longa Duração 24h', nomeCurto: 'Holter 24h', grupo: 'CARDIOLOGIA', hasAsterisk: true },
+  { id: 'ECG', nome: 'Eletrocardiograma (ECG)', nomeCurto: 'ECG', grupo: 'CARDIOLOGIA', hasAsterisk: true },
+  { id: 'US_ABD_TOTAL', nome: 'Ultrassonografia do Abdome Total', nomeCurto: 'US Abdome Total', grupo: 'ULTRASSONOGRAFIA', hasAsterisk: true },
+  { id: 'US_PELVICO', nome: 'Ultrassonografia Pélvica', nomeCurto: 'US Pélvico', grupo: 'ULTRASSONOGRAFIA', hasAsterisk: true },
+  { id: 'US_TRANSVAGINAL', nome: 'Ultrassonografia Transvaginal', nomeCurto: 'US Transvaginal', grupo: 'ULTRASSONOGRAFIA', hasAsterisk: true },
+  { id: 'US_PROSTATA', nome: 'Ultrassonografia de Próstata e Vias Urinárias', nomeCurto: 'US Próstata e Vias Urinárias', grupo: 'ULTRASSONOGRAFIA', hasAsterisk: true },
+  { id: 'US_TIREOIDE', nome: 'Ultrassonografia de Tireoide', nomeCurto: 'US Tireoide', grupo: 'ULTRASSONOGRAFIA', hasAsterisk: true },
+  { id: 'US_VIAS_BILIARES', nome: 'Ultrassonografia de Vias Biliares e Fígado', nomeCurto: 'US Vias Biliares e Fígado', grupo: 'ULTRASSONOGRAFIA', hasAsterisk: true },
   { id: 'EDA', nome: 'Esofagogastroduodenoscopia (EDA)', nomeCurto: 'EDA', grupo: 'ENDOSCOPIA' },
   { id: 'EDA_BIOPSIA_HPYLORI', nome: 'Endoscopia Digestiva Alta com Biópsia e Pesquisa de H. pylori', nomeCurto: 'EDA + Biópsia H. pylori', grupo: 'ENDOSCOPIA' },
   { id: 'COLONOSCOPIA', nome: 'Colonoscopia', nomeCurto: 'Colonoscopia', grupo: 'ENDOSCOPIA' },
@@ -43,7 +44,7 @@ export const PROCEDIMENTOS: ProcedimentoDef[] = [
   { id: 'DOPPLER_TRANSCRANIANO', nome: 'Doppler Transcraniano fluxo-estudo', nomeCurto: 'Doppler Transcraniano', grupo: 'GERIATRIA' },
   { id: 'ELETRONEUROMIOGRAFIA', nome: 'Eletroneuromiografia de MMSS e MMII', nomeCurto: 'Eletroneuromiografia', grupo: 'GERIATRIA' },
   { id: 'AUDIOMETRIA', nome: 'Audiometria Tonal e Vocal com Impedanciometria', nomeCurto: 'Audiometria', grupo: 'GERIATRIA' },
-  { id: 'ESPIROMETRIA', nome: 'Espirometria com Prova de Função Pulmonar', nomeCurto: 'Espirometria', grupo: 'GERIATRIA' },
+  { id: 'ESPIROMETRIA', nome: 'Espirometria com Prova de Função Pulmonar', nomeCurto: 'Espirometria', grupo: 'GERIATRIA', hasAsterisk: true },
   { id: 'EEG_MAPEAMENTO', nome: 'Eletroencefalograma com Mapeamento Cerebral', nomeCurto: 'EEG Mapeamento', grupo: 'GERIATRIA' },
 ];
 

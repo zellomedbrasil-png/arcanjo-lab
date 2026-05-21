@@ -16,7 +16,10 @@ interface AppState {
   examesSelecionados: string[];
   procedimentosSelecionados: string[];
   soap: string;
+  queixa: string;
   justificativa: string;
+  justificativaExames: string;
+  justificativaProcedimentos: string;
   lastSavedAt: string | null;
   iaModel: string;
 
@@ -27,7 +30,10 @@ interface AppState {
   setExamesSelecionados: (exames: string[]) => void;
   toggleProcedimento: (proc: string) => void;
   setSoap: (soap: string) => void;
+  setQueixa: (queixa: string) => void;
   setJustificativa: (justificativa: string) => void;
+  setJustificativaExames: (justificativa: string) => void;
+  setJustificativaProcedimentos: (justificativa: string) => void;
   setIaModel: (iaModel: string) => void;
   resetForm: () => void;
 }
@@ -44,7 +50,10 @@ const initialState = {
   examesSelecionados: [],
   procedimentosSelecionados: [] as string[],
   soap: '',
+  queixa: '',
   justificativa: '',
+  justificativaExames: '',
+  justificativaProcedimentos: '',
   lastSavedAt: null,
   iaModel: '',
 };
@@ -99,7 +108,26 @@ export const useAppStore = create<AppState>()(
       }),
 
       setSoap: (soap) => set({ soap, lastSavedAt: touch() }),
-      setJustificativa: (justificativa) => set({ justificativa, lastSavedAt: touch() }),
+      setQueixa: (queixa) => set({ queixa, lastSavedAt: touch() }),
+      setJustificativa: (justificativa) => set((state) => {
+        const isLab = state.tipoGuia === 'LABORATORIO';
+        return {
+          justificativa,
+          justificativaExames: isLab ? justificativa : state.justificativaExames,
+          justificativaProcedimentos: !isLab ? justificativa : state.justificativaProcedimentos,
+          lastSavedAt: touch(),
+        };
+      }),
+      setJustificativaExames: (justificativaExames) => set((state) => ({
+        justificativaExames,
+        justificativa: state.tipoGuia === 'LABORATORIO' ? justificativaExames : state.justificativa,
+        lastSavedAt: touch(),
+      })),
+      setJustificativaProcedimentos: (justificativaProcedimentos) => set((state) => ({
+        justificativaProcedimentos,
+        justificativa: state.tipoGuia !== 'LABORATORIO' ? justificativaProcedimentos : state.justificativa,
+        lastSavedAt: touch(),
+      })),
       setIaModel: (iaModel) => set({ iaModel }),
 
       resetForm: () => set(initialState),
@@ -119,7 +147,10 @@ export const useAppStore = create<AppState>()(
         examesSelecionados: state.examesSelecionados,
         procedimentosSelecionados: state.procedimentosSelecionados,
         soap: state.soap,
+        queixa: state.queixa,
         justificativa: state.justificativa,
+        justificativaExames: state.justificativaExames,
+        justificativaProcedimentos: state.justificativaProcedimentos,
         lastSavedAt: state.lastSavedAt,
         iaModel: state.iaModel,
       }),

@@ -17,7 +17,7 @@ export default function Imprimir() {
 
   useEffect(() => {
     if (!pacienteNome) {
-      navigate('/novo');
+      navigate('/prontuario');
     }
   }, [pacienteNome, navigate]);
 

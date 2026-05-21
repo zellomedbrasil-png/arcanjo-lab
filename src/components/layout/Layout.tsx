@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { FileText, LogOut, Activity, ClipboardList, FolderOpen } from 'lucide-react';
+import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useAppStore } from '../../store/useAppStore';
 import { ToastContainer } from '../ui/ToastContainer';
@@ -26,7 +26,21 @@ export default function Layout({ children }: { children: ReactNode }) {
         
         <nav className="flex-1 px-4 py-6 space-y-1 max-lg:flex max-lg:gap-2 max-lg:space-y-0 max-lg:overflow-x-auto max-lg:py-3 animate-in fade-in duration-300">
           <NavLink
-            to="/novo"
+            to="/prontuario"
+            className={({ isActive }) =>
+              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                isActive
+                  ? 'bg-slate-100 text-slate-700'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              }`
+            }
+          >
+            <FileText className="mr-3 h-5 w-5 flex-shrink-0 text-slate-500" />
+            Prontuário
+          </NavLink>
+
+          <NavLink
+            to="/exames"
             className={({ isActive }) =>
               `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
                 isActive
@@ -35,8 +49,22 @@ export default function Layout({ children }: { children: ReactNode }) {
               }`
             }
           >
-            <FileText className="mr-3 h-5 w-5 flex-shrink-0" />
-            Prontuário
+            <Beaker className="mr-3 h-5 w-5 flex-shrink-0 text-blue-500" />
+            Exames Laboratoriais
+          </NavLink>
+
+          <NavLink
+            to="/procedimentos"
+            className={({ isActive }) =>
+              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                isActive
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+              }`
+            }
+          >
+            <Stethoscope className="mr-3 h-5 w-5 flex-shrink-0 text-emerald-500" />
+            Procedimentos Eletivos
           </NavLink>
 
           <NavLink
@@ -49,7 +77,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               }`
             }
           >
-            <ClipboardList className="mr-3 h-5 w-5 flex-shrink-0" />
+            <ClipboardList className="mr-3 h-5 w-5 flex-shrink-0 text-amber-500" />
             Receituário
           </NavLink>
 
@@ -63,7 +91,7 @@ export default function Layout({ children }: { children: ReactNode }) {
               }`
             }
           >
-            <FolderOpen className="mr-3 h-5 w-5 flex-shrink-0" />
+            <FolderOpen className="mr-3 h-5 w-5 flex-shrink-0 text-emerald-600" />
             Documentos
           </NavLink>
         </nav>

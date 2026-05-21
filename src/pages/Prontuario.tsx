@@ -1,0 +1,43 @@
+import { RotateCcw } from 'lucide-react';
+import Layout from '../components/layout/Layout';
+import PatientForm from '../components/patient/PatientForm';
+import SOAPPanel from '../components/soap/SOAPPanel';
+import { useAppStore } from '../store/useAppStore';
+import { formatDraftTime } from '../lib/formatters';
+
+export default function Prontuario() {
+  const { lastSavedAt, resetForm } = useAppStore();
+
+  return (
+    <Layout>
+      <div className="max-w-4xl mx-auto px-4 py-4 pb-12 space-y-3">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h1 className="text-lg font-bold text-gray-900">Prontuário (SOAP)</h1>
+            <span className="text-xs text-gray-400">{formatDraftTime(lastSavedAt)}</span>
+          </div>
+          <div>
+            <button
+              onClick={() => {
+                if (confirm('Limpar todos os dados do prontuário e formulário?')) {
+                  resetForm();
+                }
+              }}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 bg-white"
+            >
+              <RotateCcw size={12} />
+              Limpar Tudo
+            </button>
+          </div>
+        </div>
+
+        {/* 1. Patient Form */}
+        <PatientForm />
+
+        {/* 2. SOAP & Clinical History Panel */}
+        <SOAPPanel />
+      </div>
+    </Layout>
+  );
+}

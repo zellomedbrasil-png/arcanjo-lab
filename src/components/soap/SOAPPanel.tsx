@@ -39,7 +39,6 @@ REGRAS:
 - Seja conciso mas completo`;
 
 export default function SOAPPanel() {
-  const [queixa, setQueixa] = useState('');
   const [isLoadingJust, setIsLoadingJust] = useState(false);
   const [isLoadingSoap, setIsLoadingSoap] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +57,7 @@ export default function SOAPPanel() {
   const {
     pacienteNome, genero, examesSelecionados, procedimentosSelecionados,
     soap, setSoap,
+    queixa, setQueixa,
     justificativa, setJustificativa,
     tipoGuia, iaModel, setIaModel,
   } = useAppStore();

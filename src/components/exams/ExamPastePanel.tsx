@@ -16,7 +16,7 @@ export default function ExamPastePanel() {
   const [error, setError] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ResultadoExamesIA | null>(null);
   const [examesSelecionados, setExamesSelecionadosLocal] = useState<Set<number>>(new Set());
-  const [expandido, setExpandido] = useState(true);
+  const [expandido, setExpandido] = useState(false);
 
   const { genero, setExamesSelecionados, setJustificativa } = useAppStore();
   const elapsed = useElapsedTimer(isLoading);

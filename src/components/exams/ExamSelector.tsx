@@ -13,6 +13,7 @@ type ProcDef = {
   color: string;
   activeColor: string;
   activeBg: string;
+  hasAsterisk?: boolean;
 };
 
 const PROCEDIMENTOS_LEGACY: ProcDef[] = [
@@ -73,17 +74,22 @@ const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {
     color: ui?.color ?? 'text-gray-400',
     activeColor: ui?.activeColor ?? 'text-white',
     activeBg: ui?.activeBg ?? 'bg-gray-500',
+    hasAsterisk: procedimento.hasAsterisk,
   };
 });
 
-export default function ExamSelector() {
+interface ExamSelectorProps {
+  mode?: 'exames' | 'procedimentos';
+}
+
+export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
   const [busca, setBusca] = useState('');
   const {
     tipoGuia, convenio, examesSelecionados, procedimentosSelecionados,
     setExamesSelecionados, setJustificativa, setPaciente, toggleProcedimento
   } = useAppStore();
 
-  const isLab = tipoGuia === 'LABORATORIO';
+  const isLab = mode ? mode === 'exames' : tipoGuia === 'LABORATORIO';
   const buscaNormalizada = busca.trim().toLowerCase();
 
   const categoriasFiltradas = useMemo(() => {
@@ -125,37 +131,39 @@ export default function ExamSelector() {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
       {/* Tab bar */}
-      <div className="flex border-b border-gray-100">
-        <button
-          onClick={() => setPaciente({ tipoGuia: 'LABORATORIO' })}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-all ${
-            isLab
-              ? 'text-blue-700 bg-blue-50 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <Beaker size={16} />
-          Exames Laboratoriais
-        </button>
-        <button
-          onClick={() => {
-            if (isLab) setPaciente({ tipoGuia: 'ECOCARDIOGRAMA' });
-          }}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-all ${
-            !isLab
-              ? 'text-emerald-700 bg-emerald-50 border-b-2 border-emerald-600'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          <Stethoscope size={16} />
-          Procedimentos Eletivos
-          {!isLab && procedimentosSelecionados.length > 0 && (
-            <span className="bg-emerald-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-              {procedimentosSelecionados.length}
-            </span>
-          )}
-        </button>
-      </div>
+      {!mode && (
+        <div className="flex border-b border-gray-100">
+          <button
+            onClick={() => setPaciente({ tipoGuia: 'LABORATORIO' })}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-all ${
+              isLab
+                ? 'text-blue-700 bg-blue-50 border-b-2 border-blue-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <Beaker size={16} />
+            Exames Laboratoriais
+          </button>
+          <button
+            onClick={() => {
+              if (isLab) setPaciente({ tipoGuia: 'ECOCARDIOGRAMA' });
+            }}
+            className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-semibold transition-all ${
+              !isLab
+                ? 'text-emerald-700 bg-emerald-50 border-b-2 border-emerald-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <Stethoscope size={16} />
+            Procedimentos Eletivos
+            {!isLab && procedimentosSelecionados.length > 0 && (
+              <span className="bg-emerald-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                {procedimentosSelecionados.length}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
 
       <div className="p-6">
         {!isLab ? (
@@ -243,7 +251,16 @@ export default function ExamSelector() {
                                 className="absolute top-1.5 right-1.5 text-white opacity-90"
                               />
                             )}
-                            <Icon size={20} className={isFull && !isSelected ? 'opacity-30' : ''} />
+                            <div className="relative">
+                              <Icon size={20} className={isFull && !isSelected ? 'opacity-30' : ''} />
+                              {proc.hasAsterisk && (
+                                <span className={`absolute -top-1.5 -right-2 text-xs font-black select-none leading-none ${
+                                  isSelected ? 'text-white' : 'text-red-500'
+                                }`}>
+                                  *
+                                </span>
+                              )}
+                            </div>
                             <span className="leading-tight">{proc.nome}</span>
                             {isFull && (
                               <span className="text-[9px] text-gray-300 font-normal">Limite atingido</span>
