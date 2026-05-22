@@ -108,7 +108,19 @@ export const useDocumentStore = create<DocumentState>()(
         });
         return next;
       }),
-      resetDocumento: () => set({ ...initialState, data: hoje() }),
+      resetDocumento: () => {
+        set({ ...initialState, data: hoje() });
+        publishPatientSync('document', {
+          pacienteNome: '',
+          pacienteCpf: '',
+          pacienteEndereco: '',
+          pacienteCep: '',
+          pacienteCidade: '',
+          pacienteUf: '',
+          pacienteTelefone: '',
+          pacienteDataNascimento: '',
+        });
+      },
     }),
     {
       name: 'arcanjo-lab-documento-draft',

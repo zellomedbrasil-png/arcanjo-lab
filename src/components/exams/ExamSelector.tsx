@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
 import { PROCEDIMENTOS as PROCEDIMENTOS_BASE, PROCEDIMENTOS_POR_GRUPO } from '../../data/procedimentos';
 import type { ProcedimentoGrupo, ProcedimentoDef } from '../../data/procedimentos';
-import { Activity, Stethoscope, Beaker, HeartPulse, ScanFace, FileHeart, Search, Scan, Bone, Disc, X, CheckCircle2, Moon, Ear, Wind, Brain } from 'lucide-react';
+import { Activity, Stethoscope, Beaker, HeartPulse, ScanFace, FileHeart, Search, Scan, Bone, Disc, X, CheckCircle2, Moon, Ear, Wind, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 import type { ElementType } from 'react';
 
 type ProcDef = {
@@ -84,6 +84,7 @@ interface ExamSelectorProps {
 
 export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
   const [busca, setBusca] = useState('');
+  const [paineisExpanded, setPaineisExpanded] = useState(false);
   const {
     tipoGuia, convenio, examesSelecionados, procedimentosSelecionados,
     setExamesSelecionados, setJustificativa, setPaciente, toggleProcedimento
@@ -276,7 +277,7 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
 
             {procedimentosSelecionados.length > 0 && (
               <button
-                onClick={() => procedimentosSelecionados.forEach(p => toggleProcedimento(p))}
+                onClick={() => setPaciente({ procedimentosSelecionados: [] })}
                 className="mt-3 text-xs text-gray-400 hover:text-gray-600 underline transition-colors"
               >
                 Limpar seleção
@@ -287,27 +288,50 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
         ) : (
           <div>
             {/* Quick panels */}
-            <div className="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
-              <h3 className="text-xs font-bold text-blue-800 mb-3 uppercase tracking-wider">
-                Painéis Rápidos Clínicos
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(PAINEIS_MARKDOWN).map(([key, painel]) => (
-                  <button
-                    key={key}
-                    onClick={() => aplicarPainel(key)}
-                    className="px-3 py-1.5 bg-white text-blue-600 text-xs font-semibold rounded-lg shadow-sm hover:bg-blue-600 hover:text-white transition-colors border border-blue-200"
-                  >
-                    {painel.nome}
-                  </button>
-                ))}
-                <button
-                  onClick={() => { setExamesSelecionados([]); setJustificativa(''); }}
-                  className="px-3 py-1.5 bg-white text-gray-500 text-xs font-semibold rounded-lg shadow-sm hover:bg-gray-100 transition-colors border border-gray-200 ml-auto"
-                >
-                  Limpar Tudo
-                </button>
-              </div>
+            <div className="mb-6 bg-blue-50/50 rounded-xl border border-blue-100/80 overflow-hidden shadow-sm">
+              <button
+                type="button"
+                onClick={() => setPaineisExpanded(!paineisExpanded)}
+                className="w-full flex items-center justify-between p-3.5 bg-blue-50/70 hover:bg-blue-50 transition-colors text-left cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span className="text-xs font-bold text-blue-800 uppercase tracking-wider">
+                    Painéis Rápidos Clínicos
+                  </span>
+                </div>
+                {paineisExpanded ? (
+                  <ChevronUp size={14} className="text-blue-500" />
+                ) : (
+                  <ChevronDown size={14} className="text-blue-500" />
+                )}
+              </button>
+              {paineisExpanded && (
+                <div className="p-4 bg-white flex flex-wrap gap-2 border-t border-blue-100/50 animate-fadeIn">
+                  {Object.entries(PAINEIS_MARKDOWN).map(([key, painel]) => (
+                    <button
+                      key={key}
+                      onClick={() => aplicarPainel(key)}
+                      className="px-3 py-1.5 bg-white text-blue-600 text-xs font-semibold rounded-lg shadow-sm hover:bg-blue-600 hover:text-white transition-colors border border-blue-200 cursor-pointer"
+                    >
+                      {painel.nome}
+                    </button>
+                  ))}
+                   <button
+                     onClick={() => {
+                       if (isLab) {
+                         setExamesSelecionados([]);
+                       } else {
+                         setPaciente({ procedimentosSelecionados: [] });
+                       }
+                       setJustificativa('');
+                     }}
+                     className="px-3 py-1.5 bg-white text-gray-500 text-xs font-semibold rounded-lg shadow-sm hover:bg-gray-100 transition-colors border border-gray-200 ml-auto cursor-pointer"
+                   >
+                     Limpar Tudo
+                   </button>
+                </div>
+              )}
             </div>
 
             <div className="mb-5 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 items-start">

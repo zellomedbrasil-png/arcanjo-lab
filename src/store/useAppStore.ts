@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { Convenio, Genero, Medico, TipoGuia } from '../types';
+import type { Convenio, Genero, Medico, TipoGuia, ConsultaGravada } from '../types';
 import { publishPatientSync, subscribePatientSync } from './patientSync';
 
 interface AppState {
@@ -22,6 +22,7 @@ interface AppState {
   justificativaProcedimentos: string;
   lastSavedAt: string | null;
   iaModel: string;
+  consultasGravadas: ConsultaGravada[];
 
   setMedico: (medico: Medico | null) => void;
   setPaciente: (dados: Partial<AppState>) => void;
@@ -36,6 +37,10 @@ interface AppState {
   setJustificativaProcedimentos: (justificativa: string) => void;
   setIaModel: (iaModel: string) => void;
   resetForm: () => void;
+  gravarConsulta: () => boolean;
+  removerConsultaGravada: (index: number) => void;
+  limparConsultasGravadas: () => void;
+  adicionarConsultaAoHistorico: (nome: string, queixa: string) => boolean;
 }
 
 const initialState = {
@@ -62,9 +67,10 @@ const touch = () => new Date().toISOString();
 
 export const useAppStore = create<AppState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       medico: null,
       ...initialState,
+      consultasGravadas: [] as ConsultaGravada[],
 
       setMedico: (medico) => set({ medico }),
       setPaciente: (dados) => set((state) => {
@@ -130,7 +136,62 @@ export const useAppStore = create<AppState>()(
       })),
       setIaModel: (iaModel) => set({ iaModel }),
 
-      resetForm: () => set(initialState),
+      resetForm: () => {
+        set(initialState);
+        publishPatientSync('app', {
+          pacienteNome: '',
+          pacienteCpf: '',
+          numeroBeneficiario: '',
+          genero: 'M',
+          convenio: 'IPM',
+          pacienteEndereco: '',
+          pacienteCep: '',
+          pacienteCidade: '',
+          pacienteUf: '',
+          pacienteTelefone: '',
+          pacienteDataNascimento: '',
+        });
+      },
+
+      adicionarConsultaAoHistorico: (nome: string, queixaVal: string) => {
+        let success = false;
+        set((state) => {
+          const n = nome.trim();
+          const q = queixaVal.trim();
+          if (!n || !q) {
+            return state;
+          }
+          const nova: ConsultaGravada = {
+            nome: n,
+            queixa: q,
+            data: new Date().toISOString(),
+          };
+          const filtradas = state.consultasGravadas.filter(
+            (c) => !(c.nome.toLowerCase() === n.toLowerCase() && c.queixa.toLowerCase() === q.toLowerCase())
+          );
+          success = true;
+          return {
+            consultasGravadas: [nova, ...filtradas].slice(0, 10),
+            lastSavedAt: touch(),
+          };
+        });
+        return success;
+      },
+
+      gravarConsulta: () => {
+        const state = get();
+        return state.adicionarConsultaAoHistorico(state.pacienteNome, state.queixa);
+      },
+
+      removerConsultaGravada: (index: number) => set((state) => ({
+        consultasGravadas: state.consultasGravadas.filter((_, i) => i !== index),
+        lastSavedAt: touch(),
+      })),
+
+      limparConsultasGravadas: () => set({
+        consultasGravadas: [],
+        lastSavedAt: touch(),
+      }),
     }),
     {
       name: 'arcanjo-lab-pedido-draft',
@@ -153,6 +214,7 @@ export const useAppStore = create<AppState>()(
         justificativaProcedimentos: state.justificativaProcedimentos,
         lastSavedAt: state.lastSavedAt,
         iaModel: state.iaModel,
+        consultasGravadas: state.consultasGravadas,
       }),
     }
   )

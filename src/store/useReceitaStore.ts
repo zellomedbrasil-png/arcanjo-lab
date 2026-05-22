@@ -122,8 +122,19 @@ export const useReceitaStore = create<ReceitaState>()(
           lastSavedAt: touch(),
         })),
 
-      resetReceita: () =>
-        set({ ...initialState, data: hoje(), medicamentos: [novoMedicamento()] }),
+      resetReceita: () => {
+        set({ ...initialState, data: hoje(), medicamentos: [novoMedicamento()] });
+        publishPatientSync('receita', {
+          pacienteNome: '',
+          pacienteCpf: '',
+          pacienteEndereco: '',
+          pacienteCep: '',
+          pacienteCidade: 'Fortaleza',
+          pacienteUf: 'CE',
+          pacienteTelefone: '',
+          pacienteDataNascimento: '',
+        });
+      },
     }),
     {
       name: 'arcanjo-lab-receita-draft',

@@ -1,5 +1,12 @@
 export type Convenio = 'IPM' | 'ISSEC' | 'PARTICULAR' | 'SADT';
 export type Genero = 'M' | 'F';
+
+export interface ConsultaGravada {
+  nome: string;
+  queixa: string;
+  data: string;
+}
+
 export type TipoGuia =
   | 'LABORATORIO'
   | 'ECOCARDIOGRAMA' | 'ECODOPPLER' | 'MAPA' | 'HOLTER' | 'ECG'
