@@ -5,7 +5,7 @@ import { callGemini, getLastUsedModel } from '../../config/gemini';
 import { groq } from '../../config/groq';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
-import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square } from 'lucide-react';
+import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, RefreshCw, Activity } from 'lucide-react';
 import type { ConsultaGravada } from '../../types';
 
 const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
@@ -63,7 +63,12 @@ export default function SOAPPanel() {
     justificativa, setJustificativa,
     tipoGuia, iaModel, setIaModel,
     consultasGravadas, gravarConsulta, removerConsultaGravada, adicionarConsultaAoHistorico, limparConsultasGravadas, setPaciente,
+    syncKey, setSyncKey, carregarConsultasBanco,
   } = useAppStore();
+
+  useEffect(() => {
+    carregarConsultasBanco();
+  }, [syncKey, carregarConsultasBanco]);
 
   // Estados para Gravação de Áudio
   const [isRecording, setIsRecording] = useState(false);
@@ -409,8 +414,37 @@ Queixa clínica: "${queixa}"`;
       </div>
 
       {/* Consultas Gravadas (Histórico das últimas 10) */}
-      {consultasGravadas && consultasGravadas.length > 0 && (
+      {(consultasGravadas && (consultasGravadas.length > 0 || syncKey)) && (
         <div className="border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-gray-50/50 p-3.5 space-y-2 animate-fadeIn">
+          {/* Linha de Sincronização Nuvem */}
+          <div className="flex items-center justify-between text-[11px] text-gray-500 border-b border-gray-100 pb-2 mb-1">
+            <span className="font-medium text-gray-600 flex items-center gap-1">
+              <Activity size={12} className="text-blue-500 animate-pulse" />
+              Sincronização Nuvem
+            </span>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="text"
+                value={syncKey}
+                onChange={(e) => setSyncKey(e.target.value)}
+                placeholder="CRM ou Chave"
+                className="px-2 py-0.5 border border-gray-200 rounded text-[10px] bg-white text-gray-700 w-24 focus:outline-none focus:border-blue-400 font-semibold text-center"
+                title="Chave de sincronização para compartilhar entre celular e computador"
+              />
+              <button
+                type="button"
+                onClick={async () => {
+                  await carregarConsultasBanco();
+                  toast.success('Sincronizando com Supabase...');
+                }}
+                className="p-1 hover:bg-gray-200 rounded text-gray-500 transition-colors cursor-pointer"
+                title="Sincronizar consultas agora"
+              >
+                <RefreshCw size={10} />
+              </button>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between border-b border-gray-100 pb-1.5 mb-1.5">
             <div className="flex items-center gap-1.5">
               <Save size={12} className="text-emerald-500" />
@@ -418,62 +452,71 @@ Queixa clínica: "${queixa}"`;
                 Últimas Consultas Gravadas ({consultasGravadas.length})
               </h4>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (confirm('Tem certeza que deseja apagar todo o histórico de consultas gravadas?')) {
-                  limparConsultasGravadas();
-                  toast.success('Histórico apagado com sucesso');
-                }
-              }}
-              className="text-[10px] text-gray-400 hover:text-red-500 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
-              title="Apagar todo o histórico"
-            >
-              <Trash2 size={10} />
-              Limpar Histórico
-            </button>
-          </div>
-          <div className="grid gap-2">
-            {consultasGravadas.map((c, i) => (
-              <div
-                key={`${c.nome}-${c.data}`}
-                className="group flex items-center justify-between gap-3 p-2 bg-white rounded-lg border border-gray-100 hover:border-indigo-200 hover:shadow-sm transition-all cursor-pointer"
-                onClick={() => handleCarregarConsulta(c)}
+            {consultasGravadas.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Tem certeza que deseja apagar todo o histórico de consultas gravadas?')) {
+                    limparConsultasGravadas();
+                    toast.success('Histórico apagado com sucesso');
+                  }
+                }}
+                className="text-[10px] text-gray-400 hover:text-red-500 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
+                title="Apagar todo o histórico"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-semibold text-xs text-gray-800 truncate">
-                      {c.nome}
-                    </span>
-                    <span className="text-[9px] text-gray-400 font-medium whitespace-nowrap flex items-center gap-0.5">
-                      <Calendar size={10} />
-                      {new Date(c.data).toLocaleDateString('pt-BR', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 truncate group-hover:text-gray-700" title={c.queixa}>
-                    {c.queixa}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removerConsultaGravada(i);
-                    toast.success('Registro removido');
-                  }}
-                  className="text-gray-300 hover:text-red-500 p-1.5 rounded-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                  title="Remover do histórico"
-                >
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            ))}
+                <Trash2 size={10} />
+                Limpar Histórico
+              </button>
+            )}
           </div>
+
+          {consultasGravadas.length === 0 ? (
+            <p className="text-xs text-gray-400 text-center py-2 italic">
+              Nenhuma consulta gravada sob esta chave.
+            </p>
+          ) : (
+            <div className="grid gap-2">
+              {consultasGravadas.map((c, i) => (
+                <div
+                  key={`${c.nome}-${c.data}`}
+                  className="group flex items-center justify-between gap-3 p-2 bg-white rounded-lg border border-gray-100 hover:border-indigo-200 hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() => handleCarregarConsulta(c)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-semibold text-xs text-gray-800 truncate">
+                        {c.nome}
+                      </span>
+                      <span className="text-[9px] text-gray-400 font-medium whitespace-nowrap flex items-center gap-0.5">
+                        <Calendar size={10} />
+                        {new Date(c.data).toLocaleDateString('pt-BR', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 truncate group-hover:text-gray-700" title={c.queixa}>
+                      {c.queixa}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removerConsultaGravada(i);
+                      toast.success('Registro removido');
+                    }}
+                    className="text-gray-300 hover:text-red-500 p-1.5 rounded-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                    title="Remover do histórico"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

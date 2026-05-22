@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Convenio, Genero, Medico, TipoGuia, ConsultaGravada } from '../types';
 import { publishPatientSync, subscribePatientSync } from './patientSync';
+import { supabase } from '../config/supabase';
 
 interface AppState {
   medico: Medico | null;
@@ -23,6 +24,7 @@ interface AppState {
   lastSavedAt: string | null;
   iaModel: string;
   consultasGravadas: ConsultaGravada[];
+  syncKey: string;
 
   setMedico: (medico: Medico | null) => void;
   setPaciente: (dados: Partial<AppState>) => void;
@@ -41,6 +43,8 @@ interface AppState {
   removerConsultaGravada: (index: number) => void;
   limparConsultasGravadas: () => void;
   adicionarConsultaAoHistorico: (nome: string, queixa: string) => boolean;
+  setSyncKey: (syncKey: string) => void;
+  carregarConsultasBanco: () => Promise<void>;
 }
 
 const initialState = {
@@ -71,6 +75,35 @@ export const useAppStore = create<AppState>()(
       medico: null,
       ...initialState,
       consultasGravadas: [] as ConsultaGravada[],
+      syncKey: '26.155',
+
+      setSyncKey: (syncKey) => {
+        set({ syncKey });
+        get().carregarConsultasBanco();
+      },
+
+      carregarConsultasBanco: async () => {
+        const url = import.meta.env.VITE_SUPABASE_URL;
+        if (!url || url.includes('dummy') || url.includes('placeholder')) {
+          console.log('Supabase não configurado ou usando chave dummy. Fallback para localStorage ativo.');
+          return;
+        }
+        try {
+          const { data, error } = await supabase
+            .from('consultas_gravadas')
+            .select('nome, queixa, data')
+            .eq('sync_key', get().syncKey)
+            .order('data', { ascending: false })
+            .limit(10);
+
+          if (error) throw error;
+          if (data) {
+            set({ consultasGravadas: data });
+          }
+        } catch (err) {
+          console.error('Erro ao buscar consultas do Supabase:', err);
+        }
+      },
 
       setMedico: (medico) => set({ medico }),
       setPaciente: (dados) => set((state) => {
@@ -155,17 +188,19 @@ export const useAppStore = create<AppState>()(
 
       adicionarConsultaAoHistorico: (nome: string, queixaVal: string) => {
         let success = false;
+        const n = nome.trim();
+        const q = queixaVal.trim();
+        if (!n || !q) {
+          return false;
+        }
+
+        const nova: ConsultaGravada = {
+          nome: n,
+          queixa: q,
+          data: new Date().toISOString(),
+        };
+
         set((state) => {
-          const n = nome.trim();
-          const q = queixaVal.trim();
-          if (!n || !q) {
-            return state;
-          }
-          const nova: ConsultaGravada = {
-            nome: n,
-            queixa: q,
-            data: new Date().toISOString(),
-          };
           const filtradas = state.consultasGravadas.filter(
             (c) => !(c.nome.toLowerCase() === n.toLowerCase() && c.queixa.toLowerCase() === q.toLowerCase())
           );
@@ -175,6 +210,36 @@ export const useAppStore = create<AppState>()(
             lastSavedAt: touch(),
           };
         });
+
+        // Gravação assíncrona no Supabase
+        const url = import.meta.env.VITE_SUPABASE_URL;
+        if (url && !url.includes('dummy') && !url.includes('placeholder')) {
+          (async () => {
+            try {
+              // 1. Remover duplicatas idênticas para o mesmo syncKey
+              await supabase
+                .from('consultas_gravadas')
+                .delete()
+                .eq('sync_key', get().syncKey)
+                .eq('nome', n)
+                .eq('queixa', q);
+
+              // 2. Inserir a nova consulta
+              const { error } = await supabase
+                .from('consultas_gravadas')
+                .insert({
+                  sync_key: get().syncKey,
+                  nome: n,
+                  queixa: q,
+                  data: nova.data
+                });
+              if (error) throw error;
+            } catch (err) {
+              console.error('Erro ao salvar consulta no Supabase:', err);
+            }
+          })();
+        }
+
         return success;
       },
 
@@ -183,15 +248,54 @@ export const useAppStore = create<AppState>()(
         return state.adicionarConsultaAoHistorico(state.pacienteNome, state.queixa);
       },
 
-      removerConsultaGravada: (index: number) => set((state) => ({
-        consultasGravadas: state.consultasGravadas.filter((_, i) => i !== index),
-        lastSavedAt: touch(),
-      })),
+      removerConsultaGravada: (index: number) => {
+        const target = get().consultasGravadas[index];
+        set((state) => ({
+          consultasGravadas: state.consultasGravadas.filter((_, i) => i !== index),
+          lastSavedAt: touch(),
+        }));
 
-      limparConsultasGravadas: () => set({
-        consultasGravadas: [],
-        lastSavedAt: touch(),
-      }),
+        if (target) {
+          const url = import.meta.env.VITE_SUPABASE_URL;
+          if (url && !url.includes('dummy') && !url.includes('placeholder')) {
+            (async () => {
+              try {
+                const { error } = await supabase
+                  .from('consultas_gravadas')
+                  .delete()
+                  .eq('sync_key', get().syncKey)
+                  .eq('nome', target.nome)
+                  .eq('queixa', target.queixa);
+                if (error) throw error;
+              } catch (err) {
+                console.error('Erro ao deletar consulta do Supabase:', err);
+              }
+            })();
+          }
+        }
+      },
+
+      limparConsultasGravadas: () => {
+        set({
+          consultasGravadas: [],
+          lastSavedAt: touch(),
+        });
+
+        const url = import.meta.env.VITE_SUPABASE_URL;
+        if (url && !url.includes('dummy') && !url.includes('placeholder')) {
+          (async () => {
+            try {
+              const { error } = await supabase
+                .from('consultas_gravadas')
+                .delete()
+                .eq('sync_key', get().syncKey);
+              if (error) throw error;
+            } catch (err) {
+              console.error('Erro ao limpar histórico do Supabase:', err);
+            }
+          })();
+        }
+      },
     }),
     {
       name: 'arcanjo-lab-pedido-draft',
@@ -215,6 +319,7 @@ export const useAppStore = create<AppState>()(
         lastSavedAt: state.lastSavedAt,
         iaModel: state.iaModel,
         consultasGravadas: state.consultasGravadas,
+        syncKey: state.syncKey,
       }),
     }
   )
