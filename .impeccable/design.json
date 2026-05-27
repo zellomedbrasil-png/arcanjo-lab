@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-25T00:57:00Z",
+  "title": "Design System: Arcanjo.Lab",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Surgical Blue",
+        "canonical": "#2563eb",
+        "tonalRamp": ["#172554", "#1e3a8a", "#1e40af", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd"]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Ice-Slate Background",
+        "canonical": "#f8fafc",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0"]
+      },
+      "neutral-surface": {
+        "role": "neutral",
+        "displayName": "Pure White",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#090d16", "#0f172a", "#1e293b", "#334155", "#64748b", "#cbd5e1", "#f1f5f9", "#ffffff"]
+      },
+      "neutral-border": {
+        "role": "neutral",
+        "displayName": "Soft Border",
+        "canonical": "#e2e8f0",
+        "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Cabeçalhos de seções e títulos de páginas principais."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto geral do prontuário, dosagens e informações clínicas."
+      }
+    },
+    "shadows": [
+      {
+        "name": "interative-hover",
+        "value": "0 2px 8px rgba(37, 99, 235, 0.08)",
+        "purpose": "Efeito sutil de flutuação ao passar o mouse sobre botões e campos de ação."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Transições padrão de foco e interações de estado."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Botão de ação principal, usado para salvar prontuários, receitas ou gerar guias.",
+      "html": "<button class=\"ds-btn-primary\">Salvar Receita</button>",
+      "css": ".ds-btn-primary { background-color: #2563eb; color: #ffffff; border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Inter', system-ui, sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s; } .ds-btn-primary:hover { background-color: #1d4ed8; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.16); } .ds-btn-primary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }"
+    },
+    {
+      "name": "Clinical Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Container base para dados do paciente, listas de exames ou blocos de prescrição.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Dados do Paciente</h3><p class=\"ds-card-body\">João Silva Santos - CPF: 123.456.789-00</p></div>",
+      "css": ".ds-card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; font-family: 'Inter', system-ui, sans-serif; } .ds-card-title { font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 600; color: #0f172a; margin: 0 0 8px 0; } .ds-card-body { font-size: 14px; color: #64748b; margin: 0; }"
+    },
+    {
+      "name": "Clinical Input",
+      "kind": "input",
+      "description": "Campo de texto minimalista com linha inferior, otimizado para preenchimento de prontuários clínicos rápidos.",
+      "html": "<div class=\"ds-input-group\"><input type=\"text\" class=\"ds-input-clinical\" placeholder=\"Nome do paciente *\" /></div>",
+      "css": ".ds-input-group { position: relative; width: 100%; } .ds-input-clinical { width: 100%; border: none; border-bottom: 1px solid #e2e8f0; background: transparent; padding: 4px 0; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: #0f172a; transition: border-bottom-color 0.2s cubic-bezier(0.4, 0, 0.2, 1); outline: none; } .ds-input-clinical::placeholder { font-weight: 400; color: #94a3b8; } .ds-input-clinical:focus { border-bottom-color: #4f46e5; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Clinical Slate",
+    "overview": "O Arcanjo.Lab é um sistema utilitário de clareza cirúrgica, inspirado no prontuário médico clássico reinventado. Ele foi projetado para otimizar fluxos de trabalho rápidos sob iluminação brilhante de consultórios, onde cada segundo poupado e cada redução de esforço cognitivo contam.",
+    "keyCharacteristics": [
+      "Alta densidade de informação para visualização rápida sem rolagem excessiva.",
+      "Divisão estrita e consistente entre elementos interativos em tela e folhas de impressão limpas.",
+      "Grid cirúrgico focado em alinhamentos verticais e horizontais precisos."
+    ],
+    "rules": [
+      {
+        "name": "The Color Function Rule",
+        "body": "Cores secundárias são usadas estritamente para diferenciação de seções (azul para exames, verde para procedimentos, âmbar para receitas). Nunca use cores decorativas fora do seu contexto funcional estabelecido.",
+        "section": "colors"
+      },
+      {
+        "name": "The Contrast Priority Rule",
+        "body": "A tipografia de dados clínicos nunca deve ser mais clara que o tom Muted Slate (#64748b). Prescreva contraste rigoroso para todas as informações de saúde.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Rest Rule",
+        "body": "Todas as superfícies são perfeitamente planas no estado de repouso. Sombras sutis são reservadas exclusivamente para feedback visual de estados interativos (como hover) e elementos flutuantes reais (como menus suspensos).",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do manter a interface o mais densa possível para evitar rolagem durante o preenchimento de dados do paciente.",
+      "Do ocultar todas as barras de navegação, botões e elementos interativos em tela ao gerar a versão de impressão física dos documentos.",
+      "Do usar acentos de cores de forma puramente funcional para ajudar o médico a saber instantaneamente em qual guia ele está trabalhando."
+    ],
+    "donts": [
+      "Don't usar listras ou faixas laterais coloridas de destaque (maiores que 1px) em bordas de cartões ou alertas.",
+      "Don't aplicar gradientes coloridos em textos ou elementos decorativos.",
+      "Don't usar cartões aninhados dentro de outros cartões para agrupar dados.",
+      "Don't abrir caixas modais sobrepostas para ações que podem ser feitas em linha (inline) na própria tela."
+    ]
+  }
+}

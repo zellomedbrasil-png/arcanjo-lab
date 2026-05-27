@@ -6,7 +6,8 @@ import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import {
   ClipboardPaste, Sparkles, Loader2, CheckCircle2,
-  AlertTriangle, ChevronDown, ChevronUp, FileText, Wand2, Trash2
+  AlertTriangle, ChevronDown, ChevronUp, FileText, Wand2, Trash2,
+  Pencil, Check
 } from 'lucide-react';
 
 export default function ExamPastePanel() {
@@ -15,6 +16,8 @@ export default function ExamPastePanel() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultado, setResultado] = useState<ResultadoExamesIA | null>(null);
+  const [examesEditados, setExamesEditados] = useState<ExameOrganizado[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [examesSelecionados, setExamesSelecionadosLocal] = useState<Set<number>>(new Set());
   const [expandido, setExpandido] = useState(false);
 
@@ -29,10 +32,13 @@ export default function ExamPastePanel() {
     setIsLoading(true);
     setError(null);
     setResultado(null);
+    setExamesEditados([]);
+    setEditingIndex(null);
 
     try {
       const result = await organizarExamesIA(textoExames, queixa, genero);
       setResultado(result);
+      setExamesEditados(result.exames);
       // Seleciona todos por padrão
       setExamesSelecionadosLocal(new Set(result.exames.map((_, i) => i)));
     } catch (err: unknown) {
@@ -54,12 +60,15 @@ export default function ExamPastePanel() {
   };
 
   const aplicarNaGuia = () => {
-    if (!resultado) return;
-    const nomes = resultado.exames
+    if (examesEditados.length === 0) return;
+    const nomes = examesEditados
       .filter((_, i) => examesSelecionados.has(i))
-      .map((e) => e.nomePadronizado);
+      .map((e) => {
+        // Limpar o "(verificar)" do nome padronizado para a guia impressa ficar limpa
+        return e.nomePadronizado.replace(/\s*\(verificar\)/gi, '').trim();
+      });
     setExamesSelecionados(nomes);
-    if (resultado.justificativaGlobal) {
+    if (resultado?.justificativaGlobal) {
       setJustificativa(resultado.justificativaGlobal);
     }
     toast.success(`${nomes.length} exame${nomes.length !== 1 ? 's' : ''} aplicado${nomes.length !== 1 ? 's' : ''} na guia`);
@@ -67,6 +76,8 @@ export default function ExamPastePanel() {
     setTextoExames('');
     setQueixa('');
     setResultado(null);
+    setExamesEditados([]);
+    setEditingIndex(null);
     setExpandido(false);
   };
 
@@ -74,6 +85,8 @@ export default function ExamPastePanel() {
     setTextoExames('');
     setQueixa('');
     setResultado(null);
+    setExamesEditados([]);
+    setEditingIndex(null);
     setError(null);
     setExamesSelecionadosLocal(new Set());
   };
@@ -192,69 +205,128 @@ export default function ExamPastePanel() {
               <div className="border border-gray-200 rounded-xl overflow-hidden">
                 <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-b border-gray-200">
                   <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
-                    Exames Organizados ({examesSelecionados.size} de {resultado.exames.length} selecionados)
+                    Exames Organizados ({examesSelecionados.size} de {examesEditados.length} selecionados)
                   </span>
                   <button
                     onClick={() => {
-                      if (examesSelecionados.size === resultado.exames.length) {
+                      if (examesSelecionados.size === examesEditados.length) {
                         setExamesSelecionadosLocal(new Set());
                       } else {
-                        setExamesSelecionadosLocal(new Set(resultado.exames.map((_, i) => i)));
+                        setExamesSelecionadosLocal(new Set(examesEditados.map((_, i) => i)));
                       }
                     }}
                     className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold transition-colors"
                   >
-                    {examesSelecionados.size === resultado.exames.length ? 'Desmarcar todos' : 'Selecionar todos'}
+                    {examesSelecionados.size === examesEditados.length ? 'Desmarcar todos' : 'Selecionar todos'}
                   </button>
                 </div>
                 <div className="divide-y divide-gray-100">
-                  {resultado.exames.map((exame: ExameOrganizado, index: number) => {
+                  {examesEditados.map((exame: ExameOrganizado, index: number) => {
                     const isChecked = examesSelecionados.has(index);
                     const isVerificar = exame.nomePadronizado.includes('(verificar)');
+                    const isEditing = editingIndex === index;
                     return (
-                      <label
+                      <div
                         key={index}
-                        className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-all ${
+                        className={`flex items-start gap-3 px-4 py-3 transition-all ${
                           isChecked
                             ? 'bg-violet-50/60'
                             : 'hover:bg-gray-50'
                         }`}
                       >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleExame(index)}
-                          className="mt-0.5 w-4 h-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500 shrink-0"
-                        />
+                        <div className="flex items-center mt-0.5 shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleExame(index)}
+                            className="w-4 h-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500 cursor-pointer"
+                          />
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-sm font-semibold ${isVerificar ? 'text-amber-700' : 'text-gray-800'}`}>
-                              {exame.nomePadronizado}
-                            </span>
-                            {exame.codigoTUSS && (
-                              <span className="text-[10px] text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
-                                {exame.codigoTUSS}
-                              </span>
-                            )}
-                            {isVerificar && (
-                              <AlertTriangle size={12} className="text-amber-500" />
-                            )}
-                          </div>
-                          {exame.nomeOriginal !== exame.nomePadronizado && (
-                            <p className="text-xs text-gray-400 mt-0.5">
-                              Original: "{exame.nomeOriginal}"
-                            </p>
-                          )}
-                          {exame.justificativaIndividual && (
-                            <p className="text-xs text-gray-500 mt-0.5 italic">
-                              {exame.justificativaIndividual}
-                            </p>
+                          {isEditing ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={exame.nomePadronizado}
+                                onChange={(e) => {
+                                  const updated = [...examesEditados];
+                                  updated[index] = { ...updated[index], nomePadronizado: e.target.value };
+                                  setExamesEditados(updated);
+                                }}
+                                className="flex-1 border border-violet-300 rounded-lg px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 bg-white font-medium text-gray-800"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') setEditingIndex(null);
+                                  if (e.key === 'Escape') setEditingIndex(null);
+                                }}
+                              />
+                              <button
+                                onClick={() => setEditingIndex(null)}
+                                className="p-1 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors cursor-pointer"
+                                title="Concluir"
+                              >
+                                <Check size={14} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div>
+                              <div className="flex items-center gap-2 group/title">
+                                <span
+                                  className={`text-sm font-semibold cursor-pointer hover:text-violet-700 transition-colors ${
+                                    isVerificar ? 'text-amber-700' : 'text-gray-800'
+                                  }`}
+                                  onClick={() => toggleExame(index)}
+                                >
+                                  {exame.nomePadronizado}
+                                </span>
+                                {exame.codigoTUSS && (
+                                  <span className="text-[10px] text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
+                                    {exame.codigoTUSS}
+                                  </span>
+                                )}
+                                {isVerificar && (
+                                  <AlertTriangle size={12} className="text-amber-500 shrink-0" />
+                                )}
+                                <button
+                                  onClick={() => setEditingIndex(index)}
+                                  className="opacity-0 group-hover/title:opacity-100 p-1 text-gray-400 hover:text-violet-600 rounded transition-all ml-1 cursor-pointer"
+                                  title="Editar nome do exame"
+                                >
+                                  <Pencil size={12} />
+                                </button>
+                              </div>
+                              {exame.nomeOriginal !== exame.nomePadronizado && (
+                                <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-2">
+                                  <span>Original: "{exame.nomeOriginal}"</span>
+                                  {isVerificar && (
+                                    <button
+                                      onClick={() => {
+                                        const updated = [...examesEditados];
+                                        updated[index] = { 
+                                          ...updated[index], 
+                                          nomePadronizado: exame.nomeOriginal.toUpperCase().trim() 
+                                        };
+                                        setExamesEditados(updated);
+                                      }}
+                                      className="text-[10px] text-violet-600 hover:underline font-semibold cursor-pointer"
+                                    >
+                                      Usar original
+                                    </button>
+                                  )}
+                                </p>
+                              )}
+                              {exame.justificativaIndividual && (
+                                <p className="text-xs text-gray-500 mt-0.5 italic">
+                                  {exame.justificativaIndividual}
+                                </p>
+                              )}
+                            </div>
                           )}
                         </div>
-                        {isChecked && (
+                        {!isEditing && isChecked && (
                           <CheckCircle2 size={16} className="text-violet-500 shrink-0 mt-0.5" />
                         )}
-                      </label>
+                      </div>
                     );
                   })}
                 </div>

@@ -351,25 +351,20 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
             </div>
 
             {examesSelecionados.length > 0 && (
-              <div className="mb-5 flex flex-wrap gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3">
-                {examesSelecionados.slice(0, 12).map((exame) => (
-                  <span key={exame} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 shadow-sm">
+              <div className="mb-5 flex flex-wrap gap-2 rounded-xl border border-blue-100 bg-blue-50 p-3 max-h-[250px] overflow-y-auto">
+                {examesSelecionados.map((exame) => (
+                  <span key={exame} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-blue-700 shadow-sm hover:shadow transition-all">
                     {exame}
                     <button
                       type="button"
                       onClick={() => toggleExame(exame)}
-                      className="text-blue-300 hover:text-red-500"
+                      className="text-blue-300 hover:text-red-500 transition-colors cursor-pointer"
                       title={`Remover ${exame}`}
                     >
                       <X size={12} />
                     </button>
                   </span>
                 ))}
-                {examesSelecionados.length > 12 && (
-                  <span className="rounded-full bg-blue-100 px-3 py-1.5 text-xs font-bold text-blue-700">
-                    +{examesSelecionados.length - 12}
-                  </span>
-                )}
               </div>
             )}
 

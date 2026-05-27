@@ -16,92 +16,92 @@ export default function Layout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 max-lg:flex-col">
+    <div className="flex min-h-screen bg-neutral-bg max-lg:flex-col">
       {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col no-print max-lg:w-full max-lg:border-r-0 max-lg:border-b">
-        <div className="h-16 flex items-center px-6 border-b border-gray-200 max-lg:h-14">
-          <Activity className="h-6 w-6 text-blue-600 mr-2" />
-          <span className="text-xl font-bold text-gray-900">Arcanjo.Lab</span>
+      <div className="w-64 bg-neutral-surface border-r border-neutral-border flex flex-col no-print max-lg:w-full max-lg:border-r-0 max-lg:border-b">
+        <div className="h-16 flex items-center px-6 border-b border-neutral-border max-lg:h-14">
+          <Activity className="h-5 w-5 text-primary mr-2.5" />
+          <span className="text-lg font-bold font-display text-neutral-text tracking-tight">Arcanjo.Lab</span>
         </div>
         
-        <nav className="flex-1 px-4 py-6 space-y-1 max-lg:flex max-lg:gap-2 max-lg:space-y-0 max-lg:overflow-x-auto max-lg:py-3 animate-in fade-in duration-300">
+        <nav className="flex-1 px-3 py-5 space-y-1 max-lg:flex max-lg:gap-2 max-lg:space-y-0 max-lg:overflow-x-auto max-lg:py-3 animate-in fade-in duration-300">
           <NavLink
             to="/prontuario"
             className={({ isActive }) =>
-              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+              `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
-                  ? 'bg-slate-100 text-slate-700'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-accent-slate/10 text-accent-slate'
+                  : 'text-neutral-text-muted hover:bg-neutral-bg hover:text-neutral-text'
               }`
             }
           >
-            <FileText className="mr-3 h-5 w-5 flex-shrink-0 text-slate-500" />
+            <FileText className="mr-3 h-4 w-4 flex-shrink-0" />
             Prontuário
           </NavLink>
 
           <NavLink
             to="/exames"
             className={({ isActive }) =>
-              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+              `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-accent-sky/10 text-accent-sky'
+                  : 'text-neutral-text-muted hover:bg-neutral-bg hover:text-neutral-text'
               }`
             }
           >
-            <Beaker className="mr-3 h-5 w-5 flex-shrink-0 text-blue-500" />
+            <Beaker className="mr-3 h-4 w-4 flex-shrink-0" />
             Exames Laboratoriais
           </NavLink>
 
           <NavLink
             to="/procedimentos"
             className={({ isActive }) =>
-              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+              `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-accent-emerald/10 text-accent-emerald'
+                  : 'text-neutral-text-muted hover:bg-neutral-bg hover:text-neutral-text'
               }`
             }
           >
-            <Stethoscope className="mr-3 h-5 w-5 flex-shrink-0 text-emerald-500" />
+            <Stethoscope className="mr-3 h-4 w-4 flex-shrink-0" />
             Procedimentos Eletivos
           </NavLink>
 
           <NavLink
             to="/receita"
             className={({ isActive }) =>
-              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+              `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
-                  ? 'bg-amber-50 text-amber-700'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-accent-amber/10 text-accent-amber'
+                  : 'text-neutral-text-muted hover:bg-neutral-bg hover:text-neutral-text'
               }`
             }
           >
-            <ClipboardList className="mr-3 h-5 w-5 flex-shrink-0 text-amber-500" />
+            <ClipboardList className="mr-3 h-4 w-4 flex-shrink-0" />
             Receituário
           </NavLink>
 
           <NavLink
             to="/documentos"
             className={({ isActive }) =>
-              `flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+              `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-accent-indigo/10 text-accent-indigo'
+                  : 'text-neutral-text-muted hover:bg-neutral-bg hover:text-neutral-text'
               }`
             }
           >
-            <FolderOpen className="mr-3 h-5 w-5 flex-shrink-0 text-emerald-600" />
+            <FolderOpen className="mr-3 h-4 w-4 flex-shrink-0" />
             Documentos
           </NavLink>
         </nav>
 
-        <div className="p-4 border-t border-gray-200 max-lg:hidden">
+        <div className="p-4 border-t border-neutral-border max-lg:hidden">
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-3 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50"
+            className="flex items-center w-full px-3 py-2 text-sm font-semibold text-red-650 rounded-md hover:bg-red-50/50 transition-colors"
           >
-            <LogOut className="mr-3 h-5 w-5 flex-shrink-0" />
+            <LogOut className="mr-3 h-4 w-4 flex-shrink-0" />
             Sair
           </button>
         </div>
