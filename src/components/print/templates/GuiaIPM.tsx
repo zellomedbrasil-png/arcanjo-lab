@@ -156,7 +156,7 @@ export default function GuiaIPM() {
         {/* Row 8: Procedimentos (Nº DO SERVIÇO ASSISTENCIAL) */}
         <div className="border-b border-black p-2 min-h-[160px] flex flex-col justify-between" style={{ boxSizing: 'border-box' }}>
           <div style={{ marginBottom: '3mm' }}>
-            <span className="font-bold text-[10px]" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
+            <span className="font-bold text-[10px]">
               Nº DO SERVIÇO ASSISTENCIAL <span className="font-normal text-gray-700 text-[9px]">(conforme quadro)</span>: <span className="font-bold">_______</span>.
             </span>
           </div>
@@ -194,7 +194,7 @@ export default function GuiaIPM() {
                   return lines.map(name => ({ name, code: '' }));
                 }
 
-                const MAX_CHARS_PER_LINE = 110;
+                const MAX_CHARS_PER_LINE = 90;
                 const lines: string[] = [];
                 let currentLine: string[] = [];
                 let currentLen = 0;
@@ -230,7 +230,6 @@ export default function GuiaIPM() {
                   className="flex items-end text-[9.5px] leading-tight"
                   style={{
                     minHeight: '5.8mm',
-                    fontFamily: '"Times New Roman", Times, serif',
                   }}
                 >
                   <div
@@ -239,17 +238,17 @@ export default function GuiaIPM() {
                       borderBottom: '1px solid black',
                       paddingLeft: '1mm',
                       paddingBottom: '1px',
-                      fontSize: '8.5px',
-                      fontFamily: '"Times New Roman", Times, serif',
+                      fontSize: '9.5px',
                       fontWeight: 'normal',
                       color: '#000',
                       minWidth: '50mm',
                       wordBreak: 'break-word',
+                      textTransform: 'uppercase',
                     }}
                   >
                     {linha.name || <>&nbsp;</>}
                   </div>
-                  <span style={{ fontSize: '8.5px', margin: '0 2mm', flexShrink: 0, color: '#000', fontFamily: '"Times New Roman", Times, serif', fontWeight: 'normal' }}>
+                  <span style={{ fontSize: '9.5px', margin: '0 2mm', flexShrink: 0, color: '#000', fontWeight: 'normal' }}>
                     CÓDIGO
                   </span>
                   <div
@@ -258,8 +257,7 @@ export default function GuiaIPM() {
                       borderBottom: '1px solid black',
                       textAlign: 'center',
                       paddingBottom: '1px',
-                      fontSize: '8.5px',
-                      fontFamily: '"Times New Roman", Times, serif',
+                      fontSize: '9.5px',
                       fontWeight: 'normal',
                       color: '#000',
                       flexShrink: 0,
