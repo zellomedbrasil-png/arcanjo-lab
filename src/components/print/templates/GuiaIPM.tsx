@@ -163,29 +163,42 @@ export default function GuiaIPM() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2mm', flexGrow: 1 }}>
             {(() => {
-              const getGuiaIPMLinhas = () => {
-                const finalItems = (() => {
-                  if (!isLab) {
-                    return itemsList.map(item => formatExamNameForPrint(getProcedimentoNome(item)));
+              const finalItems = (() => {
+                if (!isLab) {
+                  return itemsList.map(item => formatExamNameForPrint(getProcedimentoNome(item)));
+                }
+                
+                const hasUrinocultura = itemsList.some(e => e.toUpperCase().trim() === 'URINOCULTURA');
+                const hasAntibiograma = itemsList.some(e => e.toUpperCase().trim() === 'ANTIBIOGRAMA');
+                
+                let filtered = itemsList;
+                if (hasUrinocultura && hasAntibiograma) {
+                  filtered = itemsList.filter(e => e.toUpperCase().trim() !== 'ANTIBIOGRAMA');
+                }
+                
+                return filtered.map(item => {
+                  const upper = item.toUpperCase().trim();
+                  if (hasUrinocultura && hasAntibiograma && upper === 'URINOCULTURA') {
+                    return formatExamNameForPrint('URINOCULTURA + ANTIBIOGRAMA');
                   }
-                  
-                  const hasUrinocultura = itemsList.some(e => e.toUpperCase().trim() === 'URINOCULTURA');
-                  const hasAntibiograma = itemsList.some(e => e.toUpperCase().trim() === 'ANTIBIOGRAMA');
-                  
-                  let filtered = itemsList;
-                  if (hasUrinocultura && hasAntibiograma) {
-                    filtered = itemsList.filter(e => e.toUpperCase().trim() !== 'ANTIBIOGRAMA');
-                  }
-                  
-                  return filtered.map(item => {
-                    const upper = item.toUpperCase().trim();
-                    if (hasUrinocultura && hasAntibiograma && upper === 'URINOCULTURA') {
-                      return formatExamNameForPrint('URINOCULTURA + ANTIBIOGRAMA');
-                    }
-                    return formatExamNameForPrint(item);
-                  });
-                })();
+                  return formatExamNameForPrint(item);
+                });
+              })();
 
+              // Dynamic font size and line capacity based on item count to maximize readability
+              let fontSize = '9.5px';
+              let maxChars = 90;
+              if (isLab) {
+                if (finalItems.length > 25) {
+                  fontSize = '7px';
+                  maxChars = 150;
+                } else if (finalItems.length > 15) {
+                  fontSize = '8.5px';
+                  maxChars = 110;
+                }
+              }
+
+              const getGuiaIPMLinhas = () => {
                 if (!isLab) {
                   const lines = finalItems.slice(0, 3);
                   while (lines.length < 5) {
@@ -194,7 +207,6 @@ export default function GuiaIPM() {
                   return lines.map(name => ({ name, code: '' }));
                 }
 
-                const MAX_CHARS_PER_LINE = 150;
                 const lines: string[] = [];
                 let currentLine: string[] = [];
                 let currentLen = 0;
@@ -203,7 +215,7 @@ export default function GuiaIPM() {
                   if (currentLine.length === 0) {
                     currentLine.push(item);
                     currentLen = item.length;
-                  } else if (currentLen + 2 + item.length <= MAX_CHARS_PER_LINE) {
+                  } else if (currentLen + 2 + item.length <= maxChars) {
                     currentLine.push(item);
                     currentLen += 2 + item.length;
                   } else {
@@ -238,7 +250,7 @@ export default function GuiaIPM() {
                       borderBottom: '1px solid black',
                       paddingLeft: '1mm',
                       paddingBottom: '1px',
-                      fontSize: '7px',
+                      fontSize: fontSize,
                       fontWeight: 'normal',
                       color: '#000',
                       minWidth: '50mm',
@@ -248,7 +260,7 @@ export default function GuiaIPM() {
                   >
                     {linha.name || <>&nbsp;</>}
                   </div>
-                  <span style={{ fontSize: '7px', margin: '0 2mm', flexShrink: 0, color: '#000', fontWeight: 'normal' }}>
+                  <span style={{ fontSize: fontSize, margin: '0 2mm', flexShrink: 0, color: '#000', fontWeight: 'normal' }}>
                     CÓDIGO
                   </span>
                   <div
@@ -257,7 +269,7 @@ export default function GuiaIPM() {
                       borderBottom: '1px solid black',
                       textAlign: 'center',
                       paddingBottom: '1px',
-                      fontSize: '7px',
+                      fontSize: fontSize,
                       fontWeight: 'normal',
                       color: '#000',
                       flexShrink: 0,
