@@ -42,8 +42,9 @@ async function callGroqFallback({ prompt, systemInstruction, jsonMode, temperatu
       throw new Error('Groq retornou uma resposta vazia.');
     }
     return text.trim();
-  } catch (err: any) {
-    throw new Error(`Falha no fallback para Groq: ${err.message || err}`);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Falha no fallback para Groq: ${message}`, { cause: err });
   }
 }
 
@@ -52,7 +53,11 @@ export async function callGemini({ prompt, systemInstruction, jsonMode, temperat
   const model = getGeminiModel();
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-  const payload: any = {
+  const payload: {
+    contents: Array<{ parts: Array<{ text: string }> }>;
+    generationConfig: { temperature: number; responseMimeType?: string };
+    systemInstruction?: { parts: Array<{ text: string }> };
+  } = {
     contents: [
       {
         parts: [
@@ -112,7 +117,7 @@ export async function callGemini({ prompt, systemInstruction, jsonMode, temperat
 
       lastUsedModel = 'Gemini 3.5 Flash';
       return text.trim();
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (attempts < maxAttempts) {
         await sleep(1000);
         continue;

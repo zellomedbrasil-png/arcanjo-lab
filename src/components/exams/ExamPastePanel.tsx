@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
+import { formatExamNameForDisplay } from '../../lib/formatters';
 import { organizarExamesIA, type ExameOrganizado, type ResultadoExamesIA } from '../../services/groqExames';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
@@ -90,38 +91,37 @@ export default function ExamPastePanel() {
     setError(null);
     setExamesSelecionadosLocal(new Set());
   };
-
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+  return (
+    <div className="bg-white rounded-lg border border-neutral-border overflow-hidden">
       {/* Header */}
       <button
         onClick={() => setExpandido(!expandido)}
-        className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-violet-50 to-indigo-50 hover:from-violet-100 hover:to-indigo-100 transition-all border-b border-violet-100"
+        className="w-full flex items-center justify-between px-6 py-4.5 bg-blue-50/40 hover:bg-blue-50/70 transition-all border-b border-blue-100/50"
       >
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-xl shadow-sm">
-            <ClipboardPaste size={18} className="text-white" />
+        <div className="flex items-center gap-3.5">
+          <div className="p-2.5 bg-blue-600 rounded-lg">
+            <ClipboardPaste size={16} className="text-white" />
           </div>
           <div className="text-left">
-            <h2 className="text-sm font-bold text-gray-800">Colar Lista de Exames</h2>
-            <p className="text-xs text-gray-500">Cole exames em texto livre → IA organiza + gera justificativa</p>
+            <h2 className="text-xs font-bold text-neutral-text">Colar Lista de Exames</h2>
+            <p className="text-[11px] text-neutral-text-muted">Cole exames em texto livre → IA organiza + gera justificativa</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {resultado && (
-            <span className="text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-full font-semibold">
+            <span className="text-[10px] bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full font-semibold">
               {resultado.exames.length} exames processados
             </span>
           )}
-          {expandido ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+          {expandido ? <ChevronUp size={16} className="text-neutral-text-muted" /> : <ChevronDown size={16} className="text-neutral-text-muted" />}
         </div>
       </button>
 
       {expandido && (
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5.5">
           {/* Textarea de exames */}
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-neutral-text-muted uppercase tracking-wider mb-2">
               Exames (cole ou digite livremente)
             </label>
             <textarea
@@ -129,44 +129,29 @@ export default function ExamPastePanel() {
               onChange={(e) => setTextoExames(e.target.value)}
               rows={5}
               placeholder={`Cole aqui a lista de exames (um por linha ou separados por vírgula)...\n\nExemplos:\nhemograma\nglicemia jejum\nTSH, T4L\nureia, creatinina\nTGO, TGP, GGT\ncolesterol total e frações\nPSA (se masculino)`}
-              className="w-full border border-gray-200 rounded-xl text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 resize-none placeholder:text-gray-400 font-mono"
-            />
-          </div>
-
-          {/* Queixa */}
-          <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
-              Queixa / Contexto Clínico
-              <span className="ml-2 text-gray-400 font-normal normal-case">(opcional, melhora a justificativa)</span>
-            </label>
-            <input
-              type="text"
-              value={queixa}
-              onChange={(e) => setQueixa(e.target.value)}
-              placeholder="Ex: Check-up geriátrico anual, HAS e DM2 em acompanhamento"
-              className="w-full border border-gray-200 rounded-xl text-sm py-2.5 px-4 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-400 placeholder:text-gray-400"
+              className="w-full border border-neutral-border rounded-lg text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 resize-none placeholder:text-neutral-text-muted font-mono leading-relaxed"
             />
           </div>
 
           {/* Botões */}
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             <button
               onClick={handleOrganizar}
               disabled={isLoading || !textoExames.trim()}
-              className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm ${
+              className={`flex-1 flex items-center justify-center gap-2 px-4.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 isLoading || !textoExames.trim()
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 hover:shadow-md'
+                  ? 'bg-gray-100 text-neutral-text-muted cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
               }`}
             >
               {isLoading ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={13} className="animate-spin" />
                   {elapsed ? `Organizando com IA... (${elapsed}s)` : 'Organizando com IA...'}
                 </>
               ) : (
                 <>
-                  <Sparkles size={16} />
+                  <Sparkles size={13} />
                   Organizar com IA
                 </>
               )}
@@ -174,9 +159,9 @@ export default function ExamPastePanel() {
             {(textoExames || resultado) && (
               <button
                 onClick={limparTudo}
-                className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 transition-all"
+                className="flex items-center gap-1.5 px-4 py-3 rounded-lg text-xs font-semibold text-neutral-text-muted hover:text-red-600 hover:bg-red-50 border border-neutral-border bg-white transition-all cursor-pointer"
               >
-                <Trash2 size={14} />
+                <Trash2 size={13} />
                 Limpar
               </button>
             )}
@@ -184,8 +169,8 @@ export default function ExamPastePanel() {
 
           {/* Erro */}
           {error && (
-            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-              <AlertTriangle size={16} className="shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3.5 py-2.5">
+              <AlertTriangle size={14} className="shrink-0" />
               {error}
             </div>
           )}
@@ -195,16 +180,16 @@ export default function ExamPastePanel() {
             <div className="space-y-4 animate-in fade-in duration-300">
               {/* CID-10 */}
               {resultado.cid10Sugerido && (
-                <div className="flex items-center gap-2 text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 text-xs text-blue-700 bg-blue-50/50 border border-blue-150 rounded-lg px-3 py-2">
                   <FileText size={13} className="shrink-0" />
                   <span>CID-10 sugerido: <strong>{resultado.cid10Sugerido}</strong></span>
                 </div>
               )}
 
               {/* Lista de exames organizados */}
-              <div className="border border-gray-200 rounded-xl overflow-hidden">
-                <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-b border-gray-200">
-                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">
+              <div className="border border-neutral-border rounded-lg overflow-hidden">
+                <div className="bg-slate-50 px-4.5 py-3 flex items-center justify-between border-b border-neutral-border">
+                  <span className="text-[10px] font-bold text-neutral-text-muted uppercase tracking-wider">
                     Exames Organizados ({examesSelecionados.size} de {examesEditados.length} selecionados)
                   </span>
                   <button
@@ -215,12 +200,12 @@ export default function ExamPastePanel() {
                         setExamesSelecionadosLocal(new Set(examesEditados.map((_, i) => i)));
                       }
                     }}
-                    className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold transition-colors"
+                    className="text-xs text-blue-600 hover:text-blue-800 font-semibold transition-colors"
                   >
                     {examesSelecionados.size === examesEditados.length ? 'Desmarcar todos' : 'Selecionar todos'}
                   </button>
                 </div>
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-slate-100">
                   {examesEditados.map((exame: ExameOrganizado, index: number) => {
                     const isChecked = examesSelecionados.has(index);
                     const isVerificar = exame.nomePadronizado.includes('(verificar)');
@@ -228,10 +213,10 @@ export default function ExamPastePanel() {
                     return (
                       <div
                         key={index}
-                        className={`flex items-start gap-3 px-4 py-3 transition-all ${
+                        className={`flex items-start gap-3.5 px-4.5 py-3.5 transition-all ${
                           isChecked
-                            ? 'bg-violet-50/60'
-                            : 'hover:bg-gray-50'
+                            ? 'bg-blue-50/30'
+                            : 'hover:bg-slate-50/50'
                         }`}
                       >
                         <div className="flex items-center mt-0.5 shrink-0">
@@ -239,7 +224,7 @@ export default function ExamPastePanel() {
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => toggleExame(index)}
-                            className="w-4 h-4 text-violet-600 border-gray-300 rounded focus:ring-violet-500 cursor-pointer"
+                            className="w-3.5 h-3.5 text-blue-600 border-neutral-border rounded focus:ring-blue-500 cursor-pointer"
                           />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -253,7 +238,7 @@ export default function ExamPastePanel() {
                                   updated[index] = { ...updated[index], nomePadronizado: e.target.value };
                                   setExamesEditados(updated);
                                 }}
-                                className="flex-1 border border-violet-300 rounded-lg px-2.5 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 bg-white font-medium text-gray-800"
+                                className="flex-1 border border-blue-300 rounded-lg px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white font-medium text-neutral-text"
                                 autoFocus
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter') setEditingIndex(null);
@@ -272,15 +257,15 @@ export default function ExamPastePanel() {
                             <div>
                               <div className="flex items-center gap-2 group/title">
                                 <span
-                                  className={`text-sm font-semibold cursor-pointer hover:text-violet-700 transition-colors ${
-                                    isVerificar ? 'text-amber-700' : 'text-gray-800'
+                                  className={`text-[11px] font-semibold cursor-pointer hover:text-blue-700 transition-colors ${
+                                    isVerificar ? 'text-amber-700' : 'text-neutral-text'
                                   }`}
                                   onClick={() => toggleExame(index)}
                                 >
-                                  {exame.nomePadronizado}
+                                  {formatExamNameForDisplay(exame.nomePadronizado)}
                                 </span>
                                 {exame.codigoTUSS && (
-                                  <span className="text-[10px] text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded">
+                                  <span className="text-[9px] text-neutral-text-muted font-mono bg-slate-100 px-1.5 py-0.5 rounded">
                                     {exame.codigoTUSS}
                                   </span>
                                 )}
@@ -289,14 +274,14 @@ export default function ExamPastePanel() {
                                 )}
                                 <button
                                   onClick={() => setEditingIndex(index)}
-                                  className="opacity-0 group-hover/title:opacity-100 p-1 text-gray-400 hover:text-violet-600 rounded transition-all ml-1 cursor-pointer"
+                                  className="opacity-0 group-hover/title:opacity-100 p-1 text-neutral-text-muted hover:text-blue-600 rounded transition-all ml-1 cursor-pointer"
                                   title="Editar nome do exame"
                                 >
-                                  <Pencil size={12} />
+                                  <Pencil size={11} />
                                 </button>
                               </div>
                               {exame.nomeOriginal !== exame.nomePadronizado && (
-                                <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-2">
+                                <p className="text-[10px] text-neutral-text-muted mt-0.5 flex items-center gap-2">
                                   <span>Original: "{exame.nomeOriginal}"</span>
                                   {isVerificar && (
                                     <button
@@ -308,7 +293,7 @@ export default function ExamPastePanel() {
                                         };
                                         setExamesEditados(updated);
                                       }}
-                                      className="text-[10px] text-violet-600 hover:underline font-semibold cursor-pointer"
+                                      className="text-[9px] text-blue-600 hover:underline font-semibold cursor-pointer"
                                     >
                                       Usar original
                                     </button>
@@ -316,7 +301,7 @@ export default function ExamPastePanel() {
                                 </p>
                               )}
                               {exame.justificativaIndividual && (
-                                <p className="text-xs text-gray-500 mt-0.5 italic">
+                                <p className="text-[11px] text-neutral-text-muted mt-0.5 italic">
                                   {exame.justificativaIndividual}
                                 </p>
                               )}
@@ -324,7 +309,7 @@ export default function ExamPastePanel() {
                           )}
                         </div>
                         {!isEditing && isChecked && (
-                          <CheckCircle2 size={16} className="text-violet-500 shrink-0 mt-0.5" />
+                          <CheckCircle2 size={14} className="text-blue-600 shrink-0 mt-0.5" />
                         )}
                       </div>
                     );
@@ -334,13 +319,13 @@ export default function ExamPastePanel() {
 
               {/* Justificativa global */}
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Wand2 size={14} className="text-violet-500" />
-                  <label className="text-xs font-bold text-violet-700 uppercase tracking-wider">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Wand2 size={13} className="text-blue-500" />
+                  <label className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
                     Justificativa Clínica Gerada
                   </label>
                 </div>
-                <div className="bg-violet-50/60 border border-violet-200 rounded-xl px-4 py-3 text-sm text-gray-800 font-medium leading-relaxed">
+                <div className="bg-blue-50/20 border border-blue-100 rounded-lg px-3.5 py-2.5 text-xs text-neutral-text font-medium leading-relaxed">
                   {resultado.justificativaGlobal}
                 </div>
               </div>
@@ -349,13 +334,13 @@ export default function ExamPastePanel() {
               <button
                 onClick={aplicarNaGuia}
                 disabled={examesSelecionados.size === 0}
-                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all shadow-sm ${
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg text-xs font-bold transition-all shadow-sm ${
                   examesSelecionados.size === 0
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 hover:shadow-md'
+                    ? 'bg-gray-100 text-neutral-text-muted cursor-not-allowed'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700'
                 }`}
               >
-                <CheckCircle2 size={16} />
+                <CheckCircle2 size={14} />
                 Aplicar {examesSelecionados.size} exame{examesSelecionados.size !== 1 ? 's' : ''} na Guia
               </button>
             </div>

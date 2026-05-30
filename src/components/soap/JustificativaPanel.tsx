@@ -94,19 +94,19 @@ Queixa clínica: "${queixa}"`;
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4">
+    <div className="bg-white rounded-lg border border-neutral-border p-5.5 space-y-5.5">
       {/* Queixa + Gerar Justificativa Button */}
-      <div className="flex gap-3 items-start max-sm:flex-col">
-        <div className="flex-1 w-full">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+      <div className="flex flex-col gap-3.5">
+        <div className="w-full">
+          <label className="block text-[10px] font-bold text-neutral-text-muted uppercase tracking-wider mb-2">
             Queixa / Contexto Clínico (Sincronizado)
           </label>
           <textarea
             value={queixa}
             onChange={(e) => setQueixa(e.target.value)}
-            rows={2}
+            rows={3.5}
             placeholder="Ex: Paciente 78a, astenia há 2 meses, perda de 4kg, HAS e DM2. (Digitado no prontuário)"
-            className={`w-full border border-gray-200 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 ${theme.focusRing} resize-none placeholder:text-gray-400`}
+            className={`w-full border border-neutral-border rounded-lg text-sm py-3 px-4 focus:outline-none focus:ring-2 ${theme.focusRing} resize-none placeholder:text-neutral-text-muted leading-relaxed`}
           />
           {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
         </div>
@@ -115,7 +115,7 @@ Queixa clínica: "${queixa}"`;
           onClick={gerarJustificativa}
           disabled={isLoadingJust || !queixa.trim()}
           title={`Gerar justificativa clínica para os ${theme.title}`}
-          className={`flex items-center justify-center gap-1.5 px-4 py-2.5 text-white text-xs font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap mt-5 shrink-0 max-sm:w-full ${theme.primaryBg}`}
+          className={`flex items-center justify-center gap-1.5 px-4.5 py-2.5 text-white text-xs font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap self-end max-sm:w-full cursor-pointer ${theme.primaryBg}`}
         >
           {isLoadingJust ? <Loader2 size={13} className="animate-spin" /> : <Wand2 size={13} />}
           {isLoadingJust ? (elapsedJust ? `${elapsedJust}s…` : '…') : 'Gerar Justificativa'}
@@ -124,7 +124,7 @@ Queixa clínica: "${queixa}"`;
 
       {/* Indicação Clínica Textarea */}
       <div>
-        <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             <FileText size={12} className={theme.textColor} />
             <label className={`text-[10px] font-bold uppercase tracking-wider ${theme.textColor}`}>
@@ -145,12 +145,12 @@ Queixa clínica: "${queixa}"`;
         <textarea
           value={justificativaValue}
           onChange={(e) => setJustificativaValue(e.target.value)}
-          rows={3}
+          rows={3.5}
           placeholder={`Justificativa dos ${theme.title.toLowerCase()}...`}
-          className={`w-full border-2 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 ${theme.borderColor} ${theme.lightBg} ${theme.focusRing} resize-none placeholder:text-gray-400 font-medium`}
+          className={`w-full border-2 rounded-lg text-sm py-3 px-4 focus:outline-none focus:ring-2 ${theme.borderColor} ${theme.lightBg} ${theme.focusRing} resize-none placeholder:text-gray-405 font-medium leading-relaxed`}
         />
         {iaModel && justificativaValue && (
-          <div className="flex justify-between items-center mt-1 text-[9px] text-gray-400">
+          <div className="flex justify-between items-center mt-1.5 text-[9px] text-gray-400">
             <span>Esta justificativa é exclusiva para esta aba.</span>
             <span className="font-mono">Gerado por: {iaModel}</span>
           </div>

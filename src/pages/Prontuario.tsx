@@ -10,10 +10,10 @@ export default function Prontuario() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto px-4 py-4 pb-12 space-y-3">
+      <div className="max-w-[1600px] mx-auto px-6 py-6 pb-16 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <h1 className="text-lg font-bold text-gray-900">Prontuário (SOAP)</h1>
             <span className="text-xs text-gray-400">{formatDraftTime(lastSavedAt)}</span>
           </div>
@@ -24,7 +24,7 @@ export default function Prontuario() {
                   resetForm();
                 }
               }}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 bg-white"
+              className="flex items-center gap-1 px-3.5 py-2 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 bg-white cursor-pointer font-medium"
             >
               <RotateCcw size={12} />
               Limpar Tudo

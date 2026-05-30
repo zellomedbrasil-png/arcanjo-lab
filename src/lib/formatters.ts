@@ -34,3 +34,31 @@ export function formatDraftTime(value: string | null): string {
     minute: '2-digit',
   }).format(new Date(value))}`;
 }
+
+export function formatExamNameForDisplay(nome: string): string {
+  if (!nome) return '';
+  const prepositions = ['de', 'do', 'da', 'dos', 'das', 'e', 'com', 'sem', 'para', 'o', 'a'];
+  return nome
+    .toLowerCase()
+    .split(' ')
+    .map((word, index) => {
+      // Always capitalize first word
+      if (index === 0) {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }
+      // Keep roman numerals in uppercase
+      if (/^(i|ii|iii|iv|v|vi|vii|viii|ix|x)$/i.test(word)) {
+        return word.toUpperCase();
+      }
+      // Keep short medical acronyms in uppercase (except prepositions)
+      if (word.length <= 4 && !prepositions.includes(word)) {
+        return word.toUpperCase();
+      }
+      if (prepositions.includes(word)) {
+        return word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' ');
+}
+

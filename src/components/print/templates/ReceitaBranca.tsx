@@ -39,21 +39,21 @@ export default function ReceitaBranca() {
         <div className="flex gap-6">
           <div className="flex-[3]">
             <span className="text-[8px] font-bold uppercase text-gray-600 tracking-wide">Paciente</span>
-            <p className="text-[12px] font-semibold text-gray-900 mt-0.5 border-b border-dotted border-gray-500 pb-0.5">
+            <p className="text-[12px] font-normal text-gray-900 mt-0.5 border-b border-dotted border-gray-500 pb-0.5">
               {pacienteNome || '________________________________________________'}
             </p>
           </div>
           {pacienteCpf && (
             <div className="flex-1">
               <span className="text-[8px] font-bold uppercase text-gray-600 tracking-wide">CPF</span>
-              <p className="text-[10px] font-medium text-gray-800 mt-0.5 border-b border-dotted border-gray-500 pb-0.5">
+              <p className="text-[10px] font-normal text-gray-800 mt-0.5 border-b border-dotted border-gray-500 pb-0.5">
                 {pacienteCpf}
               </p>
             </div>
           )}
           <div className="flex-1 text-right">
             <span className="text-[8px] font-bold uppercase text-gray-600 tracking-wide">Data</span>
-            <p className="text-[10px] font-medium text-gray-800 mt-0.5">{dataFormatada}</p>
+            <p className="text-[10px] font-normal text-gray-800 mt-0.5">{dataFormatada}</p>
           </div>
         </div>
       </div>
@@ -70,7 +70,7 @@ export default function ReceitaBranca() {
               <div className="flex-1">
                 <div className="flex items-baseline gap-3 justify-between mb-0.5">
                   <div>
-                    <p className="font-bold text-[12px] text-gray-900 uppercase">
+                    <p className="font-normal text-[12px] text-gray-900 uppercase">
                       {med.principioAtivo || med.nomeDigitado}
                     </p>
                     {med.formaFarmaceutica && (
@@ -78,7 +78,7 @@ export default function ReceitaBranca() {
                     )}
                   </div>
                   {med.quantidade && (
-                    <p className="text-[9px] text-gray-700 shrink-0 font-semibold">
+                    <p className="text-[9px] text-gray-700 shrink-0 font-normal">
                       Qtd.: {med.quantidade}
                     </p>
                   )}

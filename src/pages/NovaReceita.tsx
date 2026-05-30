@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import { useReceitaStore } from '../store/useReceitaStore';
+import { useReceitaStore, type TipoRecomendado } from '../store/useReceitaStore';
 import { gerarPosologia } from '../services/groqReceita';
 import MedicamentoPastePanel from '../components/receita/MedicamentoPastePanel';
 import MedicamentoAutocomplete from '../components/receita/MedicamentoAutocomplete';
@@ -12,7 +12,7 @@ import {
   ChevronDown, ChevronUp, User, Calendar, MapPin, Pill, Loader2,
   CheckCircle2, Eye, ShieldAlert, Info, History
 } from 'lucide-react';
-import { useRecentPatientsStore } from '../store/useRecentPatientsStore';
+import { useRecentPatientsStore, type PacienteRecente } from '../store/useRecentPatientsStore';
 import { savePatientToHistory } from '../store/patientSync';
 
 // Formatação de CPF, CEP e Telefone para UX fluida
@@ -54,7 +54,7 @@ interface MedicamentoPreset {
   posologia: string;
   quantidade: string;
   duracao: string;
-  tipoRecomendado: string;
+  tipoRecomendado: TipoRecomendado;
   explicacao: string;
 }
 
@@ -500,7 +500,7 @@ export default function NovaReceita() {
     }
   };
 
-  const handleSelectRecent = (p: any) => {
+  const handleSelectRecent = (p: PacienteRecente) => {
     setPacienteReceita({
       pacienteNome: p.nome,
       pacienteCpf: p.cpf || '',
@@ -563,7 +563,7 @@ export default function NovaReceita() {
       posologia: preset.posologia,
       quantidade: preset.quantidade,
       duracao: preset.duracao,
-      tipoRecomendado: preset.tipoRecomendado as any,
+      tipoRecomendado: preset.tipoRecomendado,
     });
 
     if (preset.tipoRecomendado === 'ESPECIAL') {

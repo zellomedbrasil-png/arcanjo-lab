@@ -82,56 +82,53 @@ export function auditarTipoReceita(principioAtivo: string, tipoSugerido: TipoRec
   return tipoSugerido;
 }
 
-const SYSTEM_PROMPT = `Você é um farmacêutico clínico sênior e consultor de receituário médico no Brasil, com expertise em geriatria.
-Dado o nome de um medicamento, retorne APENAS um JSON válido (sem markdown, sem explicações) com:
+const SYSTEM_PROMPT = `Você é um farmacêutico clínico sênior e consultor de receituário médico no Brasil, especializado em geriatria e segurança do paciente.
+Dado o nome do medicamento, retorne APENAS um JSON válido (sem markdown, sem explicações adicionais) com as seguintes chaves:
 {
-  "principioAtivo": "Nome do princípio ativo + dosagem (ex: Omeprazol 20mg)",
-  "formaFarmaceutica": "Forma farmacêutica completa (ex: Cápsulas gastrorresistentes)",
-  "uso": "Via de administração (Uso oral | Uso tópico | Uso nasal | Uso sublingual | etc.)",
-  "posologia": "Instrução completa em português brasileiro claro e formal para o paciente. Para idosos (≥60 anos), prefira doses mais baixas quando aplicável e inclua orientações especiais (ex: tomar com água, evitar jejum prolongado).",
-  "quantidade": "Quantidade total com unidade (ex: 30 cápsulas, 1 frasco de 120ml)",
-  "duracao": "Duração do tratamento (ex: 30 dias, uso contínuo, 7 dias)",
-  "indicacao": "Indicação clínica ou finalidade de uso do medicamento (ex: Tratamento de refluxo gastroesofágico, controle de HAS, prevenção de osteoporose, etc.)",
-  "observacoes": "Observações adicionais pertinentes sobre cuidados, horários ou interações (ex: tomar em jejum pela manhã, pode causar sonolência, não ingerir com leite, etc.)",
-  "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL somente para: psicotrópicos (benzodiazepínicos como Clonazepam, Diazepam, Alprazolam; anfetamínicos; barbitúricos), opioides controlados (morfina, codeína acima de 30mg, tramadol em algumas apresentações), e demais sujeitos à Portaria SVS/MS 344/98 e suas locais B1, B2, A1-A5. Todos os demais são SIMPLES.",
-  "motivoTipo": "Se ESPECIAL: explique brevemente qual lista da Portaria 344/98 enquadra o medicamento (ex: 'Benzodiazepínico — Lista B1 da Portaria SVS/MS 344/98'). Se SIMPLES: deixe vazio."
+  "principioAtivo": "Nome do princípio ativo + dosagem padrão (ex: Losartana Potássica 50mg)",
+  "formaFarmaceutica": "Forma farmacêutica correta e usual (ex: Comprimidos revestidos, Cápsulas gastrorresistentes, Gotas, Aerossol nasal)",
+  "uso": "Via de administração padrão (ex: Uso oral, Uso subcutâneo, Uso nasal, Uso tópico)",
+  "posologia": "Instrução de administração em português brasileiro claro, de fácil entendimento pelo paciente. Para pacientes idosos, certifique-se de usar dosagens iniciais seguras e conservadoras e horários ideais de ingestão.",
+  "quantidade": "Quantidade total a ser dispensada com base na posologia (ex: 30 comprimidos, 1 frasco de 10ml)",
+  "duracao": "Duração sugerida do tratamento (ex: 30 dias, uso contínuo, 7 dias)",
+  "indicacao": "Indicação clínica ou finalidade terapêutica simplificada e clara (ex: Tratamento de hipertensão arterial, controle de refluxo gástrico, etc.)",
+  "observacoes": "Instruções críticas ao paciente (horários ideais, com ou sem alimentos). ATENÇÃO GERIÁTRICA (Critérios de Beers): Se o medicamento for potencialmente inapropriado para idosos (ex: benzodiazepínicos como Clonazepam/Diazepam; AINEs como Ibuprofeno/Nimesulida; tricíclicos como Amitriptilina), inclua OBRIGATORIAMENTE um alerta em MAIÚSCULAS iniciando com 'ATENÇÃO (CRITÉRIOS DE BEERS): ...' detalhando os riscos de quedas, sonolência, sangramento gastrointestinal ou disfunção renal.",
+  "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL estritamente para substâncias controladas pela Portaria ANVISA 344/98 (psicotrópicos, benzodiazepínicos, antidepressivos, opioides, anticonvulsivantes). Todos os demais são SIMPLES.",
+  "motivoTipo": "Se ESPECIAL: descreva a classe e a lista de controle (ex: 'Lista C1 (Antidepressivos) da Portaria 344/98'). Se SIMPLES: deixe vazio."
 }
-REGRA ABSOLUTA DE SEGURANÇA: Não adicione medicamentos adicionais na posologia ou nas orientações. Limite-se estritamente ao princípio ativo informado. Não invente dosagens ou frequências se forem omitidas e não houver um padrão seguro óbvio.
-Use a posologia padrão mais comum e segura para adultos/idosos. Seja preciso e profissional.`;
+REGRA DE SEGURANÇA: Não sugira medicamentos extras na posologia. Adote as recomendações de posologia brasileiras vigentes.`;
 
-// ─── Prompt para processar listas inteiras ──────────────────────
-const BATCH_SYSTEM_PROMPT = `Você é um farmacêutico clínico sênior e consultor de receituário médico no Brasil, com expertise em geriatria e polifarmácia.
+const BATCH_SYSTEM_PROMPT = `Você é um farmacêutico clínico sênior, consultor de receituário e especialista em geriatria e polifarmácia no Brasil.
+Mapeie a lista de medicamentos fornecida e retorne APENAS um JSON válido contendo a análise completa de cada item, interações e riscos.
 
-TAREFA: Receba uma lista de medicamentos e retorne APENAS um JSON válido com o formato:
+FORMATO DO JSON:
 {
   "medicamentos": [
     {
-      "nomeOriginal": "como o médico digitou",
-      "principioAtivo": "Nome do princípio ativo + dosagem (ex: Losartana Potássica 50mg)",
-      "formaFarmaceutica": "Forma farmacêutica (ex: Comprimidos revestidos)",
-      "uso": "Via de administração (Uso oral | Uso tópico | etc.)",
-      "posologia": "Instrução completa e clara para o paciente, com horários quando relevante. Para idosos, prefira doses conservadoras.",
-      "quantidade": "Quantidade total (ex: 30 comprimidos)",
-      "duracao": "Duração (ex: 30 dias, uso contínuo)",
-      "indicacao": "Indicação clínica ou finalidade de uso do medicamento",
-      "observacoes": "Observações adicionais pertinentes de cuidados, horários ou interações",
-      "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL somente para psicotrópicos, benzodiazepínicos, opioides controlados, antidepressivos, antipsicóticos, anticonvulsivantes/estabilizadores de humor e outros sujeitos à Portaria SVS/MS 344/98. Todos os demais medicamentos comuns (como anti-hipertensivos, antidiabéticos, estatinas, protetores gástricos, analgésicos e anti-inflamatórios comuns) são estritamente SIMPLES.",
-      "motivoTipo": "Se ESPECIAL: qual lista da Portaria 344/98 enquadra o medicamento. Se SIMPLES: vazio."
+      "nomeOriginal": "nome exatamente como digitado",
+      "principioAtivo": "Nome do princípio ativo expandido + dosagem (ex: Omeprazol 20mg)",
+      "formaFarmaceutica": "Forma farmacêutica completa no padrão nacional",
+      "uso": "Via de administração",
+      "posologia": "Instrução detalhada ao paciente, incluindo horários preferenciais.",
+      "quantidade": "Quantidade sugerida (ex: 30 comprimidos)",
+      "duracao": "Duração do tratamento (ex: 30 dias, uso contínuo)",
+      "indicacao": "Indicação terapêutica simplificada do medicamento",
+      "observacoes": "Orientação de administração e alertas de Beers para idosos se aplicável (ex: risco de quedas em benzodiazepínicos, hiponatremia em diuréticos, etc.)",
+      "tipoReceita": "SIMPLES ou ESPECIAL perante a Portaria ANVISA 344/98",
+      "motivoTipo": "Especificação da lista regulatória da ANVISA se ESPECIAL, ou vazio se SIMPLES."
     }
   ],
   "alertas": [
-    "Alertas de interação medicamentosa ou duplicidade detectados (se houver). Se não houver, array vazio."
+    "Alertas de interações medicamentosas graves detectadas (ex: AINE + ISRS = risco de sangramento gástrico; duplo bloqueio do sistema renina-angiotensina).",
+    "Alertas de duplicidade terapêutica (ex: uso concomitante de dois ISRS ou dois benzodiazepínicos).",
+    "Alertas de segurança do idoso (Critérios de Beers) identificando medicamentos inapropriados e riscos associados (queda de pressão, confusão, retenção urinária)."
   ]
 }
 
-REGRAS IMPORTANTES:
-- Se o médico escreveu abreviações ou nomes comerciais, expanda para princípio ativo + dosagem.
-- Inclua alertas de interação medicamentosa entre os medicamentos da lista.
-- Alerte sobre duplicidades terapêuticas (mesma classe).
-- Para perfil geriátrico, alerte sobre medicamentos potencialmente inapropriados (Critérios de Beers).
-- REGRA ABSOLUTA DE SEGURANÇA: NÃO adicione medicamentos adicionais que não foram descritos pelo médico na lista de entrada. Se a lista de entrada contiver apenas N medicamentos, a lista final de medicamentos do JSON deve conter exatamente N itens. A invenção de medicamentos adicionais é estritamente proibida.
-- Mantenha a ordem original.
-- Retorne APENAS JSON válido, sem markdown.`;
+REGRAS DE CONFORMIDADE:
+- Retorne alertas detalhados baseados em evidência clínica de geriatria. Se não houver alertas, retorne um array vazio.
+- Não invente medicamentos extras. O tamanho do array 'medicamentos' deve corresponder exatamente ao número de medicamentos da entrada do médico.
+- Retorne apenas JSON legível puro, sem blocos markdown.`;
 
 interface GeminiMedResponse {
   principioAtivo: string;

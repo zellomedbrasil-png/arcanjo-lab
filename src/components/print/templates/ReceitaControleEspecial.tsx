@@ -78,10 +78,10 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
                 <div className="border-b border-black pb-0.5 flex justify-between items-baseline gap-2" style={{ minHeight: '15px' }}>
                   <div className="flex-1 min-w-0">
                     <span className="font-bold text-[10px]">{idx + 1}. </span>
-                    <span className="font-bold uppercase text-[10px]">{med.principioAtivo || med.nomeDigitado}</span>
+                    <span className="font-normal uppercase text-[10px]">{med.principioAtivo || med.nomeDigitado}</span>
                     {med.formaFarmaceutica && <span className="text-[8px]"> — {med.formaFarmaceutica}</span>}
                   </div>
-                  {med.quantidade && <span className="text-[8px] font-semibold shrink-0 ml-2">Qtd.: {med.quantidade}</span>}
+                  {med.quantidade && <span className="text-[8px] font-normal shrink-0 ml-2">Qtd.: {med.quantidade}</span>}
                 </div>
                 {/* Posologia — largura total, logo abaixo */}
                 {(med.posologia || med.indicacao || med.observacoes) && (
@@ -89,8 +89,8 @@ function ViaReceita({ rotulo }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA —
                     {med.uso && <span className="italic">{med.uso}. </span>}
                     {med.posologia && <span>{med.posologia}</span>}
                     {med.duracao && <span> — {med.duracao}</span>}
-                    {med.indicacao && <span className="block font-semibold">Indicação: {med.indicacao}</span>}
-                    {med.observacoes && <span className="block font-semibold">Obs.: {med.observacoes}</span>}
+                    {med.indicacao && <span className="block font-normal"><span className="font-semibold">Indicação:</span> {med.indicacao}</span>}
+                    {med.observacoes && <span className="block font-normal"><span className="font-semibold">Obs.:</span> {med.observacoes}</span>}
                   </div>
                 )}
               </div>

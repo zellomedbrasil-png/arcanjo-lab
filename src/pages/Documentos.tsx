@@ -10,7 +10,7 @@ import {
   Clock, Dumbbell, ShieldCheck, HeartHandshake, FileSpreadsheet, RotateCcw,
   CheckCircle2, Loader2, Eye, History
 } from 'lucide-react';
-import { useRecentPatientsStore } from '../store/useRecentPatientsStore';
+import { useRecentPatientsStore, type PacienteRecente } from '../store/useRecentPatientsStore';
 import { savePatientToHistory } from '../store/patientSync';
 
 const formatCpf = (v: string) => {
@@ -138,7 +138,7 @@ export default function Documentos() {
     }
   };
 
-  const handleSelectRecent = (p: any) => {
+  const handleSelectRecent = (p: PacienteRecente) => {
     doc.setDocumento({
       pacienteNome: p.nome,
       pacienteCpf: p.cpf || '',
@@ -178,7 +178,7 @@ export default function Documentos() {
         });
       }
       setAiPrompt('');
-    } catch (err: any) {
+    } catch {
       setErroAi('Erro ao gerar documento com IA. Tente preencher manualmente.');
     } finally {
       setLoadingAi(false);

@@ -73,19 +73,19 @@ export default function DocumentoTemplate() {
             <div className="grid grid-cols-3 gap-4 border-b border-gray-200 pb-3">
               <div className="col-span-2">
                 <span className="text-[8px] font-bold uppercase text-gray-500 block">Paciente</span>
-                <span className="text-[11px] font-bold uppercase">{doc.pacienteNome || '________________________________________'}</span>
+                <span className="text-[11px] font-normal uppercase">{doc.pacienteNome || '________________________________________'}</span>
               </div>
               {doc.pacienteCpf && (
                 <div>
                   <span className="text-[8px] font-bold uppercase text-gray-500 block">CPF</span>
-                  <span className="text-[10px] font-semibold">{doc.pacienteCpf}</span>
+                  <span className="text-[10px] font-normal">{doc.pacienteCpf}</span>
                 </div>
               )}
             </div>
 
             <div>
               <h2 className="text-[10px] font-bold uppercase text-gray-700 tracking-wider mb-1">Diagnóstico / Hipótese Diagnóstica</h2>
-              <p className="text-[11px] bg-gray-50 p-2.5 rounded border border-gray-200 font-semibold uppercase">
+              <p className="text-[11px] bg-gray-50 p-2.5 rounded border border-gray-200 font-normal uppercase">
                 {doc.laudoDiagnostico || 'Não informado'}
                 {doc.laudoCid && ` (CID-10: ${doc.laudoCid.toUpperCase()})`}
               </p>
@@ -128,13 +128,13 @@ export default function DocumentoTemplate() {
             <div className="text-justify text-[12px] leading-loose space-y-4">
               <p>
                 Atesto para os devidos fins de direito que o(a) Sr(a).{' '}
-                <strong className="uppercase text-[13px]">{doc.pacienteNome || '________________________________________'}</strong>
+                <span className="uppercase text-[13px] font-normal">{doc.pacienteNome || '________________________________________'}</span>
                 {doc.pacienteCpf && ` (CPF nº ${doc.pacienteCpf})`} esteve sob meus cuidados médicos na presente data.
               </p>
 
               <p>
                 Necessita o(a) referido(a) paciente de um período de repouso de{' '}
-                <strong className="text-[13px] bg-gray-100 px-2 py-0.5 rounded">{doc.atestadoDias || '____'} dia(s)</strong>,{' '}
+                <span className="text-[13px] bg-gray-100 px-2 py-0.5 rounded font-normal">{doc.atestadoDias || '____'} dia(s)</span>,{' '}
                 a contar desta data, para fins de recuperação de sua saúde.
               </p>
 
@@ -147,7 +147,7 @@ export default function DocumentoTemplate() {
               {doc.atestadoDeclararCid && doc.atestadoCid ? (
                 <p className="bg-amber-50 border border-amber-200 p-3 rounded text-[10px] text-amber-900">
                   ⚠️ <strong>Declaração de CID-10:</strong> A codificação do diagnóstico{' '}
-                  <strong>{doc.atestadoCid.toUpperCase()}</strong> foi incluída sob consentimento
+                  <span className="font-normal">{doc.atestadoCid.toUpperCase()}</span> foi incluída sob consentimento
                   expresso e formalizado do paciente, em conformidade com as normas do CFM.
                 </p>
               ) : (
@@ -167,16 +167,16 @@ export default function DocumentoTemplate() {
                 Declaro para os devidos fins de comprovação de comparecimento que{' '}
                 {doc.comparecimentoAcompanhanteNome ? (
                   <>
-                    o(a) Sr(a). <strong className="uppercase text-[13px]">{doc.comparecimentoAcompanhanteNome}</strong> acompanhou{' '}
-                    o(a) paciente <strong className="uppercase text-[13px]">{doc.pacienteNome || '____________________'}</strong>
+                    o(a) Sr(a). <span className="uppercase text-[13px] font-normal">{doc.comparecimentoAcompanhanteNome}</span> acompanhou{' '}
+                    o(a) paciente <span className="uppercase text-[13px] font-normal">{doc.pacienteNome || '____________________'}</span>
                   </>
                 ) : (
                   <>
-                    o(a) paciente <strong className="uppercase text-[13px]">{doc.pacienteNome || '____________________'}</strong>
+                    o(a) paciente <span className="uppercase text-[13px] font-normal">{doc.pacienteNome || '____________________'}</span>
                   </>
                 )}
                 {doc.pacienteCpf && ` (CPF nº ${doc.pacienteCpf})`}, compareceu a uma consulta médica na presente data, no período{' '}
-                <strong className="text-[13px] bg-gray-100 px-2 py-0.5 rounded">{doc.comparecimentoPeriodo || 'das ___:___ às ___:___'}</strong>.
+                <span className="text-[13px] bg-gray-100 px-2 py-0.5 rounded font-normal">{doc.comparecimentoPeriodo || 'das ___:___ às ___:___'}</span>.
               </p>
 
               <p>
@@ -192,14 +192,14 @@ export default function DocumentoTemplate() {
             <div className="text-justify text-[12px] leading-loose space-y-4">
               <p>
                 Atesto que o(a) Sr(a).{' '}
-                <strong className="uppercase text-[13px]">{doc.pacienteNome || '________________________________________'}</strong>
+                <span className="uppercase text-[13px] font-normal">{doc.pacienteNome || '________________________________________'}</span>
                 {doc.pacienteCpf && ` (CPF nº ${doc.pacienteCpf})`}, foi submetido(a) a exame clínico rigoroso nesta data, apresentando-se em perfeitas condições de saúde física e mental.
               </p>
 
               <p>
                 Declaro que, sob o ponto de vista cardiovascular, pulmonar e locomotor, o(a) examinado(a) encontra-se{' '}
-                <strong className="text-[13px] text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded">APTO(A)</strong> para a{' '}
-                <strong>{doc.aptidaoFinalidade || 'prática de exercícios físicos'}</strong>.
+                <span className="text-[13px] text-green-700 bg-green-50 border border-green-200 px-3 py-1 rounded font-normal">APTO(A)</span> para a{' '}
+                <span className="font-normal">{doc.aptidaoFinalidade || 'prática de exercícios físicos'}</span>.
               </p>
 
               {doc.aptidaoRestricoes && (
@@ -219,7 +219,7 @@ export default function DocumentoTemplate() {
             <div className="border border-black p-2 grid grid-cols-2 gap-4">
               <div>
                 <span className="font-bold block text-[8px] uppercase text-gray-500">Nome da Empresa / Empregador</span>
-                <span className="font-semibold uppercase">{doc.asoEmpresa || '___________________________'}</span>
+                <span className="font-normal uppercase">{doc.asoEmpresa || '___________________________'}</span>
               </div>
               <div>
                 <span className="font-bold block text-[8px] uppercase text-gray-500">CNPJ</span>
@@ -231,7 +231,7 @@ export default function DocumentoTemplate() {
             <div className="border border-black p-2 grid grid-cols-3 gap-4">
               <div className="col-span-2">
                 <span className="font-bold block text-[8px] uppercase text-gray-500">Nome do Trabalhador</span>
-                <span className="font-semibold uppercase text-[11px]">{doc.pacienteNome || '___________________________'}</span>
+                <span className="font-normal uppercase text-[11px]">{doc.pacienteNome || '___________________________'}</span>
               </div>
               <div>
                 <span className="font-bold block text-[8px] uppercase text-gray-500">CPF / Data Nasc.</span>
@@ -239,11 +239,11 @@ export default function DocumentoTemplate() {
               </div>
               <div className="col-span-2">
                 <span className="font-bold block text-[8px] uppercase text-gray-500">Função do Trabalhador</span>
-                <span className="font-semibold uppercase">{doc.asoFuncao || '___________________________'}</span>
+                <span className="font-normal uppercase">{doc.asoFuncao || '___________________________'}</span>
               </div>
               <div>
                 <span className="font-bold block text-[8px] uppercase text-gray-500">Tipo de ASO</span>
-                <span className="font-bold text-blue-700">{doc.asoTipo}</span>
+                <span className="font-normal text-blue-700">{doc.asoTipo}</span>
               </div>
             </div>
 
@@ -268,7 +268,7 @@ export default function DocumentoTemplate() {
             {/* Bloco Exames */}
             <div className="border border-black p-2">
               <span className="font-bold block text-[8px] uppercase text-gray-500 mb-1">Exames Complementares Realizados e Datas</span>
-              <p className="font-semibold whitespace-pre-wrap">{doc.asoExamesRealizados || 'Nenhum exame complementar indicado para a função.'}</p>
+              <p className="font-normal whitespace-pre-wrap">{doc.asoExamesRealizados || 'Nenhum exame complementar indicado para a função.'}</p>
             </div>
 
             {/* Bloco Conclusão */}

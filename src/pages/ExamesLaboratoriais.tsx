@@ -30,6 +30,7 @@ export default function ExamesLaboratoriais() {
     // Force guide type to lab exams and sync general justification
     setPaciente({ tipoGuia: 'LABORATORIO' });
     setJustificativa(justificativaExames);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run on mount
 
   useEffect(() => {
@@ -57,21 +58,21 @@ export default function ExamesLaboratoriais() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto px-4 py-4 pb-24 space-y-3">
+      <div className="max-w-[1600px] mx-auto px-6 py-6 pb-28 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <h1 className="text-lg font-bold text-gray-900">Exames Laboratoriais</h1>
             <span className="text-xs text-gray-400">{formatDraftTime(lastSavedAt)}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 font-medium">
               <Sparkles size={11} />
               <strong>Ctrl+Enter</strong> imprimir
             </span>
             <button
               onClick={handleClear}
-              className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 bg-white"
+              className="flex items-center gap-1 px-3 py-2 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 bg-white cursor-pointer font-medium"
             >
               <RotateCcw size={12} />
               Limpar Exames
@@ -82,30 +83,39 @@ export default function ExamesLaboratoriais() {
         {/* 1. Patient Form */}
         <PatientForm />
 
-        {/* 2. IA Justification Assistant (Lab Exams specific) */}
-        <JustificativaPanel mode="exames" />
+        {/* Two-column layout for desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Context, Justification & Paste Panel */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* 2. IA Justification Assistant (Lab Exams specific) */}
+            <JustificativaPanel mode="exames" />
 
-        {/* 3. Paste list helper */}
-        <ExamPastePanel />
+            {/* 3. Paste list helper */}
+            <ExamPastePanel />
+          </div>
 
-        {/* 4. Selection Grid (Lab Exams specific) */}
-        <ExamSelector mode="exames" />
+          {/* Right Column: Catalog Grid */}
+          <div className="lg:col-span-8">
+            {/* 4. Selection Grid (Lab Exams specific) */}
+            <ExamSelector mode="exames" />
+          </div>
+        </div>
       </div>
 
       {/* Fixed bottom footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg px-4 py-2.5">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex min-w-0 flex-1 items-center gap-2 text-sm overflow-hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg px-6 py-3.5">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-6">
+          <div className="flex min-w-0 flex-1 items-center gap-3 text-sm overflow-hidden">
             <div className={`flex items-center gap-1.5 shrink-0 ${isFormValid ? 'text-green-600' : 'text-gray-400'}`}>
               <CheckCircle size={13} />
-              <span className="font-medium truncate max-w-[140px] text-xs">
+              <span className="font-semibold truncate max-w-[140px] text-xs">
                 {isFormValid ? pacienteNome : 'Sem paciente'}
               </span>
             </div>
             {hasExames && (
               <>
                 <span className="text-gray-200 shrink-0">·</span>
-                <span className="flex items-center gap-1 text-blue-600 font-semibold text-xs shrink-0">
+                <span className="flex items-center gap-1 text-blue-600 font-bold text-xs shrink-0">
                   <FileText size={12} />
                   {examesSelecionados.length} exame(s)
                 </span>
@@ -119,7 +129,7 @@ export default function ExamesLaboratoriais() {
           <button
             onClick={() => navigate('/imprimir')}
             disabled={!isReadyToPrint}
-            className={`flex shrink-0 items-center gap-2 px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-sm ${
+            className={`flex shrink-0 items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm cursor-pointer ${
               isReadyToPrint
                 ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:shadow-blue-100'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'

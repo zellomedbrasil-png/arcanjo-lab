@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { formatCpf } from '../../lib/formatters';
 import { OPERADORAS } from '../../data/operadoras';
 import type { Convenio, Genero } from '../../types';
-import { useRecentPatientsStore } from '../../store/useRecentPatientsStore';
+import { useRecentPatientsStore, type PacienteRecente } from '../../store/useRecentPatientsStore';
 import { savePatientToHistory } from '../../store/patientSync';
 
 export default function PatientForm() {
@@ -53,7 +53,7 @@ export default function PatientForm() {
     }
   };
 
-  const handleSelectRecent = (p: any) => {
+  const handleSelectRecent = (p: PacienteRecente) => {
     setPaciente({
       pacienteNome: p.nome,
       pacienteCpf: p.cpf || '',
@@ -64,8 +64,8 @@ export default function PatientForm() {
   };
 
   return (
-    <div className="bg-neutral-surface rounded-lg border border-neutral-border px-4 py-3">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+    <div className="bg-neutral-surface rounded-lg border border-neutral-border px-5 py-4.5">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3.5">
 
         {/* Nome */}
         <input
@@ -76,7 +76,7 @@ export default function PatientForm() {
           autoFocus
           autoComplete="name"
           placeholder="Nome do paciente *"
-          className="flex-1 min-w-[180px] text-sm font-semibold text-neutral-text placeholder:font-normal placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1 transition-colors"
+          className="flex-1 min-w-[180px] text-sm font-semibold text-neutral-text placeholder:font-normal placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
         />
 
         {/* CPF */}
@@ -88,7 +88,7 @@ export default function PatientForm() {
           inputMode="numeric"
           autoComplete="off"
           placeholder="CPF"
-          className="w-32 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1 transition-colors"
+          className="w-32 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
         />
 
         {/* Nº Beneficiário */}
@@ -100,7 +100,7 @@ export default function PatientForm() {
             onBlur={handleBlur}
             autoComplete="off"
             placeholder={labelBeneficiario[convenio] ?? 'Nº Cartão'}
-            className="w-36 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1 transition-colors"
+            className="w-36 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
           />
         )}
 
@@ -108,14 +108,14 @@ export default function PatientForm() {
         <div className="hidden sm:block w-px h-5 bg-neutral-border" />
 
         {/* Convênio */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <Building2 size={13} className="text-neutral-text-muted shrink-0" />
           {convenios.map(({ value, label }) => (
             <button
               key={value}
               type="button"
               onClick={() => setPaciente({ convenio: value })}
-              className={`px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
                 convenio === value
                   ? 'bg-primary text-neutral-surface border-primary'
                   : 'border-neutral-border text-neutral-text-muted hover:border-primary/30 hover:text-primary'
@@ -128,14 +128,14 @@ export default function PatientForm() {
 
         {/* Combobox de operadora SADT */}
         {convenio === 'SADT' && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <input
               list="operadoras-list"
               value={sadtOperadora}
               onChange={(e) => handleOperadoraChange(e.target.value)}
               onBlur={handleBlur}
               placeholder="Operadora (digite ou deixe vazio = guia limpa)"
-              className="w-64 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1 transition-colors"
+              className="w-64 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
             />
             <datalist id="operadoras-list">
               {OPERADORAS.map((o) => (
@@ -153,13 +153,13 @@ export default function PatientForm() {
         )}
 
         {/* Gênero */}
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           {generos.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
               type="button"
               onClick={() => setPaciente({ genero: value })}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
                 genero === value
                   ? 'bg-accent-sky text-neutral-surface border-accent-sky'
                   : 'border-neutral-border text-neutral-text-muted hover:border-accent-sky/30 hover:text-accent-sky'
@@ -175,7 +175,7 @@ export default function PatientForm() {
 
       {/* Seção Pacientes Recentes */}
       {pacientesRecentes.length > 0 && (
-        <div className="mt-3.5 pt-3.5 border-t border-neutral-border flex flex-wrap items-center gap-2 animate-in fade-in duration-300">
+        <div className="mt-4.5 pt-4 border-t border-neutral-border flex flex-wrap items-center gap-2.5 animate-in fade-in duration-300">
           <span className="text-[10px] text-neutral-text-muted font-extrabold uppercase tracking-wider flex items-center gap-1 mr-1">
             <History size={12} className="text-neutral-text-muted" />
             Recentes:
@@ -186,7 +186,7 @@ export default function PatientForm() {
               type="button"
               onClick={() => handleSelectRecent(p)}
               title={`CPF: ${p.cpf || 'Não informado'} | Convênio: ${p.convenio || 'Particular'}`}
-              className="px-2.5 py-1 bg-neutral-bg hover:bg-accent-indigo/5 border border-neutral-border hover:border-accent-indigo/35 rounded-full text-xs font-semibold text-neutral-text-muted hover:text-accent-indigo cursor-pointer transition-all"
+              className="px-3 py-1.5 bg-neutral-bg hover:bg-accent-indigo/5 border border-neutral-border hover:border-accent-indigo/35 rounded-full text-xs font-semibold text-neutral-text-muted hover:text-accent-indigo cursor-pointer transition-all"
             >
               {p.nome}
             </button>

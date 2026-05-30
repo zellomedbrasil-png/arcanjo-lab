@@ -518,6 +518,226 @@
 | Tireoglobulina | 40316530 | 28050800 |
 | TRAb - Anti Receptor TSH | 40316084 | — |
 
+### CR-IPM MULHER
+| Exame | Cód. IPM | Cód. ISSEC |
+|---|---|---|
+| HEMOGRAMA COMPLETO | — | — |
+| HEMOGLOBINA GLICADA - HBA1C | — | — |
+| GLICOSE | — | — |
+| UREIA | — | — |
+| CREATININA | — | — |
+| HEPATOGRAMA (PAINEL CONJUNTO) | — | — |
+| SODIO | — | — |
+| POTASSIO | — | — |
+| CALCIO IONICO | — | — |
+| PARVOVIRUS B19 IGG | — | — |
+| PARATORMONIO - PTH | — | — |
+| BNP / PROBNP - PEPTIDEO NATRIURETICO | — | — |
+| T4 LIVRE - TIROXINA LIVRE | — | — |
+| T3 REVERSO | — | — |
+| LIPIDOGRAMA | — | — |
+| T4 TOTAL - TIROXINA | — | — |
+| VITAMINA B12 | — | — |
+| 25-HIDROXIVITAMINA D (VIT D25) | — | — |
+| VITAMINA A | — | — |
+| VITAMINA E | — | — |
+| ACIDO FOLICO | — | — |
+| ADENOSINA DEAMINASE - ADA | — | — |
+| ALDOSTERONA | — | — |
+| ACTH - ADRENOCORTICOTROFICO | — | — |
+| SOMATOMEDINA C - IGF-1 | — | — |
+| ANDROSTENEDIONA | — | — |
+| PROGESTERONA | — | — |
+| PROLACTINA | — | — |
+| DHEA - DEHIDROEPIANDROSTERONA | — | — |
+| S-DHEA (DHEA-S) | — | — |
+| SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS | — | — |
+| TRAB - ANTI RECEPTOR TSH | — | — |
+| BIG PROLACTINA | — | — |
+| SUBCLASSE IGG (1,2,3,4) | — | — |
+| IGFBP-3 | — | — |
+| D-DIMERO | — | — |
+| PROTEINA S FUNCIONAL | — | — |
+| CORTISOL | — | — |
+| INSULINA | — | — |
+| TIREOGLOBULINA | — | — |
+| ANTI TIREOGLOBULINA | — | — |
+| CKMB-MASSA (CREATINO FOSFOCINASE MB) | — | — |
+| ZINCO SERICO | — | — |
+| RENINA | — | — |
+| DHT - DIHIDROTESTOSTERONA | — | — |
+| ANGIOTENSINA CONVERTASE - ECA | — | — |
+| TESTOSTERONA LIVRE | — | — |
+| SUMARIO DE URINA | — | — |
+| URINOCULTURA | — | — |
+| ANTIBIOGRAMA | — | — |
+
+### CR-IPM HOMEM
+| Exame | Cód. IPM | Cód. ISSEC |
+|---|---|---|
+| HEMOGRAMA COMPLETO | — | — |
+| HEMOGLOBINA GLICADA - HBA1C | — | — |
+| GLICOSE | — | — |
+| UREIA | — | — |
+| CREATININA | — | — |
+| HEPATOGRAMA (PAINEL CONJUNTO) | — | — |
+| SODIO | — | — |
+| POTASSIO | — | — |
+| CALCIO IONICO | — | — |
+| PARVOVIRUS B19 IGG | — | — |
+| PARATORMONIO - PTH | — | — |
+| BNP / PROBNP - PEPTIDEO NATRIURETICO | — | — |
+| T4 LIVRE - TIROXINA LIVRE | — | — |
+| T3 REVERSO | — | — |
+| LIPIDOGRAMA | — | — |
+| T4 TOTAL - TIROXINA | — | — |
+| VITAMINA B12 | — | — |
+| 25-HIDROXIVITAMINA D (VIT D25) | — | — |
+| VITAMINA A | — | — |
+| VITAMINA E | — | — |
+| ACIDO FOLICO | — | — |
+| ADENOSINA DEAMINASE - ADA | — | — |
+| ALDOSTERONA | — | — |
+| ACTH - ADRENOCORTICOTROFICO | — | — |
+| SOMATOMEDINA C - IGF-1 | — | — |
+| ANDROSTENEDIONA | — | — |
+| PROGESTERONA | — | — |
+| PROLACTINA | — | — |
+| DHEA - DEHIDROEPIANDROSTERONA | — | — |
+| S-DHEA (DHEA-S) | — | — |
+| SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS | — | — |
+| TRAB - ANTI RECEPTOR TSH | — | — |
+| BIG PROLACTINA | — | — |
+| SUBCLASSE IGG (1,2,3,4) | — | — |
+| IGFBP-3 | — | — |
+| D-DIMERO | — | — |
+| PROTEINA S FUNCIONAL | — | — |
+| CORTISOL | — | — |
+| INSULINA | — | — |
+| TIREOGLOBULINA | — | — |
+| ANTI TIREOGLOBULINA | — | — |
+| CKMB-MASSA (CREATINO FOSFOCINASE MB) | — | — |
+| ZINCO SERICO | — | — |
+| RENINA | — | — |
+| DHT - DIHIDROTESTOSTERONA | — | — |
+| ANGIOTENSINA CONVERTASE - ECA | — | — |
+| TESTOSTERONA TOTAL | — | — |
+| TESTOSTERONA LIVRE | — | — |
+| PSA TOTAL | — | — |
+| PSA LIVRE | — | — |
+
+### CR-ISSEC MULHER
+| Exame | Cód. IPM | Cód. ISSEC |
+|---|---|---|
+| HEMOGRAMA COMPLETO | — | — |
+| GLICOSE | — | — |
+| HEMOGLOBINA GLICADA - HBA1C | — | — |
+| TGO - TRANSAMINASE ASPARTICA | — | — |
+| TGP - TRANSAMINASE ALANINA | — | — |
+| UREIA | — | — |
+| CREATININA | — | — |
+| LIPIDOGRAMA | — | — |
+| SODIO | — | — |
+| POTASSIO | — | — |
+| CALCIO IONICO | — | — |
+| CORTISOL | — | — |
+| T3 REVERSO | — | — |
+| LH - HORMONIO LUTEINIZANTE | — | — |
+| RENINA | — | — |
+| T4 TOTAL - TIROXINA | — | — |
+| T4 LIVRE - TIROXINA LIVRE | — | — |
+| TSH | — | — |
+| ACTH - ADRENOCORTICOTROFICO | — | — |
+| HIV 1 E 2 | — | — |
+| ZINCO SERICO | — | — |
+| SOMATOMEDINA C - IGF-1 | — | — |
+| CD4 | — | — |
+| CD8 - LINFOCITOS | — | — |
+| CD3 | — | — |
+| ACIDO FOLICO | — | — |
+| CROMO | — | — |
+| 25-HIDROXIVITAMINA D (VIT D25) | — | — |
+| VITAMINA B12 | — | — |
+| TESTOSTERONA LIVRE | — | — |
+| CALCITONINA | — | — |
+| 17 ALFA-HIDROXIPROGESTERONA | — | — |
+| BNP / PROBNP - PEPTIDEO NATRIURETICO | — | — |
+| ANTIGENO HTL-III EIE | — | — |
+| BETA 2 MICROGLOBULINA | — | — |
+| CA 125 | — | — |
+| CA 15-3 | — | — |
+| CA 72-4 | — | — |
+| DHEA - DEHIDROEPIANDROSTERONA | — | — |
+| S-DHEA (DHEA-S) | — | — |
+| CEA | — | — |
+| ANTI-MICROSSOMAL - ANTI TPO | — | — |
+| ANDROSTENEDIONA | — | — |
+| ALDOSTERONA | — | — |
+| ANGIOTENSINA CONVERTASE - ECA | — | — |
+| D-DIMERO | — | — |
+| ANTI TIREOGLOBULINA | — | — |
+| TIREOGLOBULINA | — | — |
+| PROGESTERONA | — | — |
+| PROLACTINA | — | — |
+| INSULINA | — | — |
+| MICROALBUMINURIA 24H | — | — |
+
+### CR-ISSEC HOMEM
+| Exame | Cód. IPM | Cód. ISSEC |
+|---|---|---|
+| HEMOGRAMA COMPLETO | — | — |
+| GLICOSE | — | — |
+| HEMOGLOBINA GLICADA - HBA1C | — | — |
+| TGO - TRANSAMINASE ASPARTICA | — | — |
+| TGP - TRANSAMINASE ALANINA | — | — |
+| UREIA | — | — |
+| CREATININA | — | — |
+| LIPIDOGRAMA | — | — |
+| SODIO | — | — |
+| POTASSIO | — | — |
+| CALCIO IONICO | — | — |
+| CORTISOL | — | — |
+| T3 REVERSO | — | — |
+| LH - HORMONIO LUTEINIZANTE | — | — |
+| RENINA | — | — |
+| T4 TOTAL - TIROXINA | — | — |
+| T4 LIVRE - TIROXINA LIVRE | — | — |
+| TSH | — | — |
+| ACTH - ADRENOCORTICOTROFICO | — | — |
+| HIV 1 E 2 | — | — |
+| ZINCO SERICO | — | — |
+| SOMATOMEDINA C - IGF-1 | — | — |
+| CD4 | — | — |
+| CD8 - LINFOCITOS | — | — |
+| CD3 | — | — |
+| ACIDO FOLICO | — | — |
+| CROMO | — | — |
+| 25-HIDROXIVITAMINA D (VIT D25) | — | — |
+| VITAMINA B12 | — | — |
+| TESTOSTERONA TOTAL | — | — |
+| TESTOSTERONA LIVRE | — | — |
+| CALCITONINA | — | — |
+| 17 ALFA-HIDROXIPROGESTERONA | — | — |
+| BNP / PROBNP - PEPTIDEO NATRIURETICO | — | — |
+| ANTIGENO HTL-III EIE | — | — |
+| BETA 2 MICROGLOBULINA | — | — |
+| CA 125 | — | — |
+| CA 15-3 | — | — |
+| CA 72-4 | — | — |
+| DHEA - DEHIDROEPIANDROSTERONA | — | — |
+| S-DHEA (DHEA-S) | — | — |
+| CEA | — | — |
+| ANTI-MICROSSOMAL - ANTI TPO | — | — |
+| ANDROSTENEDIONA | — | — |
+| ALDOSTERONA | — | — |
+| ANGIOTENSINA CONVERTASE - ECA | — | — |
+| D-DIMERO | — | — |
+| ANTI TIREOGLOBULINA | — | — |
+| TIREOGLOBULINA | — | — |
+| PSA TOTAL | — | — |
+| PSA LIVRE | — | — |
+| INSULINA | — | — |
+
 ---
 
 ## RESUMO ESTATÍSTICO

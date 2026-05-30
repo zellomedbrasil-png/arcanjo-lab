@@ -53,7 +53,7 @@ function C({
         {n !== undefined && <span>{n} - </span>}
         {label}
       </div>
-      <div style={{ fontSize: '8.5px', fontWeight: 700, lineHeight: 1.15, marginTop: '1px', textTransform: 'uppercase' }}>
+      <div style={{ fontSize: '8.5px', fontWeight: 'normal', lineHeight: 1.15, marginTop: '1px', textTransform: 'uppercase' }}>
         {value || ' '}
       </div>
     </div>
@@ -207,7 +207,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
               <div style={{ width: '18px', padding: '1px 2px', borderRight: borda, textAlign: 'center', fontWeight: 700 }}>{seq}-</div>
               <div style={{ width: '54px', padding: '1px 3px', borderRight: borda }}>&nbsp;</div>
               <div style={{ width: '160px', padding: '1px 3px', borderRight: borda, fontFamily: 'monospace' }}>&nbsp;</div>
-              <div style={{ flex: 1, padding: '1px 3px', borderRight: borda, textTransform: 'uppercase', fontWeight: 600 }}>
+              <div style={{ flex: 1, padding: '1px 3px', borderRight: borda, textTransform: 'uppercase', fontWeight: 'normal' }}>
                 {linhasProcedimentos[idx]}
               </div>
               <div style={{ width: '58px', padding: '1px 3px', borderRight: borda, textAlign: 'center', fontWeight: 600 }}>
@@ -329,7 +329,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
         {/* ══ 58 - OBSERVAÇÃO ══ */}
         <div style={{ border: borda, flex: 1, marginBottom: '-1px', minHeight: '24px' }}>
           <Secao label="58 - Observação / Justificativa" cor={corSec} />
-          <div style={{ padding: '3px 5px', fontSize: '8px', lineHeight: 1.35, textTransform: 'uppercase', fontWeight: 600 }}>
+          <div style={{ padding: '3px 5px', fontSize: '8px', lineHeight: 1.35, textTransform: 'uppercase', fontWeight: 'normal' }}>
             {justificativa}
           </div>
         </div>

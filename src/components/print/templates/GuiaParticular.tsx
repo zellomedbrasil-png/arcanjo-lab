@@ -75,7 +75,7 @@ export default function GuiaParticular() {
                 Paciente
               </p>
               <p style={{
-                fontSize: '13px', fontWeight: '600', color: '#111',
+                fontSize: '13px', fontWeight: 'normal', color: '#111',
                 borderBottom: '1px dotted #aaa', paddingBottom: '2px',
                 minWidth: '260px',
               }}>
@@ -86,7 +86,7 @@ export default function GuiaParticular() {
               <p style={{ fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', color: '#777', letterSpacing: '0.08em', marginBottom: '2px' }}>
                 CPF
               </p>
-              <p style={{ fontSize: '11px', fontWeight: '500', color: '#333', borderBottom: '1px dotted #aaa', paddingBottom: '2px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 'normal', color: '#333', borderBottom: '1px dotted #aaa', paddingBottom: '2px' }}>
                 {pacienteCpf || '___.___.___-__'}
               </p>
             </div>
@@ -94,7 +94,7 @@ export default function GuiaParticular() {
               <p style={{ fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', color: '#777', letterSpacing: '0.08em', marginBottom: '2px' }}>
                 Gênero
               </p>
-              <p style={{ fontSize: '11px', fontWeight: '500', color: '#333', borderBottom: '1px dotted #aaa', paddingBottom: '2px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 'normal', color: '#333', borderBottom: '1px dotted #aaa', paddingBottom: '2px' }}>
                 {genero === 'M' ? 'Masculino' : 'Feminino'}
               </p>
             </div>
@@ -102,7 +102,7 @@ export default function GuiaParticular() {
               <p style={{ fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', color: '#777', letterSpacing: '0.08em', marginBottom: '2px' }}>
                 Data
               </p>
-              <p style={{ fontSize: '11px', fontWeight: '500', color: '#333' }}>{dataHoje}</p>
+              <p style={{ fontSize: '11px', fontWeight: 'normal', color: '#333' }}>{dataHoje}</p>
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@ export default function GuiaParticular() {
                     <span style={{ color: '#2ABCBE', fontWeight: '700', fontSize: '9px', minWidth: '16px' }}>
                       {idx + 1}.
                     </span>
-                    <span style={{ fontWeight: '500', color: '#1a1a1a' }}>{exame}</span>
+                    <span style={{ fontWeight: 'normal', color: '#1a1a1a' }}>{exame}</span>
                   </div>
                 ))
               ) : (
@@ -145,7 +145,7 @@ export default function GuiaParticular() {
                   <span style={{ color: '#2ABCBE', fontWeight: '700', fontSize: '9px', minWidth: '16px' }}>
                     {idx + 1}.
                   </span>
-                  <span style={{ fontWeight: '500', color: '#1a1a1a' }}>
+                  <span style={{ fontWeight: 'normal', color: '#1a1a1a' }}>
                     {getProcedimentoNome(proc)}
                   </span>
                 </div>
@@ -166,7 +166,7 @@ export default function GuiaParticular() {
           <p style={{ fontSize: '8px', fontWeight: '700', textTransform: 'uppercase', color: '#777', letterSpacing: '0.08em', marginBottom: '5px' }}>
             Indicação Clínica / Justificativa
           </p>
-          <p style={{ fontSize: '10.5px', color: '#222', lineHeight: '1.5', minHeight: '36px', fontWeight: '500' }}>
+          <p style={{ fontSize: '10.5px', color: '#222', lineHeight: '1.5', minHeight: '36px', fontWeight: 'normal' }}>
             {justificativa || ''}
           </p>
         </div>

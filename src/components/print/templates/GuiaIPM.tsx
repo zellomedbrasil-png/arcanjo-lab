@@ -1,29 +1,41 @@
 import { useAppStore } from '../../../store/useAppStore';
-import { formatExamWithCode } from '../../../utils/exames';
 import { getProcedimentoNome } from '../../../data/procedimentos';
 import logoIpm from '../../../assets/logo_ipm.jpeg';
 
+const MEDICO = {
+  nome: 'DR. ROBERTO ARCANJO',
+  crm: 'CRM/CE 26155',
+};
+
+function formatExamNameForPrint(name: string) {
+  if (!name) return '';
+  const uppercaseAcronyms = new Set([
+    'PTH', 'ACTH', 'DHEA', 'SHBG', 'IGF-1', 'BNP', 'PROBNP', 'CKMB-MASSA', 'DHT', 'VDRL',
+    'LH', 'FSH', 'TSH', 'TRAB', 'IGG', 'IGM', 'IGA', 'IGD', 'IGE', 'HIV', 'HTLV', 'ASO',
+    'CEA', 'CA', 'ADA', 'ECA', 'TGO', 'TGP', 'GGT', 'TAP', 'TTPA', 'VHS', 'HBA1C'
+  ]);
+  
+  return name.split(/(\s+|-|\(|\)|\/|,)/).map(part => {
+    const trimmed = part.trim();
+    if (!trimmed) return part;
+    if (uppercaseAcronyms.has(trimmed.toUpperCase())) {
+      if (['IGG', 'IGM', 'IGA', 'IGD', 'IGE'].includes(trimmed.toUpperCase())) {
+        return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+      }
+      return trimmed.toUpperCase();
+    }
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+  }).join('');
+}
+
 export default function GuiaIPM() {
-  const { pacienteNome, examesSelecionados, procedimentosSelecionados, tipoGuia, justificativa, genero } = useAppStore();
+  const { pacienteNome, numeroBeneficiario, examesSelecionados, procedimentosSelecionados, tipoGuia, justificativa, genero } = useAppStore();
 
   const isLab = tipoGuia === 'LABORATORIO';
 
-  const getLinhas = () => {
-    // Aplica o formato Nome (Código) para todos os exames
-    const examesFormatados = examesSelecionados.map(e => formatExamWithCode(e, 'IPM'));
-
-    // Fallback: divide os exames em blocos (até 7)
-    const limit = 7;
-    const chunkSize = Math.ceil(examesFormatados.length / limit) || 1;
-    const result = [];
-    for (let i = 0; i < limit; i++) {
-      const chunk = examesFormatados.slice(i * chunkSize, (i + 1) * chunkSize);
-      if (chunk.length > 0) result.push(chunk.join(', '));
-    }
-    return result;
-  };
-
-  const linhas = getLinhas();
+  const itemsList = isLab
+    ? examesSelecionados
+    : (procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia]);
 
   return (
     <div className="p-8 text-[11px] leading-snug font-sans text-black bg-white h-full relative">
@@ -73,10 +85,11 @@ export default function GuiaIPM() {
         <div className="flex border-b border-black">
           <div className="flex-[3] border-r border-black p-1 flex">
             <span className="font-bold mr-2 text-[10px]">PACIENTE:</span>
-            <span className="font-semibold text-[11px] uppercase">{pacienteNome}</span>
+            <span className="font-normal text-[11px] uppercase">{pacienteNome}</span>
           </div>
-          <div className="flex-1 p-1">
-            <span className="font-bold text-[10px]">MATRÍCULA:</span>
+          <div className="flex-1 p-1 flex items-baseline">
+            <span className="font-bold text-[10px] mr-2">MATRÍCULA:</span>
+            <span className="font-normal text-[11.5px] uppercase font-mono">{numeroBeneficiario}</span>
           </div>
         </div>
 
@@ -92,11 +105,11 @@ export default function GuiaIPM() {
             <div className="flex flex-1">
               <div className="flex-1 border-r border-black text-center text-[10px] flex flex-col justify-between p-1">
                 <span className="font-bold">M</span>
-                <span className="font-bold">{genero === 'M' ? 'X' : ''}</span>
+                <span className="font-normal">{genero === 'M' ? 'X' : ''}</span>
               </div>
               <div className="flex-1 border-r border-black text-center text-[10px] flex flex-col justify-between p-1">
                 <span className="font-bold">F</span>
-                <span className="font-bold">{genero === 'F' ? 'X' : ''}</span>
+                <span className="font-normal">{genero === 'F' ? 'X' : ''}</span>
               </div>
               <div className="flex-[2] text-center text-[10px] flex flex-col justify-between p-1">
                 <span className="font-bold">OUTRO (ESPECIFICAR)</span>
@@ -113,6 +126,7 @@ export default function GuiaIPM() {
         <div className="flex border-b border-black min-h-[50px]">
           <div className="flex-[3] border-r border-black p-1">
             <span className="font-bold text-[10px]">MÉDICO(A) SOLICITANTE:</span><br/>
+            <span className="font-normal text-[11px] uppercase">{MEDICO.nome}</span>
           </div>
           <div className="flex-[2] flex flex-col">
             <div className="text-center font-bold text-[8px] border-b border-black bg-gray-100 py-1 uppercase">
@@ -134,32 +148,128 @@ export default function GuiaIPM() {
         {/* Row 7: Justificativa */}
         <div className="border-b border-black p-1 min-h-[90px]">
           <span className="font-bold text-[10px]">INDICAÇÃO CLÍNICA/JUSTIFICATIVA:</span>
-          <div className="mt-1 px-1 text-justify text-[9.5px] uppercase font-semibold leading-tight">
+          <div className="mt-1 px-1 text-justify text-[9.5px] uppercase font-normal leading-tight">
             {justificativa}
           </div>
         </div>
 
         {/* Row 8: Procedimentos (Nº DO SERVIÇO ASSISTENCIAL) */}
-        <div className="border-b border-black p-1 min-h-[140px]">
-          <span className="font-bold text-[10px]">
-            Nº DO SERVIÇO ASSISTENCIAL <span className="font-normal text-gray-700 text-[9px]">(conforme quadro)</span>: <span className="font-bold">_______</span>
-          </span>
-          <div className="mt-2 text-[9px] uppercase leading-tight text-justify">
-            {isLab ? (
-              <div className="space-y-1">
-                {linhas.map((linha, idx) => (
-                  <div key={idx}>{linha}</div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-2 mt-2">
-                {(procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia]).map((id, idx) => (
-                  <div key={idx} className="font-bold text-sm">
-                    {idx + 1}. {getProcedimentoNome(id)}
+        <div className="border-b border-black p-2 min-h-[160px] flex flex-col justify-between" style={{ boxSizing: 'border-box' }}>
+          <div style={{ marginBottom: '3mm' }}>
+            <span className="font-bold text-[10px]" style={{ fontFamily: '"Times New Roman", Times, serif' }}>
+              Nº DO SERVIÇO ASSISTENCIAL <span className="font-normal text-gray-700 text-[9px]">(conforme quadro)</span>: <span className="font-bold">_______</span>.
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2mm', flexGrow: 1 }}>
+            {(() => {
+              const getGuiaIPMLinhas = () => {
+                const finalItems = (() => {
+                  if (!isLab) {
+                    return itemsList.map(item => formatExamNameForPrint(getProcedimentoNome(item)));
+                  }
+                  
+                  const hasUrinocultura = itemsList.some(e => e.toUpperCase().trim() === 'URINOCULTURA');
+                  const hasAntibiograma = itemsList.some(e => e.toUpperCase().trim() === 'ANTIBIOGRAMA');
+                  
+                  let filtered = itemsList;
+                  if (hasUrinocultura && hasAntibiograma) {
+                    filtered = itemsList.filter(e => e.toUpperCase().trim() !== 'ANTIBIOGRAMA');
+                  }
+                  
+                  return filtered.map(item => {
+                    const upper = item.toUpperCase().trim();
+                    if (hasUrinocultura && hasAntibiograma && upper === 'URINOCULTURA') {
+                      return formatExamNameForPrint('URINOCULTURA + ANTIBIOGRAMA');
+                    }
+                    return formatExamNameForPrint(item);
+                  });
+                })();
+
+                if (!isLab) {
+                  const lines = finalItems.slice(0, 3);
+                  while (lines.length < 5) {
+                    lines.push('');
+                  }
+                  return lines.map(name => ({ name, code: '' }));
+                }
+
+                const MAX_CHARS_PER_LINE = 80;
+                const lines: string[] = [];
+                let currentLine: string[] = [];
+                let currentLen = 0;
+
+                for (const item of finalItems) {
+                  if (currentLine.length === 0) {
+                    currentLine.push(item);
+                    currentLen = item.length;
+                  } else if (currentLen + 2 + item.length <= MAX_CHARS_PER_LINE) {
+                    currentLine.push(item);
+                    currentLen += 2 + item.length;
+                  } else {
+                    lines.push(currentLine.join(', '));
+                    currentLine = [item];
+                    currentLen = item.length;
+                  }
+                }
+                
+                if (currentLine.length > 0) {
+                  lines.push(currentLine.join(', '));
+                }
+
+                while (lines.length < 5) {
+                  lines.push('');
+                }
+
+                return lines.map(name => ({ name, code: '' }));
+              };
+
+              return getGuiaIPMLinhas().map((linha, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-end text-[9.5px] leading-tight"
+                  style={{
+                    minHeight: '5.8mm',
+                    fontFamily: '"Times New Roman", Times, serif',
+                  }}
+                >
+                  <div
+                    style={{
+                      flexGrow: 1,
+                      borderBottom: '1px solid black',
+                      paddingLeft: '1mm',
+                      paddingBottom: '1px',
+                      fontSize: '10px',
+                      fontFamily: '"Times New Roman", Times, serif',
+                      fontWeight: 'normal',
+                      color: '#000',
+                      minWidth: '50mm',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {linha.name || <>&nbsp;</>}
                   </div>
-                ))}
-              </div>
-            )}
+                  <span style={{ fontSize: '10px', margin: '0 2mm', flexShrink: 0, color: '#000', fontFamily: '"Times New Roman", Times, serif', fontWeight: 'normal' }}>
+                    CÓDIGO
+                  </span>
+                  <div
+                    style={{
+                      width: '20mm',
+                      borderBottom: '1px solid black',
+                      textAlign: 'center',
+                      paddingBottom: '1px',
+                      fontSize: '10px',
+                      fontFamily: '"Times New Roman", Times, serif',
+                      fontWeight: 'normal',
+                      color: '#000',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {linha.code || <>&nbsp;</>}
+                  </div>
+                </div>
+              ));
+            })()}
           </div>
         </div>
 
