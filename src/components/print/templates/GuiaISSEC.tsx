@@ -433,7 +433,8 @@ export default function GuiaISSEC() {
                   style={{
                     borderBottom: '1pt solid black',
                     padding: '1mm 2mm',
-                    fontSize: '9pt',
+                    fontSize: '9.5px',
+                    fontFamily: 'Arial, Helvetica, sans-serif',
                     fontWeight: 'normal',
                     textTransform: 'uppercase',
                     verticalAlign: 'middle',
@@ -460,7 +461,8 @@ export default function GuiaISSEC() {
               <div
                 style={{
                   marginTop: '1mm',
-                  fontSize: '9pt',
+                  fontSize: '9.5px',
+                  fontFamily: 'Arial, Helvetica, sans-serif',
                   lineHeight: 1.3,
                   fontWeight: 'normal',
                   textTransform: 'uppercase',
