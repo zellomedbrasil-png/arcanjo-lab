@@ -194,7 +194,7 @@ export default function GuiaIPM() {
                   return lines.map(name => ({ name, code: '' }));
                 }
 
-                const MAX_CHARS_PER_LINE = 90;
+                const MAX_CHARS_PER_LINE = 125;
                 const lines: string[] = [];
                 let currentLine: string[] = [];
                 let currentLen = 0;
@@ -238,7 +238,7 @@ export default function GuiaIPM() {
                       borderBottom: '1px solid black',
                       paddingLeft: '1mm',
                       paddingBottom: '1px',
-                      fontSize: '9.5px',
+                      fontSize: '7.5px',
                       fontWeight: 'normal',
                       color: '#000',
                       minWidth: '50mm',
@@ -248,7 +248,7 @@ export default function GuiaIPM() {
                   >
                     {linha.name || <>&nbsp;</>}
                   </div>
-                  <span style={{ fontSize: '9.5px', margin: '0 2mm', flexShrink: 0, color: '#000', fontWeight: 'normal' }}>
+                  <span style={{ fontSize: '7.5px', margin: '0 2mm', flexShrink: 0, color: '#000', fontWeight: 'normal' }}>
                     CÓDIGO
                   </span>
                   <div
@@ -257,7 +257,7 @@ export default function GuiaIPM() {
                       borderBottom: '1px solid black',
                       textAlign: 'center',
                       paddingBottom: '1px',
-                      fontSize: '9.5px',
+                      fontSize: '7.5px',
                       fontWeight: 'normal',
                       color: '#000',
                       flexShrink: 0,
