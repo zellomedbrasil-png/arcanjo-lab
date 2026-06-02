@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
 import { formatExamNameForDisplay } from '../../lib/formatters';
-import { organizarExamesIA, type ExameOrganizado, type ResultadoExamesIA } from '../../services/groqExames';
+import { organizarExamesIA, findMatchingExam, type ExameOrganizado, type ResultadoExamesIA } from '../../services/groqExames';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import {
   ClipboardPaste, Sparkles, Loader2, CheckCircle2,
   AlertTriangle, ChevronDown, ChevronUp, FileText, Wand2, Trash2,
-  Pencil, Check
+  Pencil, Check, Plus
 } from 'lucide-react';
 
 export default function ExamPastePanel() {
@@ -68,10 +68,22 @@ export default function ExamPastePanel() {
         // Limpar o "(verificar)" do nome padronizado para a guia impressa ficar limpa
         return e.nomePadronizado.replace(/\s*\(verificar\)/gi, '').trim();
       });
-    setExamesSelecionados(nomes);
+
+    // Mesclar aditivamente com exames já selecionados na store
+    const examesAtuais = useAppStore.getState().examesSelecionados;
+    setExamesSelecionados([...new Set([...examesAtuais, ...nomes])]);
+
+    // Tratar justificativa aditivamente
     if (resultado?.justificativaGlobal) {
-      setJustificativa(resultado.justificativaGlobal);
+      const justificativaLimpa = resultado.justificativaGlobal.trim();
+      const justificativaAtualLimpa = (useAppStore.getState().justificativa || '').trim();
+      if (justificativaAtualLimpa && !justificativaAtualLimpa.toUpperCase().includes(justificativaLimpa.toUpperCase())) {
+        setJustificativa(`${justificativaAtualLimpa}\n${justificativaLimpa}`);
+      } else if (!justificativaAtualLimpa) {
+        setJustificativa(justificativaLimpa);
+      }
     }
+
     toast.success(`${nomes.length} exame${nomes.length !== 1 ? 's' : ''} aplicado${nomes.length !== 1 ? 's' : ''} na guia`);
     // Limpar estado local
     setTextoExames('');
@@ -80,6 +92,64 @@ export default function ExamPastePanel() {
     setExamesEditados([]);
     setEditingIndex(null);
     setExpandido(false);
+  };
+
+  const concluirEdicao = (index: number) => {
+    const updated = [...examesEditados];
+    const exame = updated[index];
+    
+    // Se o nome editado estiver vazio, removemos o exame da lista local
+    if (!exame.nomePadronizado.trim()) {
+      const novaLista = examesEditados.filter((_, i) => i !== index);
+      setExamesEditados(novaLista);
+      setExamesSelecionadosLocal((prev) => {
+        const next = new Set<number>();
+        prev.forEach((idx) => {
+          if (idx < index) next.add(idx);
+          if (idx > index) next.add(idx - 1);
+        });
+        return next;
+      });
+      setEditingIndex(null);
+      return;
+    }
+
+    const nomeLimpo = exame.nomePadronizado.replace(/\s*\(verificar\)/gi, '').trim();
+    const match = findMatchingExam(nomeLimpo);
+
+    if (match) {
+      updated[index] = {
+        ...exame,
+        nomePadronizado: match.nome,
+        codigoTUSS: match.codIpm || match.codIssec || exame.codigoTUSS || ''
+      };
+      toast.success(`Exame correspondente encontrado: ${match.nome}`);
+    } else {
+      updated[index] = {
+        ...exame,
+        nomePadronizado: nomeLimpo
+      };
+    }
+
+    setExamesEditados(updated);
+    setEditingIndex(null);
+  };
+
+  const adicionarExameManual = () => {
+    const novoExame: ExameOrganizado = {
+      nomeOriginal: '',
+      nomePadronizado: '',
+      justificativaIndividual: ''
+    };
+    const novaLista = [...examesEditados, novoExame];
+    const novoIndex = novaLista.length - 1;
+    setExamesEditados(novaLista);
+    setExamesSelecionadosLocal((prev) => {
+      const next = new Set(prev);
+      next.add(novoIndex);
+      return next;
+    });
+    setEditingIndex(novoIndex);
   };
 
   const limparTudo = () => {
@@ -241,12 +311,14 @@ export default function ExamPastePanel() {
                                 className="flex-1 border border-blue-300 rounded-lg px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white font-medium text-neutral-text"
                                 autoFocus
                                 onKeyDown={(e) => {
-                                  if (e.key === 'Enter') setEditingIndex(null);
+                                  if (e.key === 'Enter') concluirEdicao(index);
                                   if (e.key === 'Escape') setEditingIndex(null);
                                 }}
+                                onBlur={() => concluirEdicao(index)}
                               />
                               <button
-                                onClick={() => setEditingIndex(null)}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => concluirEdicao(index)}
                                 className="p-1 bg-green-50 text-green-600 rounded hover:bg-green-100 transition-colors cursor-pointer"
                                 title="Concluir"
                               >
@@ -314,6 +386,16 @@ export default function ExamPastePanel() {
                       </div>
                     );
                   })}
+                </div>
+                <div className="bg-slate-50/50 p-2.5 flex justify-center border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={adicionarExameManual}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50/50 rounded-lg transition-colors cursor-pointer"
+                  >
+                    <Plus size={12} />
+                    Adicionar Exame
+                  </button>
                 </div>
               </div>
 

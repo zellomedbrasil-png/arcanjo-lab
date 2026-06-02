@@ -171,8 +171,17 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
 
   const aplicarPainel = (chave: string) => {
     const painel = PAINEIS_MARKDOWN[chave];
-    setExamesSelecionados([...new Set(painel.exames)]);
-    setJustificativa(painel.justificativa || ''); // Justificativa, não SOAP
+    const examesAtuais = useAppStore.getState().examesSelecionados;
+    setExamesSelecionados([...new Set([...examesAtuais, ...painel.exames])]);
+    if (painel.justificativa) {
+      const justificativaLimpa = painel.justificativa.trim();
+      const justificativaAtualLimpa = (useAppStore.getState().justificativa || '').trim();
+      if (justificativaAtualLimpa && !justificativaAtualLimpa.toUpperCase().includes(justificativaLimpa.toUpperCase())) {
+        setJustificativa(`${justificativaAtualLimpa}\n${justificativaLimpa}`);
+      } else if (!justificativaAtualLimpa) {
+        setJustificativa(justificativaLimpa);
+      }
+    }
   };
 
   const selecionarCategoria = (exames: string[]) => {

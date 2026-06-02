@@ -235,7 +235,7 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "codIpm": "40301630"
       },
       {
-        "nome": "MICROALBUMINURIA 24H",
+        "nome": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)",
         "marca": "",
         "codIssec": "28130456",
         "codIpm": "40311171"
@@ -365,22 +365,10 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "codIpm": "40316483"
       },
       {
-        "nome": "T3 TOTAL - TRIIODOTIRONINA",
-        "marca": "",
-        "codIssec": "28050738",
-        "codIpm": "40316556"
-      },
-      {
         "nome": "T4 LIVRE - TIROXINA LIVRE",
         "marca": "",
         "codIssec": "28050720",
         "codIpm": "40316491"
-      },
-      {
-        "nome": "T4 TOTAL - TIROXINA",
-        "marca": "",
-        "codIssec": "28050711",
-        "codIpm": "40316548"
       },
       {
         "nome": "TIREOGLOBULINA",
@@ -410,18 +398,6 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "marca": "",
         "codIssec": "28050428",
         "codIpm": "40316017"
-      },
-      {
-        "nome": "17 CETOGENICOS",
-        "marca": "",
-        "codIssec": "28050096",
-        "codIpm": "40305040"
-      },
-      {
-        "nome": "17 KS - CETOSTEROIDES",
-        "marca": "",
-        "codIssec": "28050126",
-        "codIpm": "40305082"
       },
       {
         "nome": "ACTH - ADRENOCORTICOTROFICO",
@@ -574,8 +550,8 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
     "exames": [
       {
         "nome": "25-HIDROXIVITAMINA D (VIT D25)",
-        "marca": "**",
-        "codIssec": "",
+        "marca": "",
+        "codIssec": "28011430",
         "codIpm": "40302830"
       },
       {
@@ -965,6 +941,12 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "marca": "",
         "codIssec": "28061691",
         "codIpm": "40307182"
+      },
+      {
+        "nome": "CARGA VIRAL HIV",
+        "marca": "",
+        "codIssec": "28062060",
+        "codIpm": "40307484"
       },
       {
         "nome": "HTLV 1/2",
@@ -1541,12 +1523,6 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "codIpm": "40310418"
       },
       {
-        "nome": "ANTIGENO HTL-III EIE",
-        "marca": "*",
-        "codIssec": "28061535",
-        "codIpm": ""
-      },
-      {
         "nome": "ASO - ANTIESTREPTOLISINA O",
         "marca": "",
         "codIssec": "28060180",
@@ -1822,8 +1798,6 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
     "exames": [
       "TSH",
       "T4 LIVRE",
-      "T4 TOTAL",
-      "T3 TOTAL",
       "T3 LIVRE",
       "T3 REVERSO",
       "ANTI-TPO (ANTI-MICROSSOMAL)",
@@ -1851,7 +1825,6 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "T4 LIVRE - TIROXINA LIVRE",
       "T3 REVERSO",
       "LIPIDOGRAMA",
-      "T4 TOTAL - TIROXINA",
       "VITAMINA B12",
       "25-HIDROXIVITAMINA D (VIT D25)",
       "VITAMINA A",
@@ -1907,7 +1880,6 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "T4 LIVRE - TIROXINA LIVRE",
       "T3 REVERSO",
       "LIPIDOGRAMA",
-      "T4 TOTAL - TIROXINA",
       "VITAMINA B12",
       "25-HIDROXIVITAMINA D (VIT D25)",
       "VITAMINA A",
@@ -1918,7 +1890,6 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "ACTH - ADRENOCORTICOTROFICO",
       "SOMATOMEDINA C - IGF-1",
       "ANDROSTENEDIONA",
-      "PROGESTERONA",
       "PROLACTINA",
       "DHEA - DEHIDROEPIANDROSTERONA",
       "S-DHEA (DHEA-S)",
@@ -1963,11 +1934,10 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "T3 REVERSO",
       "LH - HORMONIO LUTEINIZANTE",
       "RENINA",
-      "T4 TOTAL - TIROXINA",
       "T4 LIVRE - TIROXINA LIVRE",
       "TSH",
       "ACTH - ADRENOCORTICOTROFICO",
-      "HIV 1 E 2",
+      "CARGA VIRAL HIV",
       "ZINCO SERICO",
       "SOMATOMEDINA C - IGF-1",
       "CD4",
@@ -1981,7 +1951,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "CALCITONINA",
       "17 ALFA-HIDROXIPROGESTERONA",
       "BNP / PROBNP - PEPTIDEO NATRIURETICO",
-      "ANTIGENO HTL-III EIE",
+      "HTLV 1/2",
       "BETA 2 MICROGLOBULINA",
       "CA 125",
       "CA 15-3",
@@ -1999,7 +1969,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "PROGESTERONA",
       "PROLACTINA",
       "INSULINA",
-      "MICROALBUMINURIA 24H"
+      "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
     ],
     "justificativa": ""
   },
@@ -2021,11 +1991,10 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "T3 REVERSO",
       "LH - HORMONIO LUTEINIZANTE",
       "RENINA",
-      "T4 TOTAL - TIROXINA",
       "T4 LIVRE - TIROXINA LIVRE",
       "TSH",
       "ACTH - ADRENOCORTICOTROFICO",
-      "HIV 1 E 2",
+      "CARGA VIRAL HIV",
       "ZINCO SERICO",
       "SOMATOMEDINA C - IGF-1",
       "CD4",
@@ -2040,10 +2009,8 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "CALCITONINA",
       "17 ALFA-HIDROXIPROGESTERONA",
       "BNP / PROBNP - PEPTIDEO NATRIURETICO",
-      "ANTIGENO HTL-III EIE",
+      "HTLV 1/2",
       "BETA 2 MICROGLOBULINA",
-      "CA 125",
-      "CA 15-3",
       "CA 72-4",
       "DHEA - DEHIDROEPIANDROSTERONA",
       "S-DHEA (DHEA-S)",
@@ -2055,9 +2022,11 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "D-DIMERO",
       "ANTI TIREOGLOBULINA",
       "TIREOGLOBULINA",
+      "PROLACTINA",
+      "INSULINA",
+      "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)",
       "PSA TOTAL",
-      "PSA LIVRE",
-      "INSULINA"
+      "PSA LIVRE"
     ],
     "justificativa": ""
   }
