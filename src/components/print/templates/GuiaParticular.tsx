@@ -12,10 +12,14 @@ const MEDICO = {
 export default function GuiaParticular() {
   const {
     pacienteNome, pacienteCpf, genero, examesSelecionados,
-    procedimentosSelecionados, tipoGuia, justificativa,
+    procedimentosSelecionados, procedimentosPersonalizados, tipoGuia, justificativa,
   } = useAppStore();
 
   const isLab = tipoGuia === 'LABORATORIO';
+  const todosProcs = [
+    ...procedimentosSelecionados,
+    ...(procedimentosPersonalizados ?? []),
+  ];
   const dataHoje = new Date().toLocaleDateString('pt-BR');
 
   return (
@@ -136,7 +140,7 @@ export default function GuiaParticular() {
             </div>
           ) : (
             <div>
-              {procedimentosSelecionados.map((proc, idx) => (
+              {todosProcs.map((proc, idx) => (
                 <div key={idx} style={{
                   display: 'flex', alignItems: 'center', gap: '8px',
                   borderBottom: '1px solid #e8e8e8', padding: '5px 0',
@@ -146,11 +150,11 @@ export default function GuiaParticular() {
                     {idx + 1}.
                   </span>
                   <span style={{ fontWeight: 'normal', color: '#1a1a1a' }}>
-                    {getProcedimentoNome(proc)}
+                    {/^[A-Z0-9_]+$/.test(proc) ? getProcedimentoNome(proc) : proc}
                   </span>
                 </div>
               ))}
-              {Array.from({ length: Math.max(0, 4 - procedimentosSelecionados.length) }).map((_, i) => (
+              {Array.from({ length: Math.max(0, 4 - todosProcs.length) }).map((_, i) => (
                 <div key={i} style={{ borderBottom: '1px solid #e8e8e8', height: '22px' }} />
               ))}
             </div>

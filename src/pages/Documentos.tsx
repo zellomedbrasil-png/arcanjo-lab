@@ -38,7 +38,8 @@ const formatCnpj = (v: string) => {
 const PRESETS = {
   LAUDO: [
     {
-      label: 'Demência de Alzheimer (Geriátrico)',
+      label: 'Demência de Alzheimer',
+      categoria: 'Cognitivo / Neuro',
       diagnostico: 'Demência na Doença de Alzheimer de início tardio',
       cid: 'F00.1',
       historico: 'Paciente idoso apresenta declínio cognitivo progressivo há 3 anos, com comprometimento grave de memória episódica, desorientação têmporo-espacial, apraxia ideomotora e episódios de agitação psicomotora. Necessita de auxílio e supervisão constante de terceiros para Atividades de Vida Diária (AVDs). Mini Mental (MEEM): 12/30.',
@@ -48,12 +49,63 @@ const PRESETS = {
     },
     {
       label: 'Cardiopatia Grave (INSS)',
+      categoria: 'Cardiovascular',
       diagnostico: 'Insuficiência Cardíaca Congestiva classe funcional NYHA III',
       cid: 'I50.0',
       historico: 'Paciente com miocardiopatia isquêmica crônica, submetido a angioplastia prévia há 2 anos, evoluindo com dispneia aos mínimos esforços, ortopneia e edema de membros inferiores recorrente. Ecocardiograma recente evidencia Fração de Ejeção do Ventrículo Esquerdo (FEVE) de 28%, sugerindo disfunção sistólica grave.',
       conduta: 'Otimização medicamentosa com Sacubitril/Valsartana, Carvedilol, Espironolactona e Furosemida. Restrição hídrica, controle rigoroso de sódio na dieta e repouso de atividades com esforço físico moderado/pesado.',
       prognostico: 'Reservado, alto risco de descompensação clínica e internações recorrentes.',
       finalidade: 'Perícia médica do INSS para fins de aposentadoria por invalidez.'
+    },
+    {
+      label: 'Fraldas Geriátricas',
+      categoria: 'Insumos / Cuidados',
+      diagnostico: 'Incontinência urinária e fecal mista',
+      cid: 'R32',
+      historico: 'Paciente idoso apresenta quadro de demência avançada com perda completa do controle esfincteriano (incontinência urinária e fecal grave), associada a déficit importante de mobilidade (acamado/cadeirante). Necessita de uso contínuo de fraldas descartáveis geriátricas para higiene básica diária, prevenção de lesões por pressão (escaras) e dermatites associadas à umidade.',
+      conduta: 'Prescrição de uso contínuo de fraldas descartáveis geriátricas tamanho G/GG, estimando-se consumo médio diário de 4 unidades (total de 120 fraldas por mês). Indico cuidados rigorosos de higiene íntima e uso de creme protetor de barreira cutânea.',
+      prognostico: 'Crônico e irreversível, sem possibilidade de recuperação do controle esfincteriano devido à patologia de base.',
+      finalidade: 'Solicitação de fraldas geriátricas junto ao Programa Farmácia Popular ou órgãos públicos de saúde.'
+    },
+    {
+      label: 'Fisioterapia (AVC/Motor)',
+      categoria: 'Reabilitação',
+      diagnostico: 'Sequelas de Acidente Vascular Cerebral (AVC) / Hemiparesia',
+      cid: 'I69.4',
+      historico: 'Paciente idoso com sequela de AVC isquêmico há 6 meses, apresentando hemiparesia à direita, déficit de equilíbrio estático/dinâmico, marcha claudicante com auxílio de andador e encurtamento de cadeia muscular posterior, gerando importante dependência nas Atividades de Vida Diária (AVDs).',
+      conduta: 'Encaminhamento para reabilitação motora contínua em Fisioterapia (sugerido 3 sessões semanais) focando em fortalecimento muscular global, treino de marcha e transferências, treino de equilíbrio e prevenção de quedas.',
+      prognostico: 'Favorável à melhora funcional parcial e manutenção da independência física residual.',
+      finalidade: 'Encaminhamento para tratamento fisioterapêutico continuado (convênio ou SUS).'
+    },
+    {
+      label: 'Fonoaudiologia (Disfagia)',
+      categoria: 'Reabilitação',
+      diagnostico: 'Disfagia orofaríngea neurogênica',
+      cid: 'R13',
+      historico: 'Paciente idoso portador de Doença de Parkinson avançada evoluindo com disfagia orofaríngea progressiva, manifestada por episódios frequentes de tosse e engasgos durante alimentação líquida e sólida, com risco iminente de pneumonia por broncoaspiração e desnutrição.',
+      conduta: 'Encaminhamento urgente para terapia fonoaudiológica contínua (mínimo de 2 sessões semanais) para reabilitação da deglutição, adequação das consistências alimentares (uso de espessante alimentar), exercícios miofuncionais orofaciais e manobras protetivas.',
+      prognostico: 'Estável com acompanhamento terapêutico regular e adaptações dietéticas.',
+      finalidade: 'Solicitação de tratamento fonoaudiológico e fornecimento de espessantes.'
+    },
+    {
+      label: 'Suporte Nutricional (Sarcopenia)',
+      categoria: 'Insumos / Cuidados',
+      diagnostico: 'Desnutrição proteico-calórica e Sarcopenia grave',
+      cid: 'E44.0',
+      historico: 'Paciente idoso apresenta perda ponderal involuntária acelerada (12% do peso corporal em 6 meses) associada a inapetência grave, fadiga extrema e perda expressiva de massa magra e força muscular (sarcopenia), com restrição severa de ingesta oral proteica.',
+      conduta: 'Indicação de suporte nutricional com suplementação enteral/oral hiperproteica e hipercalórica associada a aminoácidos (ex: HMB). Acompanhamento nutricional regular para adequação calórica.',
+      prognostico: 'Favorável à recuperação parcial de força se houver adesão à terapia e reabilitação física.',
+      finalidade: 'Solicitação de cobertura de suplementos orais especiais / suporte nutricional.'
+    },
+    {
+      label: 'Terapia Ocupacional',
+      categoria: 'Reabilitação',
+      diagnostico: 'Declínio cognitivo senil e dependência funcional',
+      cid: 'G31.8',
+      historico: 'Paciente com quadro demencial em estágio moderado com perda progressiva de autonomia para Atividades Instrumentais de Vida Diária (como controle de medicamentos e finanças) e início de dependência para autocuidado (higiene, alimentação).',
+      conduta: 'Indicação de reabilitação cognitiva e funcional com Terapia Ocupacional (2 sessões semanais), focando em treino de AVDs, adequações de segurança ambiental, atividades de estimulação cognitiva e orientação aos cuidadores.',
+      prognostico: 'De manutenção funcional e redução da velocidade de declínio cognitivo.',
+      finalidade: 'Encaminhamento para reabilitação em Terapia Ocupacional.'
     }
   ],
   ATESTADO: [
@@ -65,11 +117,25 @@ const PRESETS = {
       declararCid: true
     },
     {
-      label: 'Infecção de Vias Aéreas Superiores - IVAS (5 dias)',
+      label: 'IVAS / Gripe (5 dias)',
       dias: '5',
       motivo: 'Paciente com quadro de febre termometrada (38.5ºC), tosse produtiva, coriza intensa, mialgia difusa e prostração física. Indicado repouso domiciliar, sintomáticos e hidratação regular, devendo permanecer afastado de aglomerações e atividades profissionais.',
       cid: 'J06.9',
       declararCid: true
+    },
+    {
+      label: 'Saúde Mental / Transtorno Ansioso (7 dias)',
+      dias: '7',
+      motivo: 'Paciente em acompanhamento psiquiátrico/psicológico regular apresenta crise ansiosa aguda com sintomas de palpitações, insônia refratária, irritabilidade acentuada e incapacidade de manter concentração para as atividades laborativas. Necessita de afastamento temporário para estabilização clínica e ajuste terapêutico.',
+      cid: 'F41.1',
+      declararCid: false
+    },
+    {
+      label: 'Pós-Cirúrgico / Recuperação (15 dias)',
+      dias: '15',
+      motivo: 'Paciente em período pós-operatório imediato, necessitando de repouso relativo, curativos periódicos e acompanhamento ambulatorial. Está temporariamente impedido de exercer suas atividades laborativas habituais até liberação médica formal.',
+      cid: 'Z48.0',
+      declararCid: false
     }
   ],
   COMPARECIMENTO: [
@@ -314,15 +380,35 @@ export default function Documentos() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3.5">Modelos Rápidos / Presets</h2>
               <div className="flex flex-wrap gap-2.5">
-                {doc.tipoDocumento === 'LAUDO' && PRESETS.LAUDO.map((p, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => aplicarPresetLaudo(p)}
-                    className="px-3.5 py-2 bg-indigo-50/40 hover:bg-indigo-50 border border-indigo-100/50 hover:border-indigo-200 text-indigo-800 rounded-xl text-xs font-semibold transition-all"
-                  >
-                    {p.label}
-                  </button>
-                ))}
+                {doc.tipoDocumento === 'LAUDO' && (
+                  <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Array.from(new Set(PRESETS.LAUDO.map(p => p.categoria))).map((cat) => {
+                      const presetsDaCat = PRESETS.LAUDO.filter(p => p.categoria === cat);
+                      return (
+                        <div key={cat} className="bg-gray-50/50 border border-gray-150 p-3 rounded-2xl flex flex-col gap-2">
+                          <h3 className="text-[10px] font-extrabold text-indigo-650 uppercase tracking-widest flex items-center gap-1.5 border-b border-gray-200/60 pb-1 mb-1">
+                            {cat === 'Cognitivo / Neuro' && '🧠'}
+                            {cat === 'Cardiovascular' && '🫀'}
+                            {cat === 'Insumos / Cuidados' && '🩹'}
+                            {cat === 'Reabilitação' && '♿'}
+                            {cat}
+                          </h3>
+                          <div className="flex flex-wrap gap-1.5">
+                            {presetsDaCat.map((p, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => aplicarPresetLaudo(p)}
+                                className="px-3 py-1.5 bg-white hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 text-indigo-900 rounded-xl text-xs font-semibold transition-all hover:scale-[1.01]"
+                              >
+                                {p.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
                 {doc.tipoDocumento === 'ATESTADO' && PRESETS.ATESTADO.map((p, idx) => (
                   <button
                     key={idx}
@@ -513,7 +599,7 @@ export default function Documentos() {
                     <input
                       type="text"
                       value={doc.laudoCid}
-                      onChange={(e) => doc.setDocumento({ laudoCid: e.target.value })}
+                      onChange={(e) => doc.setDocumento({ laudoCid: e.target.value.toUpperCase() })}
                       placeholder="Ex: F00.1"
                       className={inputCls}
                     />
@@ -523,10 +609,10 @@ export default function Documentos() {
                 <div>
                   <label className={labelCls}>Histórico Clínico e Evolução</label>
                   <textarea
-                    rows={4}
+                    rows={5}
                     value={doc.laudoHistorico}
                     onChange={(e) => doc.setDocumento({ laudoHistorico: e.target.value })}
-                    placeholder="Descreva o quadro evolutivo do paciente, exames que comprovam..."
+                    placeholder="Descreva o quadro evolutivo do paciente, exames realizados, escores funcionais (MEEM, NYHA, etc.)..."
                     className={`${inputCls} font-normal leading-relaxed`}
                   />
                 </div>
@@ -535,21 +621,21 @@ export default function Documentos() {
                   <div>
                     <label className={labelCls}>Conduta Terapêutica / Recomendações</label>
                     <textarea
-                      rows={3}
+                      rows={4}
                       value={doc.laudoConduta}
                       onChange={(e) => doc.setDocumento({ laudoConduta: e.target.value })}
-                      placeholder="Tratamentos indicados, medicamentos, supervisão..."
-                      className={inputCls}
+                      placeholder="Tratamentos indicados, medicamentos, sessões de reabilitação, supervisão 24h..."
+                      className={`${inputCls} font-normal leading-relaxed`}
                     />
                   </div>
                   <div>
                     <label className={labelCls}>Prognóstico Clínico</label>
                     <textarea
-                      rows={3}
+                      rows={4}
                       value={doc.laudoPrognostico}
                       onChange={(e) => doc.setDocumento({ laudoPrognostico: e.target.value })}
-                      placeholder="Ex: Reservado a longo prazo com necessidade de cuidados..."
-                      className={inputCls}
+                      placeholder="Ex: Reservado a longo prazo com necessidade de cuidados continuados..."
+                      className={`${inputCls} font-normal leading-relaxed`}
                     />
                   </div>
                 </div>
@@ -563,7 +649,71 @@ export default function Documentos() {
                     placeholder="Ex: Fins de perícia previdenciária / INSS"
                     className={inputCls}
                   />
+                  {/* Chips de finalidade rápida */}
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {[
+                      'Fins previdenciários / INSS',
+                      'Solicitação de fraldas geriátricas',
+                      'Encaminhamento para Fisioterapia',
+                      'Encaminhamento para Fonoaudiologia',
+                      'Encaminhamento para Terapia Ocupacional',
+                      'Solicitação de suporte nutricional',
+                      'Curatela / representação legal',
+                      'Uso em concurso público / BPC',
+                    ].map((fin) => (
+                      <button
+                        key={fin}
+                        type="button"
+                        onClick={() => doc.setDocumento({ laudoFinalidade: fin })}
+                        className={`px-2.5 py-1 text-[10px] font-semibold rounded-full border transition-all ${
+                          doc.laudoFinalidade === fin
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-200 hover:text-indigo-700 hover:bg-indigo-50'
+                        }`}
+                      >
+                        {fin}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {/* Informações de Reabilitação (aparecem se a finalidade for de reabilitação) */}
+                {(doc.laudoFinalidade.toLowerCase().includes('fisioterapia') ||
+                  doc.laudoFinalidade.toLowerCase().includes('fonoaudiologia') ||
+                  doc.laudoFinalidade.toLowerCase().includes('ocupacional')) && (
+                  <div className="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 space-y-3">
+                    <p className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
+                      ♿ Dados Complementares de Reabilitação
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className={labelCls}>Especialidade / Serviço Solicitado</label>
+                        <input
+                          type="text"
+                          placeholder="Ex: Fisioterapia Motora, Fonoaudiologia"
+                          className={inputCls}
+                          value={doc.laudoFinalidade.includes('Fisioterapia') ? 'Fisioterapia Motora' :
+                            doc.laudoFinalidade.includes('Fonoaudiologia') ? 'Fonoaudiologia / Reabilitação da Deglutição' :
+                            'Terapia Ocupacional Cognitiva'}
+                          readOnly
+                        />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Nº de Sessões Indicadas (por semana)</label>
+                        <select className={inputCls} defaultValue="3">
+                          <option value="1">1 sessão semanal</option>
+                          <option value="2">2 sessões semanais</option>
+                          <option value="3">3 sessões semanais</option>
+                          <option value="5">5 sessões semanais (intensivo)</option>
+                          <option value="indeterminate">Duração indeterminada</option>
+                        </select>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-indigo-500 italic">
+                      * Essas informações serão impressas como nota de encaminhamento no rodapé do laudo.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -904,10 +1054,12 @@ export default function Documentos() {
               <div 
                 className="bg-white shadow-xl border border-gray-300 rounded overflow-hidden"
                 style={{
-                  width: '21cm',
-                  minWidth: '21cm',
-                  height: '29.7cm',
-                  minHeight: '29.7cm',
+                  width: '210mm',
+                  minWidth: '210mm',
+                  maxWidth: '210mm',
+                  height: '297mm',
+                  minHeight: '297mm',
+                  maxHeight: '297mm',
                 }}
               >
                 <DocumentoTemplate />

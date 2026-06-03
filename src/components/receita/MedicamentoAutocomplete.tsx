@@ -1082,6 +1082,28 @@ const DATABASE_MEDICAMENTOS: MedicamentoSugestao[] = [
     duracao: '30 dias',
     tipoRecomendado: 'SIMPLES',
     indicacao: 'Suplementação de Folato / Anemia Megaloblástica',
+  },
+  {
+    nome: 'Renovi B Plus',
+    principioAtivo: 'Renovi B Plus (Vitamina B12 + Vitaminas do Complexo B)',
+    formaFarmaceutica: 'Comprimidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral ao dia.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    indicacao: 'Suplementação de Vitaminas do Complexo B',
+  },
+  {
+    nome: 'Complexo B',
+    principioAtivo: 'Complexo B (Vitaminas B1, B2, B3, B5, B6, B12)',
+    formaFarmaceutica: 'Comprimidos revestidos',
+    uso: 'Uso oral',
+    posologia: 'Tomar 1 comprimido por via oral ao dia.',
+    quantidade: '30 comprimidos',
+    duracao: 'Uso contínuo',
+    tipoRecomendado: 'SIMPLES',
+    indicacao: 'Suplementação de Vitaminas do Complexo B',
   }
 ];
 
@@ -1092,6 +1114,7 @@ interface AutocompleteProps {
   onEnterPress: () => void;
   placeholder: string;
   disabled?: boolean;
+  autoFocus?: boolean;
 }
 
 export default function MedicamentoAutocomplete({
@@ -1101,6 +1124,7 @@ export default function MedicamentoAutocomplete({
   onEnterPress,
   placeholder,
   disabled = false,
+  autoFocus = false,
 }: AutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -1186,6 +1210,7 @@ export default function MedicamentoAutocomplete({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
+          autoFocus={autoFocus}
           className="w-full text-sm bg-transparent border-none outline-none pl-9 pr-3 py-2 text-gray-800 placeholder-gray-400 font-medium"
         />
       </div>

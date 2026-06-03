@@ -45,7 +45,10 @@ export default function ImprimirDocumento() {
       </div>
 
       {/* Container A4 */}
-      <div className="max-w-[21cm] mx-auto bg-white min-h-[29.7cm] shadow-xl print:shadow-none print:w-[21cm] print:m-0 overflow-hidden relative">
+      <div 
+        className="mx-auto bg-white shadow-xl print:shadow-none overflow-hidden relative"
+        style={{ width: '210mm', height: '297mm' }}
+      >
         <DocumentoTemplate />
       </div>
 

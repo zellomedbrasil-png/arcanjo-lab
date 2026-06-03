@@ -14,14 +14,17 @@ export default function ProcedimentosEletivos() {
   const {
     pacienteNome,
     procedimentosSelecionados,
+    procedimentosPersonalizados,
     justificativaProcedimentos,
     lastSavedAt,
     setPaciente,
     setJustificativa,
     setJustificativaProcedimentos,
+    removeProcedimentoPersonalizado,
   } = useAppStore();
 
-  const hasProcedimentos = procedimentosSelecionados.length > 0;
+  const totalProcedimentos = procedimentosSelecionados.length + procedimentosPersonalizados.length;
+  const hasProcedimentos = totalProcedimentos > 0;
   const isFormValid = pacienteNome.trim() !== '';
   const isReadyToPrint = isFormValid && hasProcedimentos;
 
@@ -52,11 +55,15 @@ export default function ProcedimentosEletivos() {
   const handleClear = () => {
     if (confirm('Limpar procedimentos selecionados e justificativa desta aba?')) {
       setPaciente({ procedimentosSelecionados: [] });
+      procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
       setJustificativaProcedimentos('');
     }
   };
 
-  const procedimentosPreview = procedimentosSelecionados.join(', ');
+  const procedimentosPreview = [
+    ...procedimentosSelecionados,
+    ...procedimentosPersonalizados,
+  ].join(', ');
 
   return (
     <Layout>
@@ -106,9 +113,9 @@ export default function ProcedimentosEletivos() {
               <>
                 <span className="text-gray-200 shrink-0">·</span>
                 <span className="flex items-center gap-1 text-emerald-600 font-bold text-xs shrink-0">
-                  <FileText size={12} />
-                  {procedimentosSelecionados.length}/3 procedimento(s)
-                </span>
+                    <FileText size={12} />
+                    {totalProcedimentos}/3 procedimento(s)
+                  </span>
                 {procedimentosPreview && (
                   <span className="text-xs text-gray-400 truncate hidden sm:block">{procedimentosPreview}</span>
                 )}

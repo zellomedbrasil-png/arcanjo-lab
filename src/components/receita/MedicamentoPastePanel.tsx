@@ -18,7 +18,7 @@ export default function MedicamentoPastePanel() {
   const [selecionados, setSelecionados] = useState<Set<number>>(new Set());
   const [expandido, setExpandido] = useState(true);
 
-  const { setTipoReceita, addMedicamento, updateMedicamento, medicamentos } = useReceitaStore();
+  const { setTipoReceita, addMedicamento, updateMedicamento, medicamentos, setAlertas } = useReceitaStore();
   const elapsed = useElapsedTimer(isLoading);
 
   const handleProcessar = async () => {
@@ -89,6 +89,9 @@ export default function MedicamentoPastePanel() {
     if (temEspecial) {
       setTipoReceita('ESPECIAL');
     }
+
+    // Salvar alertas da IA no estado global da receita
+    setAlertas(resultado.alertas || []);
 
     const count = medsParaAplicar.length;
     toast.success(`${count} medicamento${count !== 1 ? 's' : ''} aplicado${count !== 1 ? 's' : ''} na receita${temEspecial ? ' (Controle Especial detectado)' : ''}`);

@@ -78,7 +78,7 @@ function Secao({ label, cor }: { label: string; cor?: string }) {
 export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHeader }: Props) {
   const {
     pacienteNome, numeroBeneficiario,
-    examesSelecionados, procedimentosSelecionados, tipoGuia, justificativa,
+    examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados, tipoGuia, justificativa,
   } = useAppStore();
 
   const isLab = tipoGuia === 'LABORATORIO';
@@ -86,7 +86,10 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
 
   const todosItens: string[] = isLab
     ? examesSelecionados
-    : procedimentosSelecionados.map(getProcedimentoNome);
+    : [
+        ...procedimentosSelecionados.map(p => /^[A-Z0-9_]+$/.test(p) ? getProcedimentoNome(p) : p),
+        ...(procedimentosPersonalizados ?? []),
+      ];
 
   const N_ROWS = 5;
   const porLinha = Math.ceil(todosItens.length / N_ROWS) || 1;

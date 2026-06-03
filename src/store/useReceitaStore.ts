@@ -4,6 +4,7 @@ import { publishPatientSync, subscribePatientSync } from './patientSync';
 
 export type TipoReceita = 'SIMPLES' | 'ESPECIAL';
 export type TipoRecomendado = 'SIMPLES' | 'ESPECIAL' | '';
+export type ModoEntrada = 'ESTRUTURADO' | 'TEXTO_LIVRE';
 
 export interface MedicamentoReceita {
   id: string;
@@ -34,13 +35,23 @@ interface ReceitaState {
   local: string;
   data: string;
   medicamentos: MedicamentoReceita[];
+  alertas: string[];
   lastSavedAt: string | null;
+
+  // Modo de entrada da prescrição: cards estruturados ou texto livre
+  modoEntrada: ModoEntrada;
+  textoLivre: string;
+  melhorarComIA: boolean;
 
   setTipoReceita: (tipo: TipoReceita) => void;
   setPacienteReceita: (dados: Partial<ReceitaState>) => void;
   addMedicamento: () => void;
   removeMedicamento: (id: string) => void;
   updateMedicamento: (id: string, dados: Partial<MedicamentoReceita>) => void;
+  setAlertas: (alertas: string[]) => void;
+  setModoEntrada: (modo: ModoEntrada) => void;
+  setTextoLivre: (texto: string) => void;
+  setMelhorarComIA: (valor: boolean) => void;
   resetReceita: () => void;
 }
 
@@ -76,7 +87,11 @@ const initialState = {
   local: 'Fortaleza-CE',
   data: hoje(),
   medicamentos: [novoMedicamento()],
+  alertas: [] as string[],
   lastSavedAt: null,
+  modoEntrada: 'ESTRUTURADO' as ModoEntrada,
+  textoLivre: '',
+  melhorarComIA: false,
 };
 
 export const useReceitaStore = create<ReceitaState>()(
@@ -122,8 +137,15 @@ export const useReceitaStore = create<ReceitaState>()(
           lastSavedAt: touch(),
         })),
 
+      setAlertas: (alertas) =>
+        set({ alertas, lastSavedAt: touch() }),
+
+      setModoEntrada: (modo) => set({ modoEntrada: modo, lastSavedAt: touch() }),
+      setTextoLivre: (texto) => set({ textoLivre: texto, lastSavedAt: touch() }),
+      setMelhorarComIA: (valor) => set({ melhorarComIA: valor, lastSavedAt: touch() }),
+
       resetReceita: () => {
-        set({ ...initialState, data: hoje(), medicamentos: [novoMedicamento()] });
+        set({ ...initialState, data: hoje(), medicamentos: [novoMedicamento()], alertas: [], modoEntrada: 'ESTRUTURADO', textoLivre: '', melhorarComIA: false });
         publishPatientSync('receita', {
           pacienteNome: '',
           pacienteCpf: '',
@@ -149,13 +171,16 @@ export const useReceitaStore = create<ReceitaState>()(
         pacienteUf: state.pacienteUf,
         pacienteTelefone: state.pacienteTelefone,
         local: state.local,
-        data: state.data,
         medicamentos: state.medicamentos.map((medicamento) => ({
           ...medicamento,
           carregando: false,
           erro: '',
         })),
+        alertas: state.alertas,
         lastSavedAt: state.lastSavedAt,
+        modoEntrada: state.modoEntrada,
+        textoLivre: state.textoLivre,
+        melhorarComIA: state.melhorarComIA,
       }),
     }
   )

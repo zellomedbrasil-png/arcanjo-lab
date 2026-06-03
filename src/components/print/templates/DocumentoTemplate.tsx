@@ -38,7 +38,17 @@ export default function DocumentoTemplate() {
   const idade = getIdade();
 
   return (
-    <div className="p-10 text-black bg-white font-sans text-[11px] leading-relaxed relative min-h-[29.7cm] flex flex-col justify-between">
+    <div 
+      className="p-10 text-black bg-white font-sans text-[11px] leading-relaxed relative flex flex-col justify-between"
+      style={{
+        width: '210mm',
+        height: '297mm',
+        maxWidth: '210mm',
+        maxHeight: '297mm',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+      }}
+    >
       {/* === CABEÇALHO / TIMBRE === */}
       <div>
         <div className="border-b-2 border-gray-900 pb-3 mb-6">
@@ -73,41 +83,41 @@ export default function DocumentoTemplate() {
             <div className="grid grid-cols-3 gap-4 border-b border-gray-200 pb-3">
               <div className="col-span-2">
                 <span className="text-[8px] font-bold uppercase text-gray-500 block">Paciente</span>
-                <span className="text-[11px] font-normal uppercase">{doc.pacienteNome || '________________________________________'}</span>
+                <span className="text-[11.5px] font-bold uppercase text-gray-900">{doc.pacienteNome || '________________________________________'}</span>
               </div>
               {doc.pacienteCpf && (
                 <div>
                   <span className="text-[8px] font-bold uppercase text-gray-500 block">CPF</span>
-                  <span className="text-[10px] font-normal">{doc.pacienteCpf}</span>
+                  <span className="text-[10px] font-semibold text-gray-800">{doc.pacienteCpf}</span>
                 </div>
               )}
             </div>
 
             <div>
-              <h2 className="text-[10px] font-bold uppercase text-gray-700 tracking-wider mb-1">Diagnóstico / Hipótese Diagnóstica</h2>
-              <p className="text-[11px] bg-gray-50 p-2.5 rounded border border-gray-200 font-normal uppercase">
+              <h2 className="text-[9.5px] font-bold uppercase text-indigo-700 tracking-wider mb-0.5 border-b border-indigo-100 pb-0.5">Diagnóstico / Hipótese Diagnóstica</h2>
+              <p className="text-[11.5px] font-bold uppercase text-gray-900 py-1.5 pl-0.5">
                 {doc.laudoDiagnostico || 'Não informado'}
-                {doc.laudoCid && ` (CID-10: ${doc.laudoCid.toUpperCase()})`}
+                {doc.laudoCid && <span className="text-indigo-650 ml-1.5 font-semibold font-mono">(CID-10: {doc.laudoCid.toUpperCase()})</span>}
               </p>
             </div>
 
             <div>
-              <h2 className="text-[10px] font-bold uppercase text-gray-700 tracking-wider mb-1">Histórico Clínico e Evolução</h2>
-              <p className="text-[10px] text-justify whitespace-pre-wrap leading-relaxed border border-gray-200 p-3 rounded min-h-[120px]">
+              <h2 className="text-[9.5px] font-bold uppercase text-indigo-700 tracking-wider mb-0.5 border-b border-indigo-100 pb-0.5">Histórico Clínico e Evolução</h2>
+              <p className="text-[10px] text-justify whitespace-pre-wrap leading-relaxed py-1.5 pl-0.5 text-gray-800">
                 {doc.laudoHistorico || 'Nenhum histórico clínico descrito.'}
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <h2 className="text-[10px] font-bold uppercase text-gray-700 tracking-wider mb-1">Conduta Terapêutica / Recomendações</h2>
-                <p className="text-[10px] text-justify whitespace-pre-wrap leading-relaxed border border-gray-200 p-3 rounded min-h-[80px]">
+                <h2 className="text-[9.5px] font-bold uppercase text-indigo-700 tracking-wider mb-0.5 border-b border-indigo-100 pb-0.5">Conduta Terapêutica / Recomendações</h2>
+                <p className="text-[10px] text-justify whitespace-pre-wrap leading-relaxed py-1.5 pl-0.5 text-gray-800">
                   {doc.laudoConduta || 'Não informado'}
                 </p>
               </div>
               <div>
-                <h2 className="text-[10px] font-bold uppercase text-gray-700 tracking-wider mb-1">Prognóstico Clínico</h2>
-                <p className="text-[10px] text-justify whitespace-pre-wrap leading-relaxed border border-gray-200 p-3 rounded min-h-[80px]">
+                <h2 className="text-[9.5px] font-bold uppercase text-indigo-700 tracking-wider mb-0.5 border-b border-indigo-100 pb-0.5">Prognóstico Clínico</h2>
+                <p className="text-[10px] text-justify whitespace-pre-wrap leading-relaxed py-1.5 pl-0.5 text-gray-800">
                   {doc.laudoPrognostico || 'Favorável mediante adesão ao tratamento indicado.'}
                 </p>
               </div>
@@ -295,7 +305,7 @@ export default function DocumentoTemplate() {
       </div>
 
       {/* === ASSINATURA E DATAS === */}
-      <div className="mt-8 border-t border-gray-200 pt-5">
+      <div className="mt-8 pt-5">
         <div className="flex justify-between items-end">
           <div className="text-[9px] text-gray-500">
             <p className="font-semibold text-gray-700">{doc.local || 'Fortaleza-CE'}, {dataFormatada}</p>

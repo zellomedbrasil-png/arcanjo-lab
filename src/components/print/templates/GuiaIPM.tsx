@@ -29,13 +29,16 @@ function formatExamNameForPrint(name: string) {
 }
 
 export default function GuiaIPM() {
-  const { pacienteNome, numeroBeneficiario, examesSelecionados, procedimentosSelecionados, tipoGuia, justificativa, genero } = useAppStore();
+  const { pacienteNome, numeroBeneficiario, examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados, tipoGuia, justificativa, genero } = useAppStore();
 
   const isLab = tipoGuia === 'LABORATORIO';
 
   const itemsList = isLab
     ? examesSelecionados
-    : (procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia]);
+    : [
+        ...(procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia]),
+        ...(procedimentosPersonalizados ?? []),
+      ];
 
   return (
     <div className="p-8 text-[11px] leading-snug font-sans text-black bg-white h-full relative">
@@ -165,7 +168,11 @@ export default function GuiaIPM() {
             {(() => {
               const finalItems = (() => {
                 if (!isLab) {
-                  return itemsList.map(item => formatExamNameForPrint(getProcedimentoNome(item)));
+                  return itemsList.map(item => {
+                    // Check if it's a catalog procedure ID (all caps, underscore) or custom text
+                    const isCatalogId = /^[A-Z0-9_]+$/.test(item) && getProcedimentoNome(item) !== item;
+                    return formatExamNameForPrint(isCatalogId ? getProcedimentoNome(item) : item);
+                  });
                 }
                 
                 const hasUrinocultura = itemsList.some(e => e.toUpperCase().trim() === 'URINOCULTURA');

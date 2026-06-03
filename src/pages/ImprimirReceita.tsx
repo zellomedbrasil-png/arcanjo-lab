@@ -6,7 +6,24 @@ import ReceitaControleEspecial from '../components/print/templates/ReceitaContro
 
 export default function ImprimirReceita() {
   const navigate = useNavigate();
-  const { tipoReceita, pacienteNome } = useReceitaStore();
+  const { medicamentos, pacienteNome, modoEntrada, textoLivre, tipoReceita } = useReceitaStore();
+
+  const isTextoLivre = modoEntrada === 'TEXTO_LIVRE' && textoLivre.trim() !== '';
+
+  const medsValidos = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
+  const medsSimples = medsValidos.filter((m) => m.tipoRecomendado !== 'ESPECIAL');
+  const medsEspeciais = medsValidos.filter((m) => m.tipoRecomendado === 'ESPECIAL');
+
+  const temAmbos = !isTextoLivre && medsSimples.length > 0 && medsEspeciais.length > 0;
+  const apenasEspecial = isTextoLivre
+    ? tipoReceita === 'ESPECIAL'
+    : medsEspeciais.length > 0 && medsSimples.length === 0;
+
+  const descTipo = temAmbos
+    ? '📋 Receitas Divididas (Simples + Especial)'
+    : apenasEspecial
+    ? '⚠️ Receita Controle Especial (2 Vias)'
+    : '📋 Receita Branca Simples';
 
   return (
     <div className="min-h-screen bg-gray-200 print:bg-white p-4 print:p-0">
@@ -21,8 +38,8 @@ export default function ImprimirReceita() {
         </button>
 
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500">
-            {tipoReceita === 'SIMPLES' ? '📋 Receita Branca Simples' : '⚠️ Receita Controle Especial (2 Vias)'}
+          <span className="text-sm text-gray-500 font-semibold">
+            {descTipo}
           </span>
           <button
             onClick={() => window.print()}
@@ -35,14 +52,60 @@ export default function ImprimirReceita() {
       </div>
 
       {/* Container A4 */}
-      <div className="max-w-[21cm] mx-auto bg-white min-h-[29.7cm] shadow-xl print:shadow-none print:w-[21cm] print:m-0 overflow-hidden relative">
-        {tipoReceita === 'SIMPLES' ? <ReceitaBranca /> : <ReceitaControleEspecial />}
+      <div className="flex flex-col gap-8 print:gap-0 max-w-[210mm] mx-auto print:w-[210mm] print:m-0">
+        {isTextoLivre ? (
+          <div
+            className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
+            style={{ width: '210mm', height: '297mm' }}
+          >
+            {tipoReceita === 'ESPECIAL'
+              ? <ReceitaControleEspecial textoLivre={textoLivre} />
+              : <ReceitaBranca textoLivre={textoLivre} />}
+          </div>
+        ) : temAmbos ? (
+          <>
+            {/* Receita Simples */}
+            <div 
+              className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
+              style={{ width: '210mm', height: '297mm', breakAfter: 'page', pageBreakAfter: 'always' }}
+            >
+              <ReceitaBranca medicamentosOverride={medsSimples} />
+            </div>
+
+            {/* Divisor Visual na Tela */}
+            <div className="no-print h-8 bg-gray-300 flex items-center justify-center text-[10px] text-gray-600 font-bold uppercase tracking-wider rounded-lg shadow-inner">
+              ✂️ Fim da Receita Simples · Próxima página: Receita Controle Especial C344
+            </div>
+
+            {/* Receita Especial */}
+            <div 
+              className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
+              style={{ width: '210mm', height: '297mm' }}
+            >
+              <ReceitaControleEspecial medicamentosOverride={medsEspeciais} />
+            </div>
+          </>
+        ) : apenasEspecial ? (
+          <div 
+            className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
+            style={{ width: '210mm', height: '297mm' }}
+          >
+            <ReceitaControleEspecial medicamentosOverride={medsEspeciais} />
+          </div>
+        ) : (
+          <div 
+            className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
+            style={{ width: '210mm', height: '297mm' }}
+          >
+            <ReceitaBranca medicamentosOverride={medsSimples} />
+          </div>
+        )}
       </div>
 
       {/* Dica de impressão */}
       <div className="max-w-4xl mx-auto no-print mt-4 text-center text-xs text-gray-500">
-        {tipoReceita === 'ESPECIAL'
-          ? '⚠️ Imprima em papel branco padrão A4. A receita será dividida em 2 vias para recorte.'
+        {apenasEspecial || temAmbos
+          ? '⚠️ Imprima em papel branco padrão A4. O controle especial será dividido em 2 vias para recorte.'
           : '💡 Configure a impressora para papel A4, sem margens.'}
       </div>
 

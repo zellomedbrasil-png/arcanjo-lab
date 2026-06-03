@@ -15,6 +15,7 @@ interface AppState {
   tipoGuia: TipoGuia;
   examesSelecionados: string[];
   procedimentosSelecionados: string[];
+  procedimentosPersonalizados: string[]; // Exames livres digitados pelo médico
   soap: string;
   queixa: string;
   justificativa: string;
@@ -30,6 +31,8 @@ interface AppState {
   adicionarPainel: (examesPainel: string[]) => void;
   setExamesSelecionados: (exames: string[]) => void;
   toggleProcedimento: (proc: string) => void;
+  addProcedimentoPersonalizado: (nome: string) => void;
+  removeProcedimentoPersonalizado: (nome: string) => void;
   setSoap: (soap: string) => void;
   setQueixa: (queixa: string) => void;
   setJustificativa: (justificativa: string) => void;
@@ -54,6 +57,7 @@ const initialState = {
   tipoGuia: 'LABORATORIO' as TipoGuia,
   examesSelecionados: [],
   procedimentosSelecionados: [] as string[],
+  procedimentosPersonalizados: [] as string[],
   soap: '',
   queixa: '',
   justificativa: '',
@@ -107,11 +111,26 @@ export const useAppStore = create<AppState>()(
         if (selected.includes(proc)) {
           return { procedimentosSelecionados: selected.filter((item) => item !== proc), lastSavedAt: touch() };
         }
-        if (selected.length < 3) {
+        const total = selected.length + state.procedimentosPersonalizados.length;
+        if (total < 3) {
           return { procedimentosSelecionados: [...selected, proc], lastSavedAt: touch() };
         }
         return state;
       }),
+
+      addProcedimentoPersonalizado: (nome) => set((state) => {
+        const nomeClean = nome.trim();
+        if (!nomeClean) return state;
+        if (state.procedimentosPersonalizados.includes(nomeClean)) return state;
+        const total = state.procedimentosSelecionados.length + state.procedimentosPersonalizados.length;
+        if (total >= 3) return state;
+        return { procedimentosPersonalizados: [...state.procedimentosPersonalizados, nomeClean], lastSavedAt: touch() };
+      }),
+
+      removeProcedimentoPersonalizado: (nome) => set((state) => ({
+        procedimentosPersonalizados: state.procedimentosPersonalizados.filter(n => n !== nome),
+        lastSavedAt: touch(),
+      })),
 
       setSoap: (soap) => set({ soap, lastSavedAt: touch() }),
       setQueixa: (queixa) => set({ queixa, lastSavedAt: touch() }),
@@ -137,7 +156,7 @@ export const useAppStore = create<AppState>()(
       setIaModel: (iaModel) => set({ iaModel }),
 
       resetForm: () => {
-        set(initialState);
+        set({ ...initialState, procedimentosPersonalizados: [] });
         publishPatientSync('app', {
           pacienteNome: '',
           pacienteCpf: '',
@@ -207,6 +226,7 @@ export const useAppStore = create<AppState>()(
         tipoGuia: state.tipoGuia,
         examesSelecionados: state.examesSelecionados,
         procedimentosSelecionados: state.procedimentosSelecionados,
+        procedimentosPersonalizados: state.procedimentosPersonalizados,
         soap: state.soap,
         queixa: state.queixa,
         justificativa: state.justificativa,

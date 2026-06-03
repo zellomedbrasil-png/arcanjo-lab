@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useReceitaStore, type TipoRecomendado } from '../store/useReceitaStore';
-import { gerarPosologia } from '../services/groqReceita';
+import { gerarPosologia, processarListaMedicamentos } from '../services/groqReceita';
+import { getErrorMessage } from '../lib/errors';
+import { toast } from '../lib/toast';
 import MedicamentoPastePanel from '../components/receita/MedicamentoPastePanel';
 import MedicamentoAutocomplete from '../components/receita/MedicamentoAutocomplete';
 import ReceitaBranca from '../components/print/templates/ReceitaBranca';
@@ -10,7 +12,7 @@ import ReceitaControleEspecial from '../components/print/templates/ReceitaContro
 import {
   Sparkles, Plus, Trash2, Printer, RotateCcw, FileText, AlertTriangle,
   ChevronDown, ChevronUp, User, Calendar, MapPin, Pill, Loader2,
-  CheckCircle2, Eye, ShieldAlert, Info, History
+  CheckCircle2, Eye, ShieldAlert, Info, History, LayoutGrid, PenLine
 } from 'lucide-react';
 import { useRecentPatientsStore, type PacienteRecente } from '../store/useRecentPatientsStore';
 import { savePatientToHistory } from '../store/patientSync';
@@ -308,7 +310,7 @@ function MedicamentoCard({
     try {
       const resultado = await gerarPosologia(nome);
       updateMedicamento(id, { ...resultado, nomeDigitado: nome, carregando: false });
-      setExpandido(true);
+      setExpandido(false);
     } catch {
       updateMedicamento(id, {
         carregando: false,
@@ -357,10 +359,11 @@ function MedicamentoCard({
                 nomeDigitado: inputNome || sugestao.principioAtivo,
                 erro: '',
               });
-              setExpandido(true);
+              setExpandido(false);
             }}
             onEnterPress={handleGerarIA}
             placeholder={`Medicamento ${index + 1} (ex: Clonazepam 2mg)`}
+            autoFocus={index === medicamentos.length - 1 && !med.nomeDigitado}
           />
         </div>
 
@@ -477,11 +480,14 @@ function MedicamentoCard({
 export default function NovaReceita() {
   const navigate = useNavigate();
   const [activeTabGuias, setActiveTabGuias] = useState<'geriatria' | 'gastro'>('geriatria');
+  const [processandoTextoLivre, setProcessandoTextoLivre] = useState(false);
   const {
     tipoReceita, pacienteNome, pacienteCpf,
     pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf, pacienteTelefone,
     local, data, medicamentos,
+    modoEntrada, textoLivre, melhorarComIA,
     setTipoReceita, setPacienteReceita, addMedicamento, resetReceita, updateMedicamento,
+    setModoEntrada, setTextoLivre, setMelhorarComIA, setAlertas,
   } = useReceitaStore();
 
   const { pacientes: pacientesRecentes } = useRecentPatientsStore();
@@ -531,9 +537,57 @@ export default function NovaReceita() {
     }
   };
 
+  const isTextoLivre = modoEntrada === 'TEXTO_LIVRE';
+  const temTextoLivre = isTextoLivre && textoLivre.trim() !== '';
+
   const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
+  const medsSimples = medsComConteudo.filter((m) => m.tipoRecomendado !== 'ESPECIAL');
+  const medsEspeciais = medsComConteudo.filter((m) => m.tipoRecomendado === 'ESPECIAL');
+  const temAmbos = !isTextoLivre && medsSimples.length > 0 && medsEspeciais.length > 0;
   const temMedicamentos = medsComConteudo.length > 0;
-  const podeImprimir = pacienteNome.trim() !== '' && temMedicamentos;
+  const podeImprimir = pacienteNome.trim() !== '' && (isTextoLivre ? temTextoLivre : temMedicamentos);
+
+  // Processa o texto livre com a IA e converte em cards estruturados para revisão
+  const handleProcessarTextoLivre = async () => {
+    if (!textoLivre.trim()) return;
+    setProcessandoTextoLivre(true);
+    try {
+      const resultado = await processarListaMedicamentos(textoLivre);
+      // Remove cards vazios e preenche com o resultado da IA
+      const vazios = useReceitaStore.getState().medicamentos.filter((m) => !m.nomeDigitado.trim() && !m.principioAtivo);
+      let temEspecial = false;
+      resultado.medicamentos.forEach((med) => {
+        addMedicamento();
+        const meds = useReceitaStore.getState().medicamentos;
+        const ultimoId = meds[meds.length - 1].id;
+        updateMedicamento(ultimoId, {
+          nomeDigitado: med.nomeOriginal || med.principioAtivo,
+          principioAtivo: med.principioAtivo,
+          formaFarmaceutica: med.formaFarmaceutica,
+          uso: med.uso,
+          posologia: med.posologia,
+          quantidade: med.quantidade,
+          duracao: med.duracao,
+          indicacao: med.indicacao,
+          observacoes: med.observacoes,
+          tipoRecomendado: med.tipoRecomendado,
+          motivoEspecial: med.motivoEspecial,
+        });
+        if (med.tipoRecomendado === 'ESPECIAL') temEspecial = true;
+      });
+      vazios.forEach((m) => useReceitaStore.getState().removeMedicamento(m.id));
+      setAlertas(resultado.alertas || []);
+      if (temEspecial) setTipoReceita('ESPECIAL');
+      // Volta ao modo estruturado para o médico revisar os cards gerados
+      setModoEntrada('ESTRUTURADO');
+      const n = resultado.medicamentos.length;
+      toast.success(`${n} medicamento${n !== 1 ? 's' : ''} estruturado${n !== 1 ? 's' : ''} pela IA · revise antes de imprimir${temEspecial ? ' (Controle Especial detectado)' : ''}`);
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Erro ao processar a prescrição com IA. Tente novamente.'));
+    } finally {
+      setProcessandoTextoLivre(false);
+    }
+  };
 
   // Auditoria: algum med requer ESPECIAL mas tipo está SIMPLES?
   const alertaMismatch = tipoReceita === 'SIMPLES' &&
@@ -596,20 +650,13 @@ export default function NovaReceita() {
 
         {/* Global warnings / banners */}
         {alertaMismatch && (
-          <div className="mb-5 flex items-start gap-3 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-2xl px-5 py-4 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
-            <ShieldAlert size={22} className="text-red-500 shrink-0 mt-0.5 animate-bounce" />
+          <div className="mb-5 flex items-start gap-3 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl px-5 py-4 shadow-sm animate-in fade-in slide-in-from-top-1 duration-300">
+            <Sparkles size={22} className="text-indigo-500 shrink-0 mt-0.5 animate-pulse" />
             <div>
-              <p className="text-sm font-bold text-red-800">⚠️ Atenção: Tipo de receita incorreto</p>
-              <p className="text-xs text-red-700 mt-1 leading-relaxed">
-                Um ou mais medicamentos exigem <strong>Receita de Controle Especial</strong> (Portaria SVS/MS 344/98),
-                mas você selecionou "Receita Branca Simples". Altere o tipo de receita para habilitar a impressão.
+              <p className="text-sm font-bold text-indigo-800">💡 Receitas divididas automaticamente</p>
+              <p className="text-xs text-indigo-700 mt-1 leading-relaxed">
+                Esta lista possui tanto medicamentos comuns quanto controlados. O sistema irá gerar **automaticamente duas receitas separadas**: uma Receita Branca (Simples) para os comuns e uma Receita de Controle Especial (2 vias) para os controlados na hora de imprimir.
               </p>
-              <button
-                onClick={() => setTipoReceita('ESPECIAL')}
-                className="mt-3 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 px-4 py-2 rounded-xl transition-all shadow-md shadow-red-200 hover:scale-[1.01]"
-              >
-                Mudar para Controle Especial
-              </button>
             </div>
           </div>
         )}
@@ -698,7 +745,7 @@ export default function NovaReceita() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                <div className="md:col-span-2">
+                <div className={tipoReceita === 'SIMPLES' ? '' : 'md:col-span-2'}>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Nome Completo <span className="text-red-400">*</span></label>
                   <input type="text" value={pacienteNome} onChange={(e) => setPacienteReceita({ pacienteNome: e.target.value })} onBlur={handleBlur} placeholder="Nome completo do paciente" className={inputCls} />
                   {pacientesRecentes.length > 0 && (
@@ -722,88 +769,186 @@ export default function NovaReceita() {
                   )}
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    CPF {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-                  </label>
-                  <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} onBlur={handleBlur} placeholder="000.000.000-00" className={inputCls} />
-                </div>
-
-
-
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    Endereço (Rua, Nº, Bairro) {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-                  </label>
-                  <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} onBlur={handleBlur} placeholder="Rua, número, bairro" className={inputCls} />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    CEP {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-                  </label>
-                  <input
-                    type="text"
-                    value={pacienteCep}
-                    onChange={(e) => {
-                      const formatted = formatCep(e.target.value);
-                      setPacienteReceita({ pacienteCep: formatted });
-                      fetchAddressByCep(formatted);
-                    }}
-                    onBlur={handleBlur}
-                    placeholder="00000-000"
-                    className={inputCls}
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Cidade</label>
-                    <input type="text" value={pacienteCidade} onChange={(e) => setPacienteReceita({ pacienteCidade: e.target.value })} onBlur={handleBlur} placeholder="Fortaleza" className={inputCls} />
+                {tipoReceita === 'SIMPLES' ? (
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                        <Calendar size={11} className="inline mr-1" />Data
+                      </label>
+                      <input type="text" value={data} onChange={(e) => setPacienteReceita({ data: e.target.value })} className={inputCls} />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                        <MapPin size={11} className="inline mr-1" />Local
+                      </label>
+                      <input type="text" value={local} onChange={(e) => setPacienteReceita({ local: e.target.value })} className={inputCls} />
+                    </div>
                   </div>
-                  <div style={{ width: '80px' }}>
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">UF</label>
-                    <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value })} onBlur={handleBlur} placeholder="CE" maxLength={2} className={inputCls} />
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                        CPF <span className="text-red-400">*</span>
+                      </label>
+                      <input type="text" value={pacienteCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} onBlur={handleBlur} placeholder="000.000.000-00" className={inputCls} />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    Telefone {tipoReceita === 'ESPECIAL' && <span className="text-red-400">*</span>}
-                  </label>
-                  <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatTelefone(e.target.value) })} onBlur={handleBlur} placeholder="(85) 00000-0000" className={inputCls} />
-                </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                        Endereço (Rua, Nº, Bairro) <span className="text-red-400">*</span>
+                      </label>
+                      <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} onBlur={handleBlur} placeholder="Rua, número, bairro" className={inputCls} />
+                    </div>
 
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                      <Calendar size={11} className="inline mr-1" />Data
-                    </label>
-                    <input type="text" value={data} onChange={(e) => setPacienteReceita({ data: e.target.value })} className={inputCls} />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                      <MapPin size={11} className="inline mr-1" />Local
-                    </label>
-                    <input type="text" value={local} onChange={(e) => setPacienteReceita({ local: e.target.value })} className={inputCls} />
-                  </div>
-                </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                        CEP <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={pacienteCep}
+                        onChange={(e) => {
+                          const formatted = formatCep(e.target.value);
+                          setPacienteReceita({ pacienteCep: formatted });
+                          fetchAddressByCep(formatted);
+                        }}
+                        onBlur={handleBlur}
+                        placeholder="00000-000"
+                        className={inputCls}
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Cidade</label>
+                        <input type="text" value={pacienteCidade} onChange={(e) => setPacienteReceita({ pacienteCidade: e.target.value })} onBlur={handleBlur} placeholder="Fortaleza" className={inputCls} />
+                      </div>
+                      <div style={{ width: '80px' }}>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">UF</label>
+                        <input type="text" value={pacienteUf} onChange={(e) => setPacienteReceita({ pacienteUf: e.target.value })} onBlur={handleBlur} placeholder="CE" maxLength={2} className={inputCls} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                        Telefone <span className="text-red-400">*</span>
+                      </label>
+                      <input type="text" value={pacienteTelefone} onChange={(e) => setPacienteReceita({ pacienteTelefone: formatTelefone(e.target.value) })} onBlur={handleBlur} placeholder="(85) 00000-0000" className={inputCls} />
+                    </div>
+
+                    <div className="flex gap-3 md:col-span-2">
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                          <Calendar size={11} className="inline mr-1" />Data
+                        </label>
+                        <input type="text" value={data} onChange={(e) => setPacienteReceita({ data: e.target.value })} className={inputCls} />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                          <MapPin size={11} className="inline mr-1" />Local
+                        </label>
+                        <input type="text" value={local} onChange={(e) => setPacienteReceita({ local: e.target.value })} className={inputCls} />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
             {/* Medicamentos */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-50">
+              <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-50 flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <Pill size={18} className="text-indigo-500" />
                   <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Medicamentos</h2>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold tracking-wider">
-                  <Sparkles size={12} className="text-violet-500 animate-pulse" />
-                  <span>IA AUTO-PREENCHE POSOLOGIA</span>
+                {/* Toggle de modo de entrada */}
+                <div className="flex bg-gray-100/80 p-1 rounded-xl border border-gray-200/50">
+                  <button
+                    type="button"
+                    onClick={() => setModoEntrada('ESTRUTURADO')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      !isTextoLivre ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    <LayoutGrid size={13} />
+                    Estruturado
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModoEntrada('TEXTO_LIVRE')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      isTextoLivre ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    <PenLine size={13} />
+                    Texto Livre
+                  </button>
                 </div>
               </div>
 
+              {isTextoLivre ? (
+                /* ───── MODO TEXTO LIVRE ───── */
+                <div className="space-y-4">
+                  <div className="flex items-start gap-2.5 text-xs text-indigo-800 bg-indigo-50/60 border border-indigo-150 rounded-xl p-3.5">
+                    <PenLine size={15} className="shrink-0 mt-0.5 text-indigo-500" />
+                    <span className="leading-relaxed">
+                      Escreva a prescrição livremente, do seu jeito. Ela será impressa <strong>exatamente como digitada</strong> na receita {tipoReceita === 'ESPECIAL' ? 'de Controle Especial' : 'Branca Simples'} selecionada acima. Ative o botão abaixo se quiser que a IA organize e melhore o texto antes.
+                    </span>
+                  </div>
+
+                  <textarea
+                    value={textoLivre}
+                    onChange={(e) => setTextoLivre(e.target.value)}
+                    rows={12}
+                    placeholder={`Digite a prescrição completa aqui...\n\nExemplo:\nLosartana 50mg ............ 1 comprimido pela manhã\nMetformina 850mg ......... 1 comprimido após o jantar\n\nUso contínuo. Retornar em 30 dias.`}
+                    className="w-full border border-gray-200 rounded-xl text-sm py-3.5 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 resize-y placeholder:text-gray-300 font-mono leading-relaxed"
+                  />
+
+                  {/* Toggle "Melhorar com IA" */}
+                  <div className="flex items-center justify-between gap-4 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
+                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={melhorarComIA}
+                        onClick={() => setMelhorarComIA(!melhorarComIA)}
+                        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+                          melhorarComIA ? 'bg-gradient-to-r from-violet-600 to-indigo-600' : 'bg-gray-300'
+                        }`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${melhorarComIA ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
+                      <span className="text-sm">
+                        <span className="font-bold text-gray-800 flex items-center gap-1.5">
+                          <Sparkles size={13} className="text-violet-500" />
+                          Melhorar com IA
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {melhorarComIA ? 'A IA vai expandir e organizar a prescrição para você revisar.' : 'Desligado — o texto vai impresso igual ao digitado.'}
+                        </span>
+                      </span>
+                    </label>
+
+                    {melhorarComIA && (
+                      <button
+                        type="button"
+                        onClick={handleProcessarTextoLivre}
+                        disabled={processandoTextoLivre || !textoLivre.trim()}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm shrink-0 ${
+                          processandoTextoLivre || !textoLivre.trim()
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 hover:shadow-md'
+                        }`}
+                      >
+                        {processandoTextoLivre ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+                        {processandoTextoLivre ? 'Processando...' : 'Processar com IA'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+              <>
               {/* Modelos de Medicamentos Frequentes (Abas Geriátricos & Gastro) */}
               <div className="mb-6 bg-gradient-to-br from-indigo-50/20 via-indigo-50/10 to-transparent border border-indigo-100/50 rounded-2xl p-5 shadow-sm">
                 <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
@@ -839,45 +984,45 @@ export default function NovaReceita() {
                 </div>
 
                 {/* Lista de Medicamentos da Aba Ativa */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[260px] overflow-y-auto pr-1">
                   {(activeTabGuias === 'geriatria' ? GERIATRICO_PRESETS : GASTRO_PRESETS).map((preset) => {
                     const isEspecial = preset.tipoRecomendado === 'ESPECIAL';
                     return (
                       <div
                         key={preset.nome}
-                        className="group flex flex-col justify-between p-3.5 rounded-xl border border-gray-200/80 bg-white hover:border-indigo-300 hover:shadow-md transition-all duration-200"
+                        className="group flex flex-col justify-between p-2.5 rounded-lg border border-gray-200/80 bg-white hover:border-indigo-300 hover:shadow transition-all duration-200"
                       >
                         <div>
-                          <div className="flex items-center justify-between gap-1.5">
-                            <span className="font-bold text-gray-800 text-sm">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="font-bold text-gray-800 text-xs truncate">
                               {preset.nome}
                             </span>
                             {isEspecial && (
-                              <span className="text-[9px] bg-amber-100 border border-amber-250 px-1.5 py-0.5 rounded font-bold uppercase text-amber-800 scale-90 shrink-0">
+                              <span className="text-[8px] bg-amber-100 border border-amber-200 px-1 py-0.5 rounded font-extrabold uppercase text-amber-800 shrink-0">
                                 C344
                               </span>
                             )}
                           </div>
                           
-                          <span className="block text-[10px] text-gray-400 font-semibold mt-0.5">
-                            {preset.principioAtivo} · {preset.formaFarmaceutica}
+                          <span className="block text-[9px] text-gray-400 font-semibold truncate mt-0.5">
+                            {preset.principioAtivo}
                           </span>
 
-                          <p className="text-[11px] text-gray-500 mt-2 leading-relaxed font-normal italic">
+                          <p className="text-[10px] text-gray-500 mt-1 leading-normal font-normal line-clamp-2 italic">
                             {preset.explicacao}
                           </p>
                         </div>
 
-                        <div className="mt-3.5 pt-2.5 border-t border-dashed border-gray-100 flex items-center justify-between gap-2">
-                          <span className="text-[9px] text-indigo-500/80 font-bold bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                        <div className="mt-2 pt-2 border-t border-dashed border-gray-100 flex items-center justify-between gap-2">
+                          <span className="text-[8px] text-indigo-500 font-bold bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider">
                             {preset.uso}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleAddPreset(preset)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm group-hover:shadow hover:scale-[1.02]"
+                            className="flex items-center gap-0.5 px-2 py-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-md text-[10px] font-bold transition-all shadow-sm group-hover:shadow"
                           >
-                            <Plus size={11} />
+                            <Plus size={10} />
                             Prescrever
                           </button>
                         </div>
@@ -902,6 +1047,8 @@ export default function NovaReceita() {
                 <Plus size={16} />
                 Adicionar Medicamento
               </button>
+              </>
+              )}
             </div>
 
             {/* Card pronto para Impressão */}
@@ -913,7 +1060,9 @@ export default function NovaReceita() {
                 <div className="flex-1">
                   <p className="text-sm font-bold text-green-900">Receituário validado e pronto!</p>
                   <p className="text-xs text-green-700 mt-1 leading-relaxed">
-                    {medsComConteudo.length} medicamento(s) configurado(s) · {tipoReceita === 'SIMPLES' ? 'Receita Branca Simples' : 'Controle Especial (2 vias)'}
+                    {isTextoLivre
+                      ? `Prescrição em texto livre · ${tipoReceita === 'SIMPLES' ? 'Receita Branca Simples' : 'Controle Especial (2 vias)'}`
+                      : `${medsComConteudo.length} medicamento(s) configurado(s) · ${temAmbos ? 'Dividido automaticamente em 2 receitas' : tipoReceita === 'SIMPLES' ? 'Receita Branca Simples' : 'Controle Especial (2 vias)'}`}
                   </p>
                 </div>
                 <button 
@@ -936,29 +1085,48 @@ export default function NovaReceita() {
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Visualização A4</span>
                 </div>
                 <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                  tipoReceita === 'ESPECIAL' 
+                  temAmbos
+                    ? 'bg-teal-100 text-teal-800 border border-teal-200'
+                    : tipoReceita === 'ESPECIAL'
                     ? 'bg-amber-100 text-amber-800 border border-amber-200' 
                     : 'bg-indigo-100 text-indigo-800 border border-indigo-200'
                 }`}>
-                  {tipoReceita === 'SIMPLES' ? '1 Via Simples' : '2 Vias C344'}
+                  {temTextoLivre ? 'Texto Livre' : temAmbos ? 'Receitas Divididas' : tipoReceita === 'SIMPLES' ? '1 Via Simples' : '2 Vias C344'}
                 </span>
               </div>
-              
-              <div className="bg-gray-100 rounded-xl p-3 flex justify-center items-start overflow-hidden h-[540px] border border-gray-200/50 shadow-inner relative">
-                <div 
-                  className="origin-top transition-transform duration-300 rounded shadow-md border border-gray-300"
-                  style={{
-                    transform: 'scale(0.38)',
-                    width: '21cm',
-                    height: '29.7cm',
-                    minWidth: '21cm',
-                    minHeight: '29.7cm',
-                    backgroundColor: '#fff',
-                  }}
-                >
-                  {tipoReceita === 'SIMPLES' ? <ReceitaBranca /> : <ReceitaControleEspecial />}
-                </div>
-                <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl p-2 text-center text-[10px] text-gray-500 font-semibold shadow-sm">
+
+              <div className="bg-gray-100 rounded-xl p-3 flex flex-col items-center gap-4 overflow-y-auto h-[540px] border border-gray-200/50 shadow-inner relative scrollbar-thin">
+                {isTextoLivre ? (
+                  <div style={{ width: '301.6px', height: '426.5px', overflow: 'hidden' }} className="relative rounded shadow-md border border-gray-300 shrink-0">
+                    <div className="origin-top-left" style={{ transform: 'scale(0.38)', width: '21cm', height: '29.7cm', backgroundColor: '#fff' }}>
+                      {tipoReceita === 'SIMPLES'
+                        ? <ReceitaBranca textoLivre={textoLivre} />
+                        : <ReceitaControleEspecial textoLivre={textoLivre} />}
+                    </div>
+                  </div>
+                ) : temAmbos ? (
+                  <>
+                    <div className="text-[10px] text-gray-500 font-bold bg-white px-2 py-0.5 rounded shadow-sm">1. RECEITA SIMPLES</div>
+                    <div style={{ width: '301.6px', height: '426.5px', overflow: 'hidden' }} className="relative rounded shadow-md border border-gray-300 shrink-0">
+                      <div className="origin-top-left" style={{ transform: 'scale(0.38)', width: '21cm', height: '29.7cm', backgroundColor: '#fff' }}>
+                        <ReceitaBranca medicamentosOverride={medsSimples} />
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-gray-500 font-bold bg-white px-2 py-0.5 rounded shadow-sm mt-2">2. RECEITA ESPECIAL</div>
+                    <div style={{ width: '301.6px', height: '426.5px', overflow: 'hidden' }} className="relative rounded shadow-md border border-gray-300 shrink-0">
+                      <div className="origin-top-left" style={{ transform: 'scale(0.38)', width: '21cm', height: '29.7cm', backgroundColor: '#fff' }}>
+                        <ReceitaControleEspecial medicamentosOverride={medsEspeciais} />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ width: '301.6px', height: '426.5px', overflow: 'hidden' }} className="relative rounded shadow-md border border-gray-300 shrink-0">
+                    <div className="origin-top-left" style={{ transform: 'scale(0.38)', width: '21cm', height: '29.7cm', backgroundColor: '#fff' }}>
+                      {tipoReceita === 'SIMPLES' ? <ReceitaBranca medicamentosOverride={medsSimples} /> : <ReceitaControleEspecial medicamentosOverride={medsEspeciais} />}
+                    </div>
+                  </div>
+                )}
+                <div className="bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-xl p-2 text-center text-[10px] text-gray-500 font-semibold shadow-sm w-full mt-2">
                   Atualizado em tempo real
                 </div>
               </div>
@@ -976,11 +1144,18 @@ export default function NovaReceita() {
               <CheckCircle2 size={15} />
               <span className="font-semibold">{pacienteNome || 'Sem paciente identificado'}</span>
             </div>
-            {temMedicamentos && (
+            {isTextoLivre ? (
+              temTextoLivre && (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <span className="font-bold text-xs text-indigo-600">Texto livre {melhorarComIA ? '(com IA)' : ''}</span>
+                </>
+              )
+            ) : temMedicamentos && (
               <>
                 <span className="text-gray-300">·</span>
-                <span className={`font-bold text-xs ${alertaMismatch ? 'text-red-500' : 'text-indigo-600'}`}>
-                  {alertaMismatch ? '⚠️ Ajuste o tipo da receita' : `${medsComConteudo.length} medicamento(s)`}
+                <span className="font-bold text-xs text-indigo-600">
+                  {temAmbos ? `Dividido: ${medsComConteudo.length} medicamento(s)` : `${medsComConteudo.length} medicamento(s)`}
                 </span>
               </>
             )}
@@ -988,18 +1163,19 @@ export default function NovaReceita() {
 
           <button
             onClick={() => navigate('/receita/imprimir')}
-            disabled={!podeImprimir || alertaMismatch}
-            title={alertaMismatch ? 'Corrija o tipo de receita antes de imprimir' : ''}
+            disabled={!podeImprimir}
             className={`flex items-center gap-2 px-7 py-3 rounded-2xl font-bold text-sm transition-all shadow-md ${
-              !podeImprimir || alertaMismatch
+              !podeImprimir
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200/50 shadow-none'
+                : temAmbos
+                ? 'bg-gradient-to-r from-teal-600 to-indigo-600 text-white hover:from-teal-700 hover:to-indigo-700 hover:shadow-lg shadow-indigo-200'
                 : tipoReceita === 'ESPECIAL'
                 ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:from-amber-600 hover:to-orange-700 hover:shadow-lg shadow-amber-200'
                 : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 hover:shadow-lg shadow-indigo-200'
             }`}
           >
             <Printer size={16} />
-            {tipoReceita === 'ESPECIAL' ? 'Imprimir Controle Especial' : 'Imprimir Receita'}
+            {temAmbos ? 'Imprimir Receitas (Split)' : tipoReceita === 'ESPECIAL' ? 'Imprimir Controle Especial' : 'Imprimir Receita'}
           </button>
         </div>
       </div>

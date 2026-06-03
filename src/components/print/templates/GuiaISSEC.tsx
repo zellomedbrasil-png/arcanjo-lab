@@ -43,6 +43,7 @@ export default function GuiaISSEC() {
     numeroBeneficiario,
     examesSelecionados,
     procedimentosSelecionados,
+    procedimentosPersonalizados,
     tipoGuia,
     justificativa,
   } = useAppStore();
@@ -53,6 +54,12 @@ export default function GuiaISSEC() {
   const isEndosc = procedimentosSelecionados.some(isProcedimentoEndoscopico);
   const isRadio  = procedimentosSelecionados.some(isProcedimentoImagem);
   const isOutros = procedimentosSelecionados.some(isProcedimentoGeriatrico);
+
+  // All procedures (catalog + custom) for printing
+  const todosProcs = [
+    ...(procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia]),
+    ...(procedimentosPersonalizados ?? []),
+  ];
 
   /* Quebra exames em até 3 linhas para o caso laboratorial */
   const getLinhas = () => {
@@ -408,11 +415,10 @@ export default function GuiaISSEC() {
             { h: '8.8mm', n: '02' },
             { h: '11mm',  n: '03' },
           ].map((row, idx) => {
-            const procs = procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia];
             const content = isLab
               ? linhas[idx] || ''
-              : idx < procs.length
-                ? getProcedimentoNome(procs[idx])
+              : idx < todosProcs.length
+                ? (/^[A-Z0-9_]+$/.test(todosProcs[idx]) ? getProcedimentoNome(todosProcs[idx]) : todosProcs[idx])
                 : '';
             return (
               <tr key={row.n} style={{ height: row.h }}>
