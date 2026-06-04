@@ -22,6 +22,33 @@ REGRAS:
 - NÃO use formato SOAP, NÃO use bullet points
 - Apenas uma frase clínica direta em português`;
 
+const PRE_JUSTIFICATIVAS_LAB = [
+  {
+    titulo: 'Gastroenterologia — Homem',
+    texto: `Paciente do sexo masculino em acompanhamento gastroenterológico, com quadro dispéptico / dor abdominal / alteração do hábito intestinal sob investigação diagnóstica. Solicito painel para avaliação da função hepatobiliar (TGO, TGP, GGT, fosfatase alcalina, bilirrubinas), função pancreática (amilase, lipase), pesquisa de Helicobacter pylori (IgG/IgM), rastreio de doença celíaca (antigliadina) e de intolerância à lactose, hemograma para investigação de anemia por perda digestiva e pesquisa de sangue oculto nas fezes conforme rastreio de neoplasia colorretal por faixa etária. Lipidograma para avaliação de esteatose hepática associada. Exames com nexo clínico direto às hipóteses diagnósticas.
+
+CID-10: K30 (dispepsia funcional) · K29.7 (gastrite não especificada) · K21.0 (refluxo gastroesofágico com esofagite) · K25.9 (úlcera gástrica não especificada) · R10.1 (dor abdominal superior) · R10.4 (dor abdominal não especificada) · K59.0 (constipação) · K58.9 (síndrome do intestino irritável sem diarreia) · K90.0 (doença celíaca) · E73.9 (intolerância à lactose) · K76.0 (esteatose hepática) · R19.5 (alteração das fezes / sangue oculto) · D64.9 (anemia não especificada) · Z12.1 (rastreamento de neoplasia intestinal) · B98.0 (H. pylori como causa de doença)`
+  },
+  {
+    titulo: 'Gastroenterologia — Mulher',
+    texto: `Paciente do sexo feminino em acompanhamento gastroenterológico, com quadro dispéptico / dor abdominal / distensão / alteração do hábito intestinal sob investigação. Solicito painel para função hepatobiliar (TGO, TGP, GGT, fosfatase alcalina, bilirrubinas), função pancreática (amilase, lipase), pesquisa de H. pylori (IgG/IgM), rastreio de doença celíaca (antigliadina) e intolerância à lactose, hemograma para investigação de anemia por perda digestiva e pesquisa de sangue oculto nas fezes conforme rastreio colorretal. CA 125 incluído para diagnóstico diferencial de massa/distensão abdominal de causa pélvica. Exames com nexo clínico direto às hipóteses listadas.
+
+CID-10: K30 (dispepsia funcional) · K29.7 (gastrite não especificada) · K21.0 (refluxo gastroesofágico com esofagite) · R10.1 (dor abdominal superior) · R10.4 (dor abdominal não especificada) · R19.0 (massa/tumoração intra-abdominal e pélvica) · K59.0 (constipação) · K58.9 (síndrome do intestino irritável sem diarreia) · K90.0 (doença celíaca) · E73.9 (intolerância à lactose) · K76.0 (esteatose hepática) · R19.5 (alteração das fezes / sangue oculto) · D64.9 (anemia não especificada) · Z12.1 (rastreamento de neoplasia intestinal) · B98.0 (H. pylori como causa de doença)`
+  },
+  {
+    titulo: 'Geriatria — Homem',
+    texto: `Paciente idoso (≥ 60 anos) em Avaliação Geriátrica Ampla, portador de comorbidades crônicas e em uso contínuo de medicamentos (monitorização de polifarmácia). Solicito painel para: investigação de anemia e estado nutricional (hemograma, ferritina, B12, ácido fólico, albumina); função renal e eletrolítica para ajuste de doses e vigilância de fármacos nefroativos (ureia, creatinina, sódio, potássio); rastreio metabólico e glicêmico (glicose, HbA1c, insulina, lipidograma, ácido úrico); função tireoidiana (TSH, T4 livre); metabolismo ósseo-mineral por risco de osteoporose e quedas (cálcio, vitamina D, PTH, magnésio); CK para monitorização de miopatia em uso de estatina; rastreio de próstata por faixa etária (PSA). Exames vinculados às comorbidades and ao protocolo de avaliação do idoso.
+
+CID-10: Z00.0 (exame médico geral) · I10 (hipertensão essencial) · E11.9 (diabetes tipo 2 sem complicações) · E78.5 (hiperlipidemia) · N18.9 (doença renal crônica) · D64.9 (anemia não especificada) · E53.8 (deficiência de vitaminas do complexo B — B12/folato) · E55.9 (deficiência de vitamina D) · M81.9 (osteoporose não especificada) · E03.9 (hipotireoidismo) · Z79.8 (uso prolongado de medicamentos / polifarmácia) · E29.1 (hipofunção testicular) · N40 (hiperplasia da próstata) · Z12.5 (rastreamento de neoplasia da próstata) · R54 (senilidade)`
+  },
+  {
+    titulo: 'Geriatria — Mulher',
+    texto: `Paciente idosa (≥ 60 anos) em Avaliação Geriátrica Ampla, com comorbidades crônicas e polifarmácia. Solicito painel para: investigação de anemia e estado nutricional (hemograma, ferritina, B12, ácido fólico, albumina); função renal e eletrolítica para vigilância farmacológica (ureia, creatinina, sódio, potássio); rastreio metabólico (glicose, HbA1c, insulina, lipidograma, ácido úrico); função tireoidiana (TSH, T4 livre); metabolismo ósseo-mineral por elevado risco de osteoporose pós-menopausa e quedas (cálcio, vitamina D, PTH); avaliação hormonal no contexto de climatério/menopausa (FSH, estradiol, progesterona). Exames vinculados às comorbidades e ao protocolo de avaliação da idosa.
+
+CID-10: Z00.0 (exame médico geral) · I10 (hipertensão essencial) · E11.9 (diabetes tipo 2 sem complicações) · E78.5 (hiperlipidemia) · N18.9 (doença renal crônica) · D64.9 (anemia não especificada) · E53.8 (deficiência de vitaminas do complexo B — B12/folato) · E55.9 (deficiência de vitamina D) · M81.0 (osteoporose pós-menopáusica) · E03.9 (hipotireoidismo) · Z79.8 (uso prolongado de medicamentos / polifarmácia) · N95.1 (estados da menopausa e climatério) · R53 (fadiga e mal-estar) · R54 (senilidade)`
+  }
+];
+
 interface JustificativaPanelProps {
   mode: 'exames' | 'procedimentos';
 }
@@ -142,6 +169,30 @@ Queixa clínica: "${queixa}"`;
             </button>
           )}
         </div>
+
+        {isLab && (
+          <div className="mb-3.5 bg-slate-50/50 rounded-xl p-3 border border-slate-100/80">
+            <span className="block text-[9px] font-bold text-neutral-text-muted uppercase tracking-wider mb-2">
+              Modelos Rápidos (Clique para aplicar)
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              {PRE_JUSTIFICATIVAS_LAB.map((item) => (
+                <button
+                  key={item.titulo}
+                  type="button"
+                  onClick={() => {
+                    setJustificativaValue(item.texto);
+                    toast.success(`Modelo "${item.titulo}" aplicado!`);
+                  }}
+                  className="px-3 py-2 text-left text-[11px] bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50/70 hover:text-blue-700 rounded-lg transition-all cursor-pointer font-semibold leading-tight shadow-sm hover:shadow-none"
+                >
+                  {item.titulo}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <textarea
           value={justificativaValue}
           onChange={(e) => setJustificativaValue(e.target.value)}
