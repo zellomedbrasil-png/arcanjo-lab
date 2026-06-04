@@ -196,9 +196,9 @@ Queixa clínica: "${queixa}"`;
         <textarea
           value={justificativaValue}
           onChange={(e) => setJustificativaValue(e.target.value)}
-          rows={3.5}
+          rows={10}
           placeholder={`Justificativa dos ${theme.title.toLowerCase()}...`}
-          className={`w-full border-2 rounded-lg text-sm py-3 px-4 focus:outline-none focus:ring-2 ${theme.borderColor} ${theme.lightBg} ${theme.focusRing} resize-none placeholder:text-gray-405 font-medium leading-relaxed`}
+          className={`w-full border-2 rounded-lg text-sm py-3 px-4 focus:outline-none focus:ring-2 ${theme.borderColor} ${theme.lightBg} ${theme.focusRing} resize-y placeholder:text-gray-405 font-medium leading-relaxed`}
         />
         {iaModel && justificativaValue && (
           <div className="flex justify-between items-center mt-1.5 text-[9px] text-gray-400">
