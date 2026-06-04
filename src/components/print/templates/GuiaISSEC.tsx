@@ -57,9 +57,12 @@ export default function GuiaISSEC() {
 
   // All procedures (catalog + custom) for printing
   const todosProcs = [
-    ...(procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia]),
+    ...procedimentosSelecionados,
     ...(procedimentosPersonalizados ?? []),
   ];
+  if (todosProcs.length === 0) {
+    todosProcs.push(tipoGuia);
+  }
 
   /* Quebra exames em até 3 linhas para o caso laboratorial */
   const getLinhas = () => {

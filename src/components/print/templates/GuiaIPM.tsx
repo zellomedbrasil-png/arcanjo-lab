@@ -35,10 +35,13 @@ export default function GuiaIPM() {
 
   const itemsList = isLab
     ? examesSelecionados
-    : [
-        ...(procedimentosSelecionados.length > 0 ? procedimentosSelecionados : [tipoGuia]),
-        ...(procedimentosPersonalizados ?? []),
-      ];
+    : (() => {
+        const procs = [
+          ...procedimentosSelecionados,
+          ...(procedimentosPersonalizados ?? []),
+        ];
+        return procs.length > 0 ? procs : [tipoGuia];
+      })();
 
   return (
     <div className="p-8 text-[11px] leading-snug font-sans text-black bg-white h-full relative">
