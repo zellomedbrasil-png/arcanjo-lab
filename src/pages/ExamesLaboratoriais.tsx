@@ -18,8 +18,7 @@ export default function ExamesLaboratoriais() {
     lastSavedAt,
     setPaciente,
     setJustificativa,
-    setExamesSelecionados,
-    setJustificativaExames,
+    resetForm,
   } = useAppStore();
 
   const hasExames = examesSelecionados.length > 0;
@@ -45,9 +44,8 @@ export default function ExamesLaboratoriais() {
   }, [isReadyToPrint, navigate]);
 
   const handleClear = () => {
-    if (confirm('Limpar exames selecionados e justificativa desta aba?')) {
-      setExamesSelecionados([]);
-      setJustificativaExames('');
+    if (confirm('Limpar todos os dados da guia (paciente, exames selecionados e justificativa)?')) {
+      resetForm();
     }
   };
 
@@ -75,7 +73,7 @@ export default function ExamesLaboratoriais() {
               className="flex items-center gap-1 px-3 py-2 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 bg-white cursor-pointer font-medium"
             >
               <RotateCcw size={12} />
-              Limpar Exames
+              Limpar Tudo
             </button>
           </div>
         </div>

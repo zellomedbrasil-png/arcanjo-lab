@@ -19,8 +19,7 @@ export default function ProcedimentosEletivos() {
     lastSavedAt,
     setPaciente,
     setJustificativa,
-    setJustificativaProcedimentos,
-    removeProcedimentoPersonalizado,
+    resetForm,
   } = useAppStore();
 
   const totalProcedimentos = procedimentosSelecionados.length + procedimentosPersonalizados.length;
@@ -53,10 +52,8 @@ export default function ProcedimentosEletivos() {
   }, [isReadyToPrint, navigate]);
 
   const handleClear = () => {
-    if (confirm('Limpar procedimentos selecionados e justificativa desta aba?')) {
-      setPaciente({ procedimentosSelecionados: [] });
-      procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
-      setJustificativaProcedimentos('');
+    if (confirm('Limpar todos os dados da guia (paciente, procedimentos selecionados e justificativa)?')) {
+      resetForm();
     }
   };
 
@@ -84,7 +81,7 @@ export default function ProcedimentosEletivos() {
               className="flex items-center gap-1 px-3 py-2 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 bg-white cursor-pointer font-medium"
             >
               <RotateCcw size={12} />
-              Limpar Procedimentos
+              Limpar Tudo
             </button>
           </div>
         </div>

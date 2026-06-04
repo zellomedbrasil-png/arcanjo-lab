@@ -451,9 +451,11 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
             {totalSelecionados > 0 && (
               <button
                 onClick={() => {
-                  setPaciente({ procedimentosSelecionados: [] });
-                  // Also clear all custom ones
-                  procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
+                  if (confirm('Tem certeza que deseja limpar todos os procedimentos selecionados?')) {
+                    setPaciente({ procedimentosSelecionados: [] });
+                    // Also clear all custom ones
+                    procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
+                  }
                 }}
                 className="mt-4.5 text-xs text-neutral-text-muted hover:text-neutral-text underline transition-colors cursor-pointer"
               >
@@ -496,12 +498,22 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                   ))}
                   <button
                     onClick={() => {
-                      if (isLab) {
-                        setExamesSelecionados([]);
-                      } else {
-                        setPaciente({ procedimentosSelecionados: [] });
+                      const confirmMsg = isLab
+                        ? 'Limpar todos os exames selecionados e justificativa?'
+                        : 'Limpar todos os procedimentos selecionados (incluindo personalizados) e justificativa?';
+                      if (confirm(confirmMsg)) {
+                        if (isLab) {
+                          setExamesSelecionados([]);
+                          setPaciente({ justificativaExames: '' });
+                        } else {
+                          setPaciente({
+                            procedimentosSelecionados: [],
+                            justificativaProcedimentos: ''
+                          });
+                          procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
+                        }
+                        setJustificativa('');
                       }
-                      setJustificativa('');
                     }}
                     className="px-3.5 py-2 bg-white text-neutral-text-muted text-xs font-semibold rounded-lg hover:bg-slate-100 transition-colors border border-neutral-border ml-auto cursor-pointer"
                   >

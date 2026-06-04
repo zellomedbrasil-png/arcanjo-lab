@@ -325,7 +325,11 @@ export default function Documentos() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => doc.resetDocumento()}
+              onClick={() => {
+                if (confirm('Limpar todos os dados do documento e dados do paciente?')) {
+                  doc.resetDocumento();
+                }
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10"
             >
               <RotateCcw size={14} />
