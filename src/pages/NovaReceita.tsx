@@ -629,7 +629,7 @@ export default function NovaReceita() {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto px-4 py-6 pb-28">
+      <div className="max-w-7xl mx-auto px-4 py-6 pb-28 max-lg:pb-36">
 
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
@@ -1137,7 +1137,7 @@ export default function NovaReceita() {
       </div>
 
       {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl px-4 py-4 no-print">
+      <div className="fixed bottom-0 lg:left-64 left-0 right-0 z-30 lg:z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl px-4 py-4 no-print max-lg:bottom-14">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-sm">
             <div className={`flex items-center gap-1.5 ${pacienteNome ? 'text-green-600' : 'text-gray-400'}`}>

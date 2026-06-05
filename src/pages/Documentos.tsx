@@ -375,7 +375,7 @@ export default function Documentos() {
         </div>
 
         {/* Split Screen Layout */}
-        <div className="flex flex-col lg:flex-row gap-8 items-start pb-32">
+        <div className="flex flex-col lg:flex-row gap-8 items-start pb-32 max-lg:pb-40">
           
           {/* Coluna Esquerda: Edição */}
           <div className="flex-1 w-full space-y-6">
@@ -1095,7 +1095,7 @@ export default function Documentos() {
       )}
 
       {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl px-4 py-4 no-print">
+      <div className="fixed bottom-0 lg:left-64 left-0 right-0 z-30 lg:z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl px-4 py-4 no-print max-lg:bottom-14">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-sm">
             <div className={`flex items-center gap-1.5 ${doc.pacienteNome ? 'text-green-600' : 'text-gray-400'}`}>

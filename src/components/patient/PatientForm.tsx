@@ -65,77 +65,85 @@ export default function PatientForm() {
 
   return (
     <div className="bg-neutral-surface rounded-lg border border-neutral-border px-5 py-4.5">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-x-6 gap-y-3.5">
 
         {/* Nome */}
-        <input
-          type="text"
-          value={pacienteNome}
-          onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
-          onBlur={handleBlur}
-          autoFocus
-          autoComplete="name"
-          placeholder="Nome do paciente *"
-          className="flex-1 min-w-[180px] text-sm font-semibold text-neutral-text placeholder:font-normal placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
-        />
+        <div className="col-span-full lg:flex-1">
+          <input
+            type="text"
+            value={pacienteNome}
+            onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
+            onBlur={handleBlur}
+            autoFocus
+            autoComplete="name"
+            placeholder="Nome do paciente *"
+            className="w-full text-sm font-semibold text-neutral-text placeholder:font-normal placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
+          />
+        </div>
 
         {/* CPF */}
-        <input
-          type="text"
-          value={pacienteCpf}
-          onChange={(e) => setPaciente({ pacienteCpf: formatCpf(e.target.value) })}
-          onBlur={handleBlur}
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder="CPF"
-          className="w-32 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
-        />
+        <div className="w-full lg:w-auto">
+          <input
+            type="text"
+            value={pacienteCpf}
+            onChange={(e) => setPaciente({ pacienteCpf: formatCpf(e.target.value) })}
+            onBlur={handleBlur}
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="CPF"
+            className="w-full lg:w-32 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
+          />
+        </div>
 
         {/* Nº Beneficiário */}
         {convenio !== 'PARTICULAR' && (
-          <input
-            type="text"
-            value={numeroBeneficiario}
-            onChange={(e) => setPaciente({ numeroBeneficiario: e.target.value })}
-            onBlur={handleBlur}
-            autoComplete="off"
-            placeholder={labelBeneficiario[convenio] ?? 'Nº Cartão'}
-            className="w-36 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
-          />
+          <div className="w-full lg:w-auto">
+            <input
+              type="text"
+              value={numeroBeneficiario}
+              onChange={(e) => setPaciente({ numeroBeneficiario: e.target.value })}
+              onBlur={handleBlur}
+              autoComplete="off"
+              placeholder={labelBeneficiario[convenio] ?? 'Nº Cartão'}
+              className="w-full lg:w-36 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
+            />
+          </div>
         )}
 
         {/* Separador */}
-        <div className="hidden sm:block w-px h-5 bg-neutral-border" />
+        <div className="hidden lg:block w-px h-5 bg-neutral-border" />
 
         {/* Convênio */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap sm:col-span-2 lg:col-span-auto">
           <Building2 size={13} className="text-neutral-text-muted shrink-0" />
-          {convenios.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setPaciente({ convenio: value })}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                convenio === value
-                  ? 'bg-primary text-neutral-surface border-primary'
-                  : 'border-neutral-border text-neutral-text-muted hover:border-primary/30 hover:text-primary'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+          <div className="flex flex-wrap gap-1">
+            {convenios.map(({ value, label }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setPaciente({ convenio: value })}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                  convenio === value
+                    ? 'bg-primary text-neutral-surface border-primary'
+                    : 'border-neutral-border text-neutral-text-muted hover:border-primary/30 hover:text-primary'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Combobox de operadora SADT */}
         {convenio === 'SADT' && (
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 w-full lg:w-auto flex-wrap sm:col-span-2 lg:col-span-auto">
             <input
               list="operadoras-list"
               value={sadtOperadora}
               onChange={(e) => handleOperadoraChange(e.target.value)}
               onBlur={handleBlur}
               placeholder="Operadora (digite ou deixe vazio = guia limpa)"
-              className="w-64 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
+              className="flex-1 lg:w-64 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
             />
             <datalist id="operadoras-list">
               {OPERADORAS.map((o) => (
@@ -153,7 +161,7 @@ export default function PatientForm() {
         )}
 
         {/* Gênero */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 sm:col-span-2 lg:col-span-auto">
           {generos.map(({ value, label, icon: Icon }) => (
             <button
               key={value}

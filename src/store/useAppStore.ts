@@ -24,6 +24,10 @@ interface AppState {
   lastSavedAt: string | null;
   iaModel: string;
   consultasGravadas: ConsultaGravada[];
+  syncRoomCode: string;
+  syncStatus: 'idle' | 'waiting' | 'connected' | 'recording' | 'transcribing';
+  quickNotes: string;
+  isPairingModalOpen: boolean;
 
   setMedico: (medico: Medico | null) => void;
   setPaciente: (dados: Partial<AppState>) => void;
@@ -44,6 +48,11 @@ interface AppState {
   removerConsultaGravada: (index: number) => void;
   limparConsultasGravadas: () => void;
   adicionarConsultaAoHistorico: (nome: string, queixa: string) => boolean;
+  setSyncRoomCode: (code: string) => void;
+  setSyncStatus: (status: 'idle' | 'waiting' | 'connected' | 'recording' | 'transcribing') => void;
+  setQuickNotes: (notes: string) => void;
+  setIsPairingModalOpen: (open: boolean) => void;
+  resetSyncSession: () => void;
 }
 
 const initialState = {
@@ -65,6 +74,10 @@ const initialState = {
   justificativaProcedimentos: '',
   lastSavedAt: null,
   iaModel: '',
+  syncRoomCode: '',
+  syncStatus: 'idle' as 'idle' | 'waiting' | 'connected' | 'recording' | 'transcribing',
+  quickNotes: '',
+  isPairingModalOpen: false,
 };
 
 const touch = () => new Date().toISOString();
@@ -211,6 +224,11 @@ export const useAppStore = create<AppState>()(
         consultasGravadas: [],
         lastSavedAt: touch(),
       }),
+      setSyncRoomCode: (syncRoomCode) => set({ syncRoomCode }),
+      setSyncStatus: (syncStatus) => set({ syncStatus }),
+      setQuickNotes: (quickNotes) => set({ quickNotes }),
+      setIsPairingModalOpen: (isPairingModalOpen) => set({ isPairingModalOpen }),
+      resetSyncSession: () => set({ syncRoomCode: '', syncStatus: 'idle' }),
     }),
     {
       name: 'arcanjo-lab-pedido-draft',
@@ -235,6 +253,7 @@ export const useAppStore = create<AppState>()(
         lastSavedAt: state.lastSavedAt,
         iaModel: state.iaModel,
         consultasGravadas: state.consultasGravadas,
+        quickNotes: state.quickNotes,
       }),
     }
   )

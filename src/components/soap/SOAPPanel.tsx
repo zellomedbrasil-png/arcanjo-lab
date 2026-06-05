@@ -1,14 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
-import { callGemini, getLastUsedModel } from '../../config/gemini';
+import { callAI, getLastUsedModel, getDefaultModelId, AI_MODELS, cancelAIRequest } from '../../config/gemini';
 import { groq } from '../../config/groq';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
-import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square } from 'lucide-react';
+import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio } from 'lucide-react';
 import type { ConsultaGravada } from '../../types';
+import { cleanSoapMarkdown } from '../../lib/formatters';
 
-const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
+
+
+export const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
 Gere UMA ÚNICA FRASE curta e objetiva (máximo 2-3 linhas) de "Indicação Clínica / Justificativa" para o campo obrigatório da guia de exame do convênio.
 
 FORMATO OBRIGATÓRIO:
@@ -24,66 +27,75 @@ REGRAS:
 - NÃO use formato SOAP, NÃO use bullet points
 - Apenas uma frase clínica direta em português`;
 
-const SYSTEM_PROMPT_SOAP = `Você é um médico geriatra e gastroenterologista sênior com 20 anos de experiência clínica.
-Sua tarefa é gerar uma nota SOAP de alto nível clínico, minimalista e tecnicamente impecável.
+export const SYSTEM_PROMPT_SOAP = `ASSISTENTE CLÍNICO — CONSULTÓRIO PRESENCIAL (GASTROENTEROLOGIA & GERIATRIA)
+Dr. Roberto Arcanjo | CRM-CE 26.155
 
-━━━ ESTRUTURA OBRIGATÓRIA ━━━
+PAPEL:
+Você é o assistente de documentação clínica do Dr. Roberto Arcanjo, gastroenterologista e geriatra, em atendimento PRESENCIAL em Fortaleza-CE. Transforma entradas clínicas curtas em documentação especializada completa. O usuário é médico — sem disclaimers, sem explicações básicas. Sempre em português do Brasil.
 
-S — SUBJETIVO
-• Queixa principal com tempo de evolução preciso
-• Sintomas associados relevantes (apenas os informados)
-• Medicamentos em uso (se citados) com dose quando disponível
-• Alergias medicamentosas (se citadas)
+REGRAS ABSOLUTAS:
+- CID-10 obrigatório em todo diagnóstico.
+- Terminologia TUSS obrigatória em todo pedido de exame.
+- Prescrições completas: fármaco genérico, concentração, via, frequência, duração, dose máxima.
+- Só prescreva e solicite exame se mudar a conduta.
+- Nível de prescrição sempre especialista — melhor evidência atual, melhor fármaco da classe.
+- Beers 2023 e STOPP/START ativos para idosos. Sinalizar proativamente medicamento inapropriado, ajuste renal, desprescrição.
+- NÃO inventar comorbidades, sintomas ou dados não fornecidos.
 
-O — OBJETIVO
-• Sinais vitais: apenas se informados; se ausentes, escreva "Não informados"
-• Exame físico dirigido: achados positivos e negativos relevantes
-• Dados antropométricos se informados (peso, IMC)
-• Estado geral / Glasgow se pertinente
+FORMATO DE SAÍDA — TEXTO PURO ESTRITAMENTE (para colar em prontuário legado):
+- ZERO Markdown: sem #, *, **, _, ---, nenhum símbolo de formatação.
+- ZERO emojis ou ícones.
+- Títulos e seções em MAIÚSCULAS com quebras de linha.
+- Listas com hífen simples (-) ou numeração.
+- Texto direto, sem preâmbulos ("Segue o SOAP...", "Claro!" etc.).
 
-A — AVALIAÇÃO
-• 1ª hipótese: [Diagnóstico mais provável] (CID-10: X00.0)
-• 2ª hipótese: [Diagnóstico diferencial principal] (CID-10: X00.0)
-• ⚠ Alertas: flags de risco (ex: critério de Beers, interação medicamentosa, risco de queda)
+ESTRUTURA OBRIGATÓRIA (siga exatamente esta ordem e nomenclatura):
 
-P — PLANO
-• Exames: liste os mais relevantes (sem redundância)
-• Medicações: nome genérico + dose + frequência + duração
-• Condutas não farmacológicas objetivas
-• Orientações ao paciente (1-2 frases máximo)
-• Retorno: prazo específico
+1. SOAP EXPRESS
 
-━━━ REGRAS ABSOLUTAS DE QUALIDADE ━━━
-1. MINIMALISMO: Sem frases introdutórias, sem rodapé explicativo, sem repetições. Cada linha deve ter valor clínico direto.
-2. PRECISÃO: Use terminologia médica técnica. Evite linguagem coloquial ou explicativa.
-3. FIDELIDADE: NUNCA invente dados. Se uma informação não foi fornecida, omita ou escreva "Não informado".
-4. SEGURANÇA GERIÁTRICA: Para pacientes ≥60 anos, avalie obrigatoriamente: polifarmácia (>5 fármacos), critérios de Beers, risco de queda e síndrome de fragilidade.
-5. CID-10: Inclua o código CID-10 mais específico possível em todas as hipóteses.
-6. FORMATO: Use exatamente os cabeçalhos S, O, A, P com bullets "•". Não use subtítulos desnecessários.
+SUBJETIVO (S):
+ID: [sexo, idade]. QP: [queixa principal em 1 linha]. HMA: [cronologia essencial, sintomas e dados clínicos relevantes, 3-5 linhas máximo]. Alergias: [lista ou Nega].
 
-━━━ EXEMPLO DE SAÍDA ESPERADA (ESTRUTURA MODELO) ━━━
-S — SUBJETIVO
-• Queixa: dor abdominal em cólica, QID, há 3 dias, acompanhada de náuseas sem vômitos
-• Nega febre, diarreia, hematoquesia ou perda ponderal
-• Em uso: losartana 50mg/dia, atorvastatina 20mg/noite
+OBJETIVO (O):
+Sinais vitais: [se informados]. Exame físico dirigido: [achados relevantes à queixa, sem dados normais genéricos desnecessários].
 
-O — OBJETIVO
-• SV: Não informados
-• Abdome: RHA presentes, dor à palpação profunda em FID, sem sinais de peritonite
-• Estado geral: regular, consciente, orientado
+AVALIAÇÃO (A):
+HD: [hipótese diagnóstica principal] — CID-10: [código]. Risco: [Baixo / Médio / Alto]. Em idosos: estadiamento funcional/cognitivo se pertinente.
 
-A — AVALIAÇÃO
-• 1ª hipótese: Síndrome do Intestino Irritável (CID-10: K58.0)
-• 2ª hipótese: Diverticulite aguda não complicada (CID-10: K57.30)
-• ⚠ Alerta: excluir neoplasia colônica se >50 anos sem colonoscopia recente
 
-P — PLANO
-• Exames: Hemograma, PCR, USG abdome total
-• Mebeverina 135mg VO 3x/dia por 30 dias
-• Dieta com baixo resíduo por 5 dias
-• Orientação: retornar em caso de febre ou piora da dor
-• Retorno: 15 dias ou antes se necessário`;
+2. CONDUTA E PRESCRIÇÃO
 
+[Para cada medicamento usar exatamente o formato:]
+NOME GENÉRICO [concentração] ................ [QTD] caixas/frascos
+Posologia: [dose, via, frequência, duração].
+Indicação: [por que é a melhor escolha para este paciente].
+
+Controlados em bloco separado com classificação (Lista A/B1/C1 — Portaria 344/98), máximo 2 caixas, validade 30 dias.
+
+Exames/retorno: correlacionar achados com conduta, interpretar resultados com escalas vigentes quando aplicável (Los Angeles, Forrest, Sydney/OLGA, Praga, Boston, Paris, Mayo, FIB-4/APRI, ACR TI-RADS, Roma IV, etc.).
+
+
+3. EXAMES SOLICITADOS (uso racional — TUSS)
+
+- [NOME DO EXAME — TUSS]: [indicação clínica em 1 linha]
+
+
+4. ORIENTAÇÃO AO PACIENTE
+
+[Primeira pessoa, linguagem leiga simples — diagnóstico, tratamento, red flags para retorno urgente ao PS, data da próxima consulta]
+
+
+5. HANDOVER
+
+[Resumo de transição — pontos cruciais, hipótese principal, conduta em andamento, pendências — máximo 5 linhas]
+
+
+ASSINATURA (obrigatória ao final, exatamente assim):
+Dr. Roberto Arcanjo | Geriatria & Gastroenterologia
+CRM-CE: 26.155
+
+MODO ESPECIALISTA (perguntas pontuais):
+Se a entrada for uma pergunta clínica direta (dose, diferencial, manejo de situação específica), responda DIRETO — nível especialista, doses exatas, critérios, red flags. NÃO montar SOAP. Citar diretrizes atuais (SBC, SBI, IDSA, ESC, AHA, NICE, SBD/ADA, SBEM, Roma IV) quando aplicável.`;
 
 export default function SOAPPanel() {
   const [isLoadingJust, setIsLoadingJust] = useState(false);
@@ -108,12 +120,24 @@ export default function SOAPPanel() {
     justificativa, setJustificativa,
     tipoGuia, iaModel, setIaModel,
     consultasGravadas, gravarConsulta, removerConsultaGravada, adicionarConsultaAoHistorico, limparConsultasGravadas, setPaciente,
+    syncStatus, setIsPairingModalOpen,
   } = useAppStore();
 
   // Estados para Gravação de Áudio
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+
+  // Seletor de modelo de IA — armazena o model ID diretamente
+  const [selectedModelId, setSelectedModelId] = useState<string>(() => getDefaultModelId());
+
+  const handleProcessMobileTranscription = async (text: string) => {
+    if (!text || !text.trim()) return;
+    setQueixa(queixa.trim() ? `${queixa}\n${text}` : text);
+    if (pacienteNome.trim()) {
+      adicionarConsultaAoHistorico(pacienteNome.trim(), text);
+    }
+  };
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -183,7 +207,7 @@ export default function SOAPPanel() {
     toast.info('Enviando áudio para transcrição...');
     try {
       const file = new File([audioBlob], 'audio.webm', { type: 'audio/webm' });
-      
+
       const transcription = await groq.audio.transcriptions.create({
         file: file,
         model: 'whisper-large-v3',
@@ -192,14 +216,8 @@ export default function SOAPPanel() {
 
       const text = transcription.text;
       if (text && text.trim()) {
-        setQueixa(text);
         toast.success('Áudio transcrito com sucesso!');
-
-        const nome = pacienteNome.trim();
-        if (nome) {
-          adicionarConsultaAoHistorico(nome, text);
-          toast.success('Consulta adicionada ao histórico!');
-        }
+        await handleProcessMobileTranscription(text);
       } else {
         toast.error('Não foi possível detectar fala no áudio.');
       }
@@ -242,10 +260,10 @@ Queixa clínica: "${queixa}"`;
     setIsLoadingJust(true);
     setError(null);
     try {
-      const content = await callGemini({
-        prompt: buildContext(),
-        systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA,
-      });
+      const content = await callAI(
+        { prompt: buildContext(), systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA },
+        selectedModelId
+      );
       setJustificativa(content.toUpperCase());
       setIaModel(getLastUsedModel());
       toast.success('Justificativa clínica gerada');
@@ -263,11 +281,11 @@ Queixa clínica: "${queixa}"`;
     setIsLoadingSoap(true);
     setError(null);
     try {
-      const content = await callGemini({
-        prompt: buildContext(),
-        systemInstruction: SYSTEM_PROMPT_SOAP,
-      });
-      setSoap(content);
+      const content = await callAI(
+        { prompt: buildContext(), systemInstruction: SYSTEM_PROMPT_SOAP },
+        selectedModelId
+      );
+      setSoap(cleanSoapMarkdown(content));
       setIaModel(getLastUsedModel());
       setSoapExpanded(true);
       toast.success('Nota SOAP gerada');
@@ -292,41 +310,69 @@ Queixa clínica: "${queixa}"`;
           <textarea
             value={queixa}
             onChange={(e) => setQueixa(e.target.value)}
-            rows={3}
             placeholder="Ex: Paciente 78a, astenia há 2 meses, perda de 4kg, HAS e DM2."
-            className="w-full border border-gray-200 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 resize-y placeholder:text-gray-400 bg-gray-50/10 focus:bg-white transition-all font-medium leading-relaxed"
+            className="w-full border border-gray-200 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 resize-y placeholder:text-gray-400 bg-gray-50/10 focus:bg-white transition-all font-medium leading-relaxed h-20 lg:h-28"
           />
           {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
         </div>
 
         {/* Botões do Prontuário */}
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 items-center">
           <button
-            onClick={gerarJustificativa}
-            disabled={isLoadingJust || !queixa.trim() || isRecording || isTranscribing}
-            title="Gerar indicação clínica para a guia"
-            className="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow"
+            onClick={isLoadingJust ? cancelAIRequest : gerarJustificativa}
+            disabled={!isLoadingJust && (!queixa.trim() || isRecording || isTranscribing)}
+            title={isLoadingJust ? 'Parar a geração' : 'Gerar indicação clínica para a guia'}
+            className={`flex items-center justify-center gap-1.5 px-3 py-2 text-white text-xs font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full ${
+              isLoadingJust ? 'bg-red-500 hover:bg-red-600' : 'bg-indigo-600 hover:bg-indigo-700'
+            }`}
           >
-            {isLoadingJust ? <Loader2 size={13} className="animate-spin" /> : <Wand2 size={13} />}
-            {isLoadingJust ? (elapsedJust ? `${elapsedJust}s…` : '…') : 'Justificativa'}
+            {isLoadingJust ? <Square size={12} fill="white" /> : <Wand2 size={13} />}
+            {isLoadingJust ? `Parar${elapsedJust ? ` ${elapsedJust}s` : ''}` : 'Justificativa'}
           </button>
           <button
-            onClick={gerarSOAP}
-            disabled={isLoadingSoap || !queixa.trim() || isRecording || isTranscribing}
-            title="Gerar nota SOAP para prontuário"
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow"
+            onClick={isLoadingSoap ? cancelAIRequest : gerarSOAP}
+            disabled={!isLoadingSoap && (!queixa.trim() || isRecording || isTranscribing)}
+            title={isLoadingSoap ? 'Parar a geração' : 'Gerar nota SOAP para prontuário'}
+            className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full border ${
+              isLoadingSoap ? 'bg-red-500 hover:bg-red-600 text-white border-red-500' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
           >
-            {isLoadingSoap ? <Loader2 size={13} className="animate-spin" /> : <ClipboardList size={13} />}
-            {isLoadingSoap ? (elapsedSoap ? `${elapsedSoap}s…` : '…') : 'SOAP'}
+            {isLoadingSoap ? <Square size={12} fill="white" /> : <ClipboardList size={13} />}
+            {isLoadingSoap ? `Parar${elapsedSoap ? ` ${elapsedSoap}s` : ''}` : 'SOAP'}
           </button>
 
-          <div className="flex-grow" />
+          {/* Botão de Conectar Celular para espelhar */}
+          {syncStatus === 'recording' ? (
+            <div className="col-span-2 sm:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2 bg-red-500 text-white text-xs font-semibold rounded-xl shadow-sm animate-pulse">
+              <Radio size={13} className="animate-ping" />
+              Celular Gravando...
+            </div>
+          ) : syncStatus === 'transcribing' ? (
+            <div className="col-span-2 sm:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-sm">
+              <Loader2 size={13} className="animate-spin" />
+              Celular Transcrevendo...
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsPairingModalOpen(true)}
+              type="button"
+              title="Espelhar e gravar áudio pelo celular"
+              className={`col-span-2 sm:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer hover:shadow ${
+                syncStatus === 'connected'
+                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100'
+                  : 'bg-slate-900 text-white hover:bg-slate-800'
+              }`}
+            >
+              <Smartphone size={13} />
+              {syncStatus === 'connected' ? 'Celular Conectado' : 'Conectar Celular'}
+            </button>
+          )}
 
-          {/* Botão de Gravar Áudio (Consulta por voz) */}
+          {/* Botão de Gravar Áudio (Consulta por voz local) */}
           {isRecording ? (
             <button
               onClick={stopRecording}
-              className="flex items-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm whitespace-nowrap animate-pulse cursor-pointer hover:shadow"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm whitespace-nowrap animate-pulse cursor-pointer hover:shadow max-sm:w-full"
               title="Parar gravação de áudio"
             >
               <Square size={13} fill="white" />
@@ -335,7 +381,7 @@ Queixa clínica: "${queixa}"`;
           ) : isTranscribing ? (
             <button
               disabled
-              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500 text-white text-xs font-semibold rounded-xl disabled:opacity-75 transition-all shadow-sm whitespace-nowrap"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent-emerald text-white text-xs font-semibold rounded-xl disabled:bg-accent-emerald/60 disabled:text-white/80 disabled:opacity-75 transition-all shadow-sm whitespace-nowrap max-sm:w-full"
             >
               <Loader2 size={13} className="animate-spin" />
               Transcrevendo...
@@ -344,11 +390,11 @@ Queixa clínica: "${queixa}"`;
             <button
               onClick={startRecording}
               disabled={isLoadingJust || isLoadingSoap}
-              title="Gravar consulta por voz (transcrição automática)"
-              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow"
+              title="Gravar consulta pelo microfone do computador"
+              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent-emerald text-white text-xs font-semibold rounded-xl hover:bg-accent-emerald/90 disabled:bg-accent-emerald/40 disabled:text-white/60 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full"
             >
               <Mic size={13} />
-              Gravar Consulta
+              Gravar Computador
             </button>
           )}
 
@@ -357,11 +403,33 @@ Queixa clínica: "${queixa}"`;
             onClick={handleGravarConsulta}
             disabled={!pacienteNome.trim() || !queixa.trim() || isRecording || isTranscribing}
             title="Salvar consulta de texto no histórico"
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow"
+            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full"
           >
             <Save size={13} />
             Salvar Texto
           </button>
+
+          {/* Seletor de Modelo de IA — direto, sem configuração */}
+          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 max-sm:w-full max-sm:col-span-2 shadow-sm">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider select-none shrink-0">IA:</label>
+            <select
+              value={selectedModelId}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedModelId(val);
+                localStorage.setItem('arcanjo_selected_model', val);
+                const m = AI_MODELS.find((m) => m.id === val);
+                toast.info(`Modelo: ${m?.label ?? val}`);
+              }}
+              className="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer border-none focus:ring-0 min-w-0 truncate"
+            >
+              {AI_MODELS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}{m.note ? ` — ${m.note}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -439,9 +507,8 @@ Queixa clínica: "${queixa}"`;
             <textarea
               value={soap}
               onChange={(e) => setSoap(e.target.value)}
-              rows={14}
               placeholder="A nota SOAP (S/O/A/P) aparecerá aqui ao ser gerada pela IA ou digitada..."
-              className="w-full border border-gray-200 rounded-xl text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50/30 resize-y font-sans leading-relaxed text-gray-800 placeholder:text-gray-400 focus:bg-white transition-all"
+              className="w-full border border-gray-200 rounded-xl text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50/30 resize-y font-sans leading-relaxed text-gray-800 placeholder:text-gray-400 focus:bg-white transition-all h-56 lg:h-96"
             />
             <div className="flex justify-between items-center text-[10px] text-gray-400">
               <span>Nota clínica no padrão S-O-A-P. Não é impressa na guia de exames.</span>

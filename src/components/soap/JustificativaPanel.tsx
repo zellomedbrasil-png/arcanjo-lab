@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
-import { callGemini, getLastUsedModel } from '../../config/gemini';
+import { callAI, getLastUsedModel } from '../../config/gemini';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import { Loader2, Wand2, FileText, X } from 'lucide-react';
@@ -104,7 +104,7 @@ Queixa clínica: "${queixa}"`;
     setIsLoadingJust(true);
     setError(null);
     try {
-      const content = await callGemini({
+      const content = await callAI({
         prompt: buildContext(),
         systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA,
       });
