@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
-import { callAI, getLastUsedModel } from '../../config/gemini';
+import { callAI, getLastUsedModel, cancelAIRequest } from '../../config/gemini';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
-import { Loader2, Wand2, FileText, X } from 'lucide-react';
+import { Wand2, FileText, X, Square } from 'lucide-react';
 
 const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
 Gere UMA ÚNICA FRASE curta e objetiva (máximo 2-3 linhas) de "Indicação Clínica / Justificativa" para o campo obrigatório da guia de exame do convênio.
@@ -139,13 +139,15 @@ Queixa clínica: "${queixa}"`;
         </div>
 
         <button
-          onClick={gerarJustificativa}
-          disabled={isLoadingJust || !queixa.trim()}
-          title={`Gerar justificativa clínica para os ${theme.title}`}
-          className={`flex items-center justify-center gap-1.5 px-4.5 py-2.5 text-white text-xs font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap self-end max-sm:w-full cursor-pointer ${theme.primaryBg}`}
+          onClick={isLoadingJust ? cancelAIRequest : gerarJustificativa}
+          disabled={!isLoadingJust && !queixa.trim()}
+          title={isLoadingJust ? 'Parar a geração' : `Gerar justificativa clínica para os ${theme.title}`}
+          className={`flex items-center justify-center gap-1.5 px-4.5 py-2.5 text-white text-xs font-semibold rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm whitespace-nowrap self-end max-sm:w-full cursor-pointer ${
+            isLoadingJust ? 'bg-red-500 hover:bg-red-600' : theme.primaryBg
+          }`}
         >
-          {isLoadingJust ? <Loader2 size={13} className="animate-spin" /> : <Wand2 size={13} />}
-          {isLoadingJust ? (elapsedJust ? `${elapsedJust}s…` : '…') : 'Gerar Justificativa'}
+          {isLoadingJust ? <Square size={12} fill="white" /> : <Wand2 size={13} />}
+          {isLoadingJust ? `Parar${elapsedJust ? ` ${elapsedJust}s` : ''}` : 'Gerar Justificativa'}
         </button>
       </div>
 

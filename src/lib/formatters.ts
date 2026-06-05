@@ -78,3 +78,40 @@ export function cleanSoapMarkdown(text: string): string {
     .trim();
 }
 
+/**
+ * Extrai o bloco JSON de uma string de resposta da IA.
+ * Trata casos onde o modelo envia tags como <think> (DeepSeek)
+ * ou texto introdutório antes do JSON.
+ */
+export function extractJson(text: string): string {
+  if (!text) return '';
+
+  // 1. Remove qualquer conteúdo dentro de tags <think> e </think>
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+
+  // 2. Busca o primeiro '{' ou '[' e o último '}' ou ']'
+  const firstBrace = cleaned.indexOf('{');
+  const firstBracket = cleaned.indexOf('[');
+  const lastBrace = cleaned.lastIndexOf('}');
+  const lastBracket = cleaned.lastIndexOf(']');
+
+  let startIndex = -1;
+  let endIndex = -1;
+
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    startIndex = firstBrace;
+    endIndex = lastBrace;
+  } else if (firstBracket !== -1) {
+    startIndex = firstBracket;
+    endIndex = lastBracket;
+  }
+
+  // 3. Extrai apenas o bloco JSON se as chaves forem encontradas validamente
+  if (startIndex !== -1 && endIndex !== -1 && endIndex >= startIndex) {
+    return cleaned.substring(startIndex, endIndex + 1);
+  }
+
+  // Fallback: tenta remover os code blocks markdown comuns
+  return cleaned.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+}
+

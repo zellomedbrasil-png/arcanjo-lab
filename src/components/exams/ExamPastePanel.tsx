@@ -6,10 +6,11 @@ import { organizarExamesIA, findMatchingExam, type ExameOrganizado, type Resulta
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import {
-  ClipboardPaste, Sparkles, Loader2, CheckCircle2,
+  ClipboardPaste, Sparkles, CheckCircle2,
   AlertTriangle, ChevronDown, ChevronUp, FileText, Wand2, Trash2,
-  Pencil, Check, Plus
+  Pencil, Check, Plus, Square
 } from 'lucide-react';
+import { cancelAIRequest } from '../../config/gemini';
 
 export default function ExamPastePanel() {
   const [textoExames, setTextoExames] = useState('');
@@ -206,18 +207,20 @@ export default function ExamPastePanel() {
           {/* Botões */}
           <div className="flex gap-2.5">
             <button
-              onClick={handleOrganizar}
-              disabled={isLoading || !textoExames.trim()}
+              onClick={isLoading ? cancelAIRequest : handleOrganizar}
+              disabled={!isLoading && !textoExames.trim()}
               className={`flex-1 flex items-center justify-center gap-2 px-4.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                isLoading || !textoExames.trim()
+                isLoading
+                  ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-100'
+                  : !textoExames.trim()
                   ? 'bg-gray-100 text-neutral-text-muted cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
               }`}
             >
               {isLoading ? (
                 <>
-                  <Loader2 size={13} className="animate-spin" />
-                  {elapsed ? `Organizando com IA... (${elapsed}s)` : 'Organizando com IA...'}
+                  <Square size={13} fill="white" />
+                  {elapsed ? `Parar (${elapsed}s)` : 'Parar'}
                 </>
               ) : (
                 <>

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, Smartphone, X } from 'lucide-react';
+import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, Smartphone, X, Settings } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useAppStore } from '../../store/useAppStore';
 import { ToastContainer } from '../ui/ToastContainer';
 import PairingModal from '../soap/PairingModal';
+import SettingsModal from './SettingsModal';
 import { SyncService } from '../../services/syncService';
 import { callAI, getLastUsedModel } from '../../config/gemini';
 
@@ -25,6 +26,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   } = useAppStore();
 
   const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const syncRef = useRef<SyncService | null>(null);
 
   // Background Sync Listener
@@ -209,6 +211,15 @@ export default function Layout({ children }: { children: ReactNode }) {
             )}
           </button>
 
+          {/* Settings Button */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 rounded-lg hover:bg-neutral-bg text-neutral-text-muted hover:text-neutral-text cursor-pointer transition-colors"
+            title="Configurações de API"
+          >
+            <Settings size={18} />
+          </button>
+
           {/* Logout Button */}
           <button
             onClick={handleLogout}
@@ -350,6 +361,15 @@ export default function Layout({ children }: { children: ReactNode }) {
           >
             <ClipboardList className="mr-3 h-4 w-4 flex-shrink-0" />
             Bloco de Notas
+          </button>
+
+          {/* Settings Button */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="w-full flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors text-left text-neutral-text-muted hover:bg-neutral-bg hover:text-neutral-text cursor-pointer"
+          >
+            <Settings className="mr-3 h-4 w-4 flex-shrink-0" />
+            Configurações de API
           </button>
         </nav>
 
@@ -520,6 +540,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       <ToastContainer />
       <PairingModal />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </div>
   );
 }

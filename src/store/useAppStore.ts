@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Convenio, Genero, Medico, TipoGuia, ConsultaGravada } from '../types';
 import { publishPatientSync, subscribePatientSync } from './patientSync';
+import { useReceitaStore } from './useReceitaStore';
 
 interface AppState {
   medico: Medico | null;
@@ -170,6 +171,7 @@ export const useAppStore = create<AppState>()(
 
       resetForm: () => {
         set({ ...initialState, procedimentosPersonalizados: [] });
+        useReceitaStore.getState().resetReceita();
         publishPatientSync('app', {
           pacienteNome: '',
           pacienteCpf: '',

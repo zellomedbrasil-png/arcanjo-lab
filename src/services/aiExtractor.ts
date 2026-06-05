@@ -1,4 +1,4 @@
-import { callGemini } from '../config/gemini';
+import { callAI } from '../config/gemini';
 
 export interface ExtractedPatientData {
   pacienteNome: string | null;
@@ -32,14 +32,16 @@ export async function extractPatientDataFromText(transcriptionText: string): Pro
   }
 
   try {
-    const response = await callGemini({
+    const response = await callAI({
       prompt: `Analise a seguinte transcrição de consulta:\n\n"${transcriptionText}"`,
       systemInstruction: SYSTEM_PROMPT_EXTRACT,
       jsonMode: true,
     });
 
     console.log('[AIExtractor] Raw AI response:', response);
-    const parsedData = JSON.parse(response) as ExtractedPatientData;
+    const { extractJson } = await import('../lib/formatters');
+    const jsonStr = extractJson(response);
+    const parsedData = JSON.parse(jsonStr) as ExtractedPatientData;
     return parsedData;
   } catch (err) {
     console.error('[AIExtractor] Error extracting patient data:', err);

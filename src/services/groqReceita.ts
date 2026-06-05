@@ -1,5 +1,5 @@
 import type { MedicamentoReceita, TipoRecomendado } from '../store/useReceitaStore';
-import { callGemini } from '../config/gemini';
+import { callAI } from '../config/gemini';
 
 // ─── Auditor Clínico Determinístico (Evita Falsos Positivos da IA) ───
 export function auditarTipoReceita(principioAtivo: string, tipoSugerido: TipoRecomendado): TipoRecomendado {
@@ -189,6 +189,8 @@ export interface MedProcessado {
   motivoEspecial: string;
 }
 
+import { extractJson } from '../lib/formatters';
+
 export interface ResultadoListaMedicamentos {
   medicamentos: MedProcessado[];
   alertas: string[];
@@ -197,13 +199,13 @@ export interface ResultadoListaMedicamentos {
 export async function gerarPosologia(
   nomeMedicamento: string
 ): Promise<Omit<MedicamentoReceita, 'id' | 'nomeDigitado' | 'carregando' | 'erro'>> {
-  const raw = await callGemini({
+  const raw = await callAI({
     prompt: `Medicamento: "${nomeMedicamento}"\n\nRetorne apenas o JSON sem markdown.`,
     systemInstruction: SYSTEM_PROMPT,
     jsonMode: true
   });
 
-  const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const jsonStr = extractJson(raw);
 
   let parsed: GeminiMedResponse;
   try {
@@ -235,13 +237,13 @@ export async function gerarPosologia(
 export async function processarListaMedicamentos(
   textoMedicamentos: string
 ): Promise<ResultadoListaMedicamentos> {
-  const raw = await callGemini({
+  const raw = await callAI({
     prompt: `LISTA DE MEDICAMENTOS:\n"""\n${textoMedicamentos.trim()}\n"""\n\nProcesse todos os medicamentos e retorne apenas o JSON.`,
     systemInstruction: BATCH_SYSTEM_PROMPT,
     jsonMode: true
   });
 
-  const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const jsonStr = extractJson(raw);
 
   let parsed: GeminiBatchResponse;
   try {

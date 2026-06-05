@@ -1,4 +1,4 @@
-import { callGemini } from '../config/gemini';
+import { callAI } from '../config/gemini';
 import { CATEGORIAS_EXAMES } from '../data/exames';
 
 export interface ExameOrganizado {
@@ -195,13 +195,14 @@ ${examesPermitidosList.join(', ')}
 
 Organize os exames e retorne apenas o JSON.`;
 
-  const raw = await callGemini({
+  const raw = await callAI({
     prompt: userMessage,
     systemInstruction: SYSTEM_PROMPT,
     jsonMode: true
   });
 
-  const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const { extractJson } = await import('../lib/formatters');
+  const jsonStr = extractJson(raw);
 
   let parsed: ResultadoExamesIA;
   try {

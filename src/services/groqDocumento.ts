@@ -1,4 +1,4 @@
-import { callGemini } from '../config/gemini';
+import { callAI } from '../config/gemini';
 
 export interface IaLaudoResponse {
   laudoDiagnostico: string;
@@ -42,14 +42,16 @@ Retorne APENAS um JSON válido (sem markdown, sem explicações adicionais) com 
 }
 Evite termos informais e mantenha a redação profissional e segura.`;
 
+import { extractJson } from '../lib/formatters';
+
 export async function gerarLaudoIA(prompt: string): Promise<IaLaudoResponse> {
-  const raw = await callGemini({
+  const raw = await callAI({
     prompt: `Descrição do Caso: "${prompt}"\n\nRetorne apenas o JSON.`,
     systemInstruction: LAUDO_SYSTEM_PROMPT,
     jsonMode: true
   });
 
-  const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const jsonStr = extractJson(raw);
 
   try {
     return JSON.parse(jsonStr) as IaLaudoResponse;
@@ -59,13 +61,13 @@ export async function gerarLaudoIA(prompt: string): Promise<IaLaudoResponse> {
 }
 
 export async function gerarAtestadoIA(prompt: string): Promise<IaAtestadoResponse> {
-  const raw = await callGemini({
+  const raw = await callAI({
     prompt: `Descrição do Afastamento: "${prompt}"\n\nRetorne apenas o JSON.`,
     systemInstruction: ATESTADO_SYSTEM_PROMPT,
     jsonMode: true
   });
 
-  const jsonStr = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const jsonStr = extractJson(raw);
 
   try {
     return JSON.parse(jsonStr) as IaAtestadoResponse;

@@ -5,10 +5,11 @@ import { processarListaMedicamentos, type MedProcessado, type ResultadoListaMedi
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import {
-  ClipboardPaste, Sparkles, Loader2, CheckCircle2,
+  ClipboardPaste, Sparkles, CheckCircle2,
   AlertTriangle, ChevronDown, ChevronUp, Pill, Trash2,
-  ShieldAlert
+  ShieldAlert, Square
 } from 'lucide-react';
+import { cancelAIRequest } from '../../config/gemini';
 
 export default function MedicamentoPastePanel() {
   const [textoMedicamentos, setTextoMedicamentos] = useState('');
@@ -156,18 +157,20 @@ export default function MedicamentoPastePanel() {
           {/* Botões */}
           <div className="flex gap-3">
             <button
-              onClick={handleProcessar}
-              disabled={isLoading || !textoMedicamentos.trim()}
-              className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm ${
-                isLoading || !textoMedicamentos.trim()
+              onClick={isLoading ? cancelAIRequest : handleProcessar}
+              disabled={!isLoading && !textoMedicamentos.trim()}
+              className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm cursor-pointer ${
+                isLoading
+                  ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-100'
+                  : !textoMedicamentos.trim()
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:shadow-md'
               }`}
             >
               {isLoading ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
-                  {elapsed ? `Processando com IA... (${elapsed}s)` : 'Processando com IA...'}
+                  <Square size={14} fill="white" />
+                  {elapsed ? `Parar (${elapsed}s)` : 'Parar'}
                 </>
               ) : (
                 <>
