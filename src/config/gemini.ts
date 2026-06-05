@@ -121,9 +121,9 @@ export const AI_MODELS: AIModel[] = [
     timeoutMs: 12_000,
   },
   {
-    id: 'anthropic/claude-3-5-sonnet',
-    label: 'Claude 3.5 Sonnet 👑',
-    badge: 'Claude 3.5 Sonnet (OpenRouter)',
+    id: 'anthropic/claude-sonnet-4.6',
+    label: 'Claude Sonnet 4.6 👑',
+    badge: 'Claude Sonnet 4.6 (OpenRouter)',
     provider: 'openrouter',
     note: 'Inteligência máxima clínica',
     timeoutMs: 12_000,
