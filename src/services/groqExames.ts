@@ -37,7 +37,8 @@ REGRAS:
 - Dê preferência aos nomes exatos da lista de EXAMES PERMITIDOS e EVITE nomes longos ou redundantes como "DOSAGEM DE GLICOSE" (use "GLICOSE"), "DOSAGEM DE INSULINA" (use "INSULINA"), "DOSAGEM DE UREIA" (use "UREIA"), "DOSAGEM DE HEMOGLOBINA GLICADA" (use "HEMOGLOBINA GLICADA - HBA1C").
 - Se o médico escreveu abreviações (HMG, GJ, TGO, TGP, etc.), expanda para o nome oficial curto que consta na lista de EXAMES PERMITIDOS.
 - Se não reconhecer um exame na lista de EXAMES PERMITIDOS, padronize seu nome de forma curta e direta, sem termos redundantes como "DOSAGEM DE" ou "DETERMINACAO DE", e marque com "(verificar)" (ex: "EXAME RARO (verificar)").
-- A justificativa global deve ser profissional, adequada para auditoria de convênio
+- Raciocínio Clínico Avançado: Se o paciente for idoso (≥ 60 anos) ou apresentar queixas gastrointestinais, integre termos formais nas justificativas individuais e globais (ex: relacionar TSH e Hemograma à investigação de astenia sob suspeita de hipotireoidismo/anemia senil; relacionar exames hepáticos à esteatose ou escalas como FIB-4; relacionar endoscopia a dispepsia e escalas de Roma IV).
+- A justificativa global deve ser profissional, adequada para auditoria de convênio e escrita inteiramente em MAIÚSCULAS.
 - Se a queixa for fornecida, use-a para gerar justificativas contextualmente relevantes. Não invente doenças secundárias ou históricos fictícios.
 - Se não houver queixa, gere justificativas genéricas baseadas nos exames solicitados, sem alucinar diagnósticos do paciente.
 - Retorne exames na mesma ordem em que foram fornecidos.

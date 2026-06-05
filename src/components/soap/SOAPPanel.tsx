@@ -5,7 +5,7 @@ import { callAI, getLastUsedModel, getDefaultModelId, AI_MODELS, cancelAIRequest
 import { groq } from '../../config/groq';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
-import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio } from 'lucide-react';
+import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio, ShieldAlert, Activity } from 'lucide-react';
 import type { ConsultaGravada } from '../../types';
 import { cleanSoapMarkdown } from '../../lib/formatters';
 
@@ -136,6 +136,56 @@ export default function SOAPPanel() {
     consultasGravadas, gravarConsulta, removerConsultaGravada, adicionarConsultaAoHistorico, limparConsultasGravadas, setPaciente,
     syncStatus, setIsPairingModalOpen,
   } = useAppStore();
+
+  // Análise clínica em tempo real da nota SOAP
+  const analisarSOAP = (texto: string) => {
+    if (!texto) return { alertBeers: null, escalas: [] as string[], cids: [] as string[] };
+
+    const textLower = texto.toLowerCase();
+    
+    // 1. Detecção de Alertas de Beers / STOPP
+    let alertBeers: string | null = null;
+    const hasBeersKeywords = textLower.includes('beers') || textLower.includes('stopp');
+    const hasCriticalDrugs = textLower.includes('amitriptilina') || 
+                             textLower.includes('clonazepam') || 
+                             textLower.includes('diazepam') || 
+                             textLower.includes('alprazolam') || 
+                             textLower.includes('bromazepam') || 
+                             textLower.includes('zolpidem') || 
+                             textLower.includes('glimepirida') || 
+                             textLower.includes('metoclopramida') || 
+                             (textLower.includes('diclofenaco') && textLower.includes('idoso')) || 
+                             (textLower.includes('nimesulida') && textLower.includes('idoso')) || 
+                             (textLower.includes('ibuprofeno') && textLower.includes('idoso'));
+                             
+    if (hasBeersKeywords || hasCriticalDrugs) {
+      alertBeers = "Possível risco terapêutico/medicamento inapropriado detectado (Critérios de Beers 2023 / STOPP-START). Avalie desprescrição ou ajuste de dose.";
+    }
+
+    // 2. Detecção de Escalas Clínicas
+    const escalasDisponiveis = [
+      { nome: 'Bristol (Fezes)', keywords: ['bristol', 'cíbalos'] },
+      { nome: 'Roma IV (Gastroenterologia)', keywords: ['roma iv', 'roma 4', 'constipação funcional', 'dispepsia funcional', 'síndrome do intestino irritável'] },
+      { nome: 'Los Angeles (Esofagite)', keywords: ['los angeles', 'grau a', 'grau b', 'grau c', 'grau d'] },
+      { nome: 'Sydney/OLGA (Gastrite)', keywords: ['sydney', 'olga', 'olgis'] },
+      { nome: 'Forrest (HDA)', keywords: ['forrest'] },
+      { nome: 'FIB-4 (Fibrose Hepática)', keywords: ['fib-4', 'fib4'] },
+      { nome: 'Katz (Funcionalidade)', keywords: ['katz'] },
+      { nome: 'Lawton (Funcionalidade)', keywords: ['lawton'] },
+      { nome: 'FRAIL / Fried (Fragilidade)', keywords: ['frail', 'fried', 'fragilidade'] }
+    ];
+
+    const escalas = escalasDisponiveis
+      .filter(e => e.keywords.some(k => textLower.includes(k)))
+      .map(e => e.nome);
+
+    // 3. Extração de CIDs
+    const regexCid = /\b[A-Z]\d{2}(?:\.\d)?\b/g;
+    const matches = texto.match(regexCid) || [];
+    const cids = Array.from(new Set(matches));
+
+    return { alertBeers, escalas, cids };
+  };
 
   // Estados para Gravação de Áudio
   const [isRecording, setIsRecording] = useState(false);
@@ -499,6 +549,47 @@ Queixa clínica: "${queixa}"`;
         </button>
         {soapExpanded && (
           <div className="p-3 bg-white space-y-3">
+            {/* Auditoria Clínica Ativa */}
+            {(() => {
+              const analise = analisarSOAP(soap);
+              if (!soap.trim() || (!analise.alertBeers && analise.escalas.length === 0 && analise.cids.length === 0)) return null;
+              
+              return (
+                <div className="bg-slate-50 rounded-xl p-3 border border-indigo-100/60 space-y-2.5">
+                  <div className="flex items-center gap-1.5 border-b border-indigo-100/30 pb-1.5">
+                    <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider">
+                      Auditoria Clínica Ativa (Segurança & Métricas)
+                    </span>
+                  </div>
+                  
+                  {/* Beers Alert */}
+                  {analise.alertBeers && (
+                    <div className="flex items-start gap-2 bg-red-50 border border-red-200/60 rounded-lg p-2 text-[11px] text-red-800">
+                      <ShieldAlert size={14} className="shrink-0 mt-0.5 text-red-600 animate-pulse" />
+                      <div className="leading-relaxed">
+                        <strong className="font-bold">⚠️ Alerta Beers / STOPP:</strong> {analise.alertBeers}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Escalas e Códigos */}
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    {analise.escalas.map(e => (
+                      <span key={e} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">
+                        <Activity size={10} />
+                        Escala: {e}
+                      </span>
+                    ))}
+                    {analise.cids.map(c => (
+                      <span key={c} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        CID-10: {c}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="flex justify-between items-center">
               <span className="text-[10px] text-gray-400 font-medium">
                 Edite a nota abaixo e clique no botão para copiar com formatação limpa:

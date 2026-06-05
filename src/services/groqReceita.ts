@@ -134,12 +134,12 @@ FORMATO DO JSON:
   ],
   "alertas": [
     "Alertas discretos de interações medicamentosas graves detectadas (ex: AINE + ISRS = risco de sangramento gástrico).",
-    "Alertas de segurança do idoso (Critérios de Beers) ou duplicidade terapêutica."
+    "Alertas de segurança do idoso (Critérios de Beers 2023 / STOPP-START) caso identifique medicamentos potencialmente inapropriados para idosos (ex: benzodiazepínicos, amitriptilina, AINEs contínuos, metoclopramida prolongada, glimepirida, zolpidem), recomendando alternativas seguras."
   ]
 }
 
 REGRAS DE CONFORMIDADE:
-- Retorne alertas detalhados baseados em evidência clínica de geriatria. Se não houver alertas, retorne um array vazio.
+- RASTREIO DE SEGURANÇA ATIVO (CRITÉRIOS DE BEERS 2023): Verifique ativamente se algum medicamento inserido apresenta risco para idosos (≥ 60 anos) ou causa interações graves. Insira avisos objetivos no array "alertas". Se não houver riscos, retorne o array vazio.
 - Se for digitado um diagnóstico/classe (ex: "gastrite"), a IA deve sugerir os medicamentos ideais correspondentes. A quantidade de medicamentos sugerida deve ser de 1 a 3 conforme o bom senso médico.
 - Retorne apenas JSON legível puro, sem blocos markdown fora das chaves.`;
 
