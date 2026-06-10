@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { publishPatientSync, subscribePatientSync } from './patientSync';
 
-export type TipoDocumento = 'LAUDO' | 'ATESTADO' | 'COMPARECIMENTO' | 'APTIDAO' | 'ASO';
+export type TipoDocumento = 'LAUDO' | 'ATESTADO' | 'COMPARECIMENTO' | 'APTIDAO' | 'ASO' | 'LIVRE';
 export type AsoTipoExame = 'ADMISSIONAL' | 'PERIODICO' | 'RETORNO_TRABALHO' | 'MUDANCA_FUNCAO' | 'DEMISSIONAL';
 
 interface DocumentState {
@@ -44,6 +44,10 @@ interface DocumentState {
   asoRiscos: string[];
   asoExamesRealizados: string;
   asoResultado: 'APTO' | 'INAPTO';
+
+  // Documento Livre
+  livreTitulo: string;
+  livreConteudo: string;
 
   setTipoDocumento: (tipo: TipoDocumento) => void;
   setDocumento: (dados: Partial<DocumentState>) => void;
@@ -91,6 +95,10 @@ const initialState = {
   asoRiscos: ['AUSÊNCIA DE RISCO'],
   asoExamesRealizados: 'Exame clínico geral ocupacional',
   asoResultado: 'APTO' as 'APTO' | 'INAPTO',
+
+  // Documento Livre
+  livreTitulo: 'DECLARAÇÃO MÉDICA',
+  livreConteudo: '',
 };
 
 export const useDocumentStore = create<DocumentState>()(

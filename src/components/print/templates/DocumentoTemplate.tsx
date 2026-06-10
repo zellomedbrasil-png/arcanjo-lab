@@ -70,6 +70,7 @@ export default function DocumentoTemplate() {
                 {doc.tipoDocumento === 'COMPARECIMENTO' && 'Atestado de Comparecimento'}
                 {doc.tipoDocumento === 'APTIDAO' && 'Atestado de Aptidão Física'}
                 {doc.tipoDocumento === 'ASO' && 'ASO - Saúde Ocupacional'}
+                {doc.tipoDocumento === 'LIVRE' && (doc.livreTitulo || 'Documento Livre')}
               </p>
             </div>
           </div>
@@ -300,6 +301,28 @@ export default function DocumentoTemplate() {
             <p className="text-[8px] text-gray-500 leading-normal text-justify">
               O Atestado de Saúde Ocupacional (ASO) é emitido em conformidade com as diretrizes da NR-7 da Portaria 3.214/78 do MTE. O trabalhador foi informado sobre o resultado dos exames e sua aptidão funcional.
             </p>
+          </div>
+        )}
+
+        {/* 6. DOCUMENTO LIVRE */}
+        {doc.tipoDocumento === 'LIVRE' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-4 border-b border-gray-200 pb-3 mb-4">
+              <div className="col-span-2">
+                <span className="text-[8px] font-bold uppercase text-gray-500 block">Paciente</span>
+                <span className="text-[11.5px] font-bold uppercase text-gray-900">{doc.pacienteNome || '________________________________________'}</span>
+              </div>
+              {doc.pacienteCpf && (
+                <div>
+                  <span className="text-[8px] font-bold uppercase text-gray-500 block">CPF</span>
+                  <span className="text-[10px] font-semibold text-gray-800">{doc.pacienteCpf}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="text-justify text-[11px] leading-relaxed whitespace-pre-wrap py-1.5 pl-0.5 text-gray-800">
+              {doc.livreConteudo || 'Nenhum conteúdo inserido.'}
+            </div>
           </div>
         )}
       </div>

@@ -1,6 +1,40 @@
 import type { MedicamentoReceita, TipoRecomendado } from '../store/useReceitaStore';
 import { callAI } from '../config/gemini';
 
+// ─── Antimicrobianos (RDC 471/2021 ANVISA) ───────────────────────
+// Antibióticos e antifúngicos sistêmicos exigem receita em DUAS VIAS,
+// com retenção da 1ª via na farmácia. No sistema, são emitidos no
+// modelo de 2 vias (Receita de Controle Especial).
+const termosAntimicrobianos = [
+  // Penicilinas e associações
+  'amoxicilina', 'clavulanato', 'ampicilina', 'penicilina', 'benzilpenicilina', 'benzatina', 'oxacilina', 'piperacilina',
+  // Cefalosporinas
+  'cefalexina', 'cefadroxila', 'cefaclor', 'cefuroxima', 'ceftriaxona', 'cefepima', 'cefixima', 'cefpodoxima',
+  // Macrolídeos
+  'azitromicina', 'claritromicina', 'eritromicina', 'espiramicina',
+  // Quinolonas
+  'ciprofloxacino', 'levofloxacino', 'norfloxacino', 'moxifloxacino', 'ofloxacino', 'gatifloxacino',
+  // Sulfas e associações
+  'sulfametoxazol', 'trimetoprima', 'sulfadiazina',
+  // Tetraciclinas
+  'doxiciclina', 'tetraciclina', 'minociclina', 'tigeciclina',
+  // Outros antibacterianos
+  'nitrofurantoína', 'nitrofurantoina', 'clindamicina', 'metronidazol', 'secnidazol', 'tinidazol',
+  'vancomicina', 'linezolida', 'gentamicina', 'amicacina', 'tobramicina', 'neomicina',
+  'rifampicina', 'rifamicina', 'isoniazida', 'pirazinamida', 'etambutol', 'dapsona',
+  'fosfomicina', 'cloranfenicol', 'mupirocina', 'ácido fusídico', 'acido fusidico',
+  // Antifúngicos da lista de antimicrobianos da ANVISA
+  'fluconazol', 'itraconazol', 'cetoconazol', 'nistatina', 'griseofulvina', 'terbinafina', 'anfotericina', 'voriconazol',
+];
+
+export function ehAntimicrobiano(principioAtivo: string): boolean {
+  const nomeLower = principioAtivo.toLowerCase();
+  return termosAntimicrobianos.some((termo) => nomeLower.includes(termo));
+}
+
+export const MOTIVO_ANTIMICROBIANO =
+  'Antimicrobiano (RDC 471/2021 ANVISA) — exige receita em 2 vias, com retenção da 1ª via na farmácia.';
+
 // ─── Auditor Clínico Determinístico (Evita Falsos Positivos da IA) ───
 export function auditarTipoReceita(principioAtivo: string, tipoSugerido: TipoRecomendado): TipoRecomendado {
   const nomeLower = principioAtivo.toLowerCase();
@@ -30,11 +64,6 @@ export function auditarTipoReceita(principioAtivo: string, tipoSugerido: TipoRec
     'loratadina', 'desloratadina', 'fexofenadina', 'cetirizina', 'dexclorfeniramina', 
     'prednisona', 'prednisolona', 'dexametasona', 'budesonida', 'fluticasona', 'montelucaste', 
     'levocetirizina', 'bilastina', 'rupatadina', 'hidroxizina',
-    // Antibióticos / Antifúngicos comuns (usam receita de controle de antimicrobianos, mas NÃO Portaria 344)
-    'amoxicilina', 'clavulanato', 'azitromicina', 'claritromicina', 'cefalexina', 'ceftriaxona', 
-    'ciprofloxacino', 'levofloxacino', 'norfloxacino', 'sulfametoxazol', 'trimetoprima', 
-    'nitrofurantoína', 'doxiciclina', 'eritromicina', 'clindamicina', 'metronidazol', 
-    'fluconazol', 'itraconazol', 'cetoconazol', 'nistatina',
     // Tireoide
     'levotiroxina', 'puran', 'synthroid', 'tiamazol', 'propiltiuracil',
     // Vitaminas / Suplementos / Fitoterápicos
@@ -68,17 +97,22 @@ export function auditarTipoReceita(principioAtivo: string, tipoSugerido: TipoRec
     'sibutramina', 'biperideno'
   ];
 
-  // 1. Prioridade absoluta para termos estritamente controlados
+  // 1. Prioridade absoluta para termos estritamente controlados (Portaria 344/98)
   if (termosEspeciais.some(termo => nomeLower.includes(termo))) {
     return 'ESPECIAL';
   }
 
-  // 2. Se contiver termos estritamente simples, força a receita a ser SIMPLES
+  // 2. Antimicrobianos (RDC 471/2021) exigem receita em 2 vias → modelo ESPECIAL
+  if (ehAntimicrobiano(nomeLower)) {
+    return 'ESPECIAL';
+  }
+
+  // 3. Se contiver termos estritamente simples, força a receita a ser SIMPLES
   if (termosSimples.some(termo => nomeLower.includes(termo))) {
     return 'SIMPLES';
   }
 
-  // 3. Fallback para a sugestão da IA
+  // 4. Fallback para a sugestão da IA
   return tipoSugerido;
 }
 
@@ -100,8 +134,8 @@ Dado o nome do medicamento ou diagnóstico/classe, retorne APENAS um JSON válid
   "duracao": "Duração sugerida do tratamento (ex: 30 dias, uso contínuo, 7 dias)",
   "indicacao": "A função básica do medicamento em poucas palavras (ex: 'Para controle da pressão', 'Para gastrite', 'Para o colesterol', 'Para dormir'). Seja extremamente conciso.",
   "observacoes": "Instruções críticas ao paciente (horários, jejum, etc.). Mantenha extremamente curto e direto (ex: 'Tomar em jejum', 'Pode causar sonolência'). Não insira alertas de Beers ou interações aqui.",
-  "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL estritamente para substâncias da Portaria ANVISA 344/98 (psicotrópicos, benzodiazepínicos, antidepressivos, opioides, anticonvulsivantes). Todos os demais são SIMPLES.",
-  "motivoTipo": "Se ESPECIAL: descreva a classe e a lista de controle (ex: 'Lista C1 (Antidepressivos) da Portaria 344/98'). Se SIMPLES: deixe vazio."
+  "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL para: (a) substâncias da Portaria ANVISA 344/98 (psicotrópicos, benzodiazepínicos, antidepressivos, opioides, anticonvulsivantes); e (b) ANTIMICROBIANOS (antibióticos e antifúngicos sistêmicos), que pela RDC 471/2021 da ANVISA exigem receita em 2 vias com retenção da 1ª via na farmácia. Todos os demais são SIMPLES.",
+  "motivoTipo": "Se ESPECIAL por controle: descreva a classe e a lista de controle (ex: 'Lista C1 (Antidepressivos) da Portaria 344/98'). Se ESPECIAL por antimicrobiano: 'Antimicrobiano (RDC 471/2021) — receita em 2 vias'. Se SIMPLES: deixe vazio."
 }
 REGRA DE SEGURANÇA: Não sugira medicamentos extras na posologia. Adote as recomendações de posologia brasileiras vigentes.`;
 
@@ -128,8 +162,8 @@ FORMATO DO JSON:
       "duracao": "Duração do tratamento (ex: 30 dias, uso contínuo)",
       "indicacao": "A função básica do medicamento em poucas palavras (ex: 'Para controle da pressão', 'Para gastrite', 'Para o colesterol', 'Para dormir'). Seja extremamente conciso.",
       "observacoes": "Orientação de administração (horários, jejum, etc.). Mantenha extremamente curto e direto (ex: 'Tomar em jejum', 'Pode causar sonolência'). Não insira alertas de Beers ou interações aqui.",
-      "tipoReceita": "SIMPLES ou ESPECIAL perante a Portaria ANVISA 344/98",
-      "motivoTipo": "Especificação da lista regulatória da ANVISA se ESPECIAL, ou vazio se SIMPLES."
+      "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL para substâncias da Portaria ANVISA 344/98 E TAMBÉM para ANTIMICROBIANOS (antibióticos e antifúngicos sistêmicos), que pela RDC 471/2021 exigem receita em 2 vias",
+      "motivoTipo": "Especificação da lista regulatória da ANVISA se controlado (ex: 'Lista B1 da Portaria 344/98'), 'Antimicrobiano (RDC 471/2021) — receita em 2 vias' se antibiótico/antifúngico, ou vazio se SIMPLES."
     }
   ],
   "alertas": [
@@ -217,10 +251,12 @@ export async function gerarPosologia(
   const tipoRecomendadoBruto: TipoRecomendado =
     parsed.tipoReceita === 'ESPECIAL' ? 'ESPECIAL' : 'SIMPLES';
 
-  const tipoRecomendado = auditarTipoReceita(parsed.principioAtivo || nomeMedicamento, tipoRecomendadoBruto);
+  const principioFinal = parsed.principioAtivo || nomeMedicamento;
+  const tipoRecomendado = auditarTipoReceita(principioFinal, tipoRecomendadoBruto);
+  const antimicrobiano = ehAntimicrobiano(`${principioFinal} ${nomeMedicamento}`);
 
   return {
-    principioAtivo: parsed.principioAtivo || nomeMedicamento,
+    principioAtivo: principioFinal,
     formaFarmaceutica: parsed.formaFarmaceutica || '',
     uso: parsed.uso || 'Uso oral',
     posologia: parsed.posologia || '',
@@ -229,7 +265,12 @@ export async function gerarPosologia(
     indicacao: parsed.indicacao || '',
     observacoes: parsed.observacoes || '',
     tipoRecomendado,
-    motivoEspecial: tipoRecomendado === 'ESPECIAL' ? (parsed.motivoTipo || 'Medicamento de Controle Especial') : '',
+    motivoEspecial:
+      tipoRecomendado === 'ESPECIAL'
+        ? antimicrobiano
+          ? MOTIVO_ANTIMICROBIANO
+          : (parsed.motivoTipo || 'Medicamento de Controle Especial')
+        : '',
   };
 }
 
@@ -258,10 +299,12 @@ export async function processarListaMedicamentos(
 
   const medicamentos: MedProcessado[] = parsed.medicamentos.map((m) => {
     const tipoSugerido = (m.tipoReceita === 'ESPECIAL' ? 'ESPECIAL' : 'SIMPLES') as TipoRecomendado;
-    const tipoRecomendado = auditarTipoReceita(m.principioAtivo || m.nomeOriginal || '', tipoSugerido);
+    const principioFinal = m.principioAtivo || m.nomeOriginal || '';
+    const tipoRecomendado = auditarTipoReceita(principioFinal, tipoSugerido);
+    const antimicrobiano = ehAntimicrobiano(`${principioFinal} ${m.nomeOriginal || ''}`);
     return {
       nomeOriginal: m.nomeOriginal || '',
-      principioAtivo: m.principioAtivo || m.nomeOriginal || '',
+      principioAtivo: principioFinal,
       formaFarmaceutica: m.formaFarmaceutica || '',
       uso: m.uso || 'Uso oral',
       posologia: m.posologia || '',
@@ -270,7 +313,12 @@ export async function processarListaMedicamentos(
       indicacao: m.indicacao || '',
       observacoes: m.observacoes || '',
       tipoRecomendado,
-      motivoEspecial: tipoRecomendado === 'ESPECIAL' ? (m.motivoTipo || 'Medicamento de Controle Especial') : '',
+      motivoEspecial:
+        tipoRecomendado === 'ESPECIAL'
+          ? antimicrobiano
+            ? MOTIVO_ANTIMICROBIANO
+            : (m.motivoTipo || 'Medicamento de Controle Especial')
+          : '',
     };
   });
 

@@ -20,7 +20,7 @@ export default function PairingModal() {
       setSyncRoomCode(code);
       setSyncStatus('waiting');
     }
-  }, [isPairingModalOpen, syncRoomCode]);
+  }, [isPairingModalOpen, syncRoomCode, setSyncRoomCode, setSyncStatus]);
 
   if (!isPairingModalOpen || !syncRoomCode) return null;
 

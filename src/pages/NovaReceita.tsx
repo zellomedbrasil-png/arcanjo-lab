@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { useRecentPatientsStore, type PacienteRecente } from '../store/useRecentPatientsStore';
 import { savePatientToHistory } from '../store/patientSync';
+import { useAppStore } from '../store/useAppStore';
+import { getDefaultModelId, AI_MODELS } from '../config/gemini';
 
 // Formatação de CPF, CEP e Telefone para UX fluida
 const formatCpf = (v: string) => {
@@ -290,7 +292,7 @@ const GASTRO_PRESETS: MedicamentoPreset[] = [
 function MedicamentoCard({
   id, index, tipoAtual,
 }: { id: string; index: number; tipoAtual: string }) {
-  const { medicamentos, updateMedicamento, removeMedicamento } = useReceitaStore();
+  const { medicamentos, updateMedicamento, removeMedicamento, setTipoReceita } = useReceitaStore();
   const med = medicamentos.find((m) => m.id === id)!;
   const [expandido, setExpandido] = useState(false);
   const [inputNome, setInputNome] = useState(med.nomeDigitado);
@@ -400,12 +402,19 @@ function MedicamentoCard({
           <ShieldAlert size={16} className="shrink-0 mt-0.5 text-red-500" />
           <div>
             <p className="font-bold text-red-900">
-              ⚠️ Este medicamento requer Receita de Controle Especial
+              ⚠️ Este medicamento requer receita em 2 vias (Controle Especial)
             </p>
             {med.motivoEspecial && (
               <p className="mt-1 text-red-700 leading-relaxed">{med.motivoEspecial}</p>
             )}
             <p className="mt-1.5 text-[10px] text-red-500 font-semibold uppercase tracking-wide">Mude o tipo de receita para prosseguir.</p>
+            <button
+              type="button"
+              onClick={() => setTipoReceita('ESPECIAL')}
+              className="mt-2 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold rounded-lg transition-colors cursor-pointer shadow-sm"
+            >
+              Alternar para Controle Especial
+            </button>
           </div>
         </div>
       )}
@@ -422,7 +431,7 @@ function MedicamentoCard({
       {med.tipoRecomendado && !mismatch && (
         <div className="mx-4 mb-3 flex items-center gap-1.5 text-[10px] text-green-700 bg-green-50/50 border border-green-150 rounded-lg px-2.5 py-1 w-fit font-medium">
           <CheckCircle2 size={12} className="text-green-600" />
-          <span>IA confirmou: <strong className="font-semibold">{med.tipoRecomendado === 'SIMPLES' ? 'Receita Branca Simples ✓' : 'Receita Controle Especial ✓'}</strong></span>
+          <span>IA confirmou: <strong className="font-semibold">{med.tipoRecomendado === 'SIMPLES' ? 'Receita Branca Simples ✓' : 'Receita de 2 Vias (Controle Especial) ✓'}</strong></span>
         </div>
       )}
 
@@ -481,6 +490,12 @@ export default function NovaReceita() {
   const navigate = useNavigate();
   const [activeTabGuias, setActiveTabGuias] = useState<'geriatria' | 'gastro'>('geriatria');
   const [processandoTextoLivre, setProcessandoTextoLivre] = useState(false);
+
+  const getActiveModelLabel = () => {
+    const modelId = getDefaultModelId();
+    const model = AI_MODELS.find((m) => m.id === modelId || m.id.replace('google/', '') === modelId);
+    return model ? model.badge : 'Gemini 3 Flash';
+  };
   const {
     tipoReceita, pacienteNome, pacienteCpf,
     pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf, pacienteTelefone,
@@ -494,9 +509,14 @@ export default function NovaReceita() {
 
   const handleBlur = () => {
     if (pacienteNome && pacienteNome.trim().length >= 3) {
+      const existing = useRecentPatientsStore.getState().pacientes.find(
+        (p) => p.nome.toLowerCase() === pacienteNome.trim().toLowerCase()
+      );
+      const appStoreGenero = useAppStore.getState().genero;
       savePatientToHistory({
         nome: pacienteNome.trim(),
         cpf: pacienteCpf,
+        genero: existing?.genero || appStoreGenero || 'M',
         endereco: pacienteEndereco,
         cep: pacienteCep,
         cidade: pacienteCidade,
@@ -670,6 +690,13 @@ export default function NovaReceita() {
                 A IA identificou que todos os medicamentos na lista são de venda livre ou exigem apenas <strong>Receita Branca Simples</strong>.
                 Você pode alternar o tipo de receita abaixo caso queira evitar vias extras desnecessárias.
               </p>
+              <button
+                type="button"
+                onClick={() => setTipoReceita('SIMPLES')}
+                className="mt-2 px-3.5 py-2 bg-indigo-650 hover:bg-indigo-750 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm hover:shadow"
+              >
+                Alternar para Receita Simples
+              </button>
             </div>
           </div>
         )}
@@ -724,7 +751,7 @@ export default function NovaReceita() {
                   </div>
                   <div>
                     <p className={`font-bold text-sm ${tipoReceita === 'ESPECIAL' ? 'text-amber-900' : 'text-gray-700'}`}>Receita Controle Especial</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Psicotrópicos, benzodiazepínicos · 2 vias (ANVISA)</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Psicotrópicos, controlados e antibióticos · 2 vias (ANVISA)</p>
                   </div>
                 </button>
               </div>
@@ -925,7 +952,11 @@ export default function NovaReceita() {
                           Melhorar com IA
                         </span>
                         <span className="text-xs text-gray-400">
-                          {melhorarComIA ? 'A IA vai expandir e organizar a prescrição para você revisar.' : 'Desligado — o texto vai impresso igual ao digitado.'}
+                          {melhorarComIA ? (
+                            <span>
+                              A IA vai expandir e organizar a prescrição. IA ativa: <strong className="text-indigo-650 font-bold">{getActiveModelLabel()}</strong>
+                            </span>
+                          ) : 'Desligado — o texto vai impresso igual ao digitado.'}
                         </span>
                       </span>
                     </label>

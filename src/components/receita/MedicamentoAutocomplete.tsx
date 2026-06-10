@@ -13,6 +13,7 @@ interface MedicamentoSugestao {
   tipoRecomendado: TipoRecomendado;
   indicacao: string;
   observacoes?: string;
+  motivoEspecial?: string;
 }
 
 const DATABASE_MEDICAMENTOS: MedicamentoSugestao[] = [
@@ -156,8 +157,9 @@ const DATABASE_MEDICAMENTOS: MedicamentoSugestao[] = [
     posologia: 'Tomar 1 cápsula por via oral de 8 em 8 horas.',
     quantidade: '21 cápsulas',
     duracao: '7 dias',
-    tipoRecomendado: 'SIMPLES',
-    indicacao: 'Antibiótico / Infecções bacterianas',
+    tipoRecomendado: 'ESPECIAL',
+    indicacao: 'Antibiótico / Infecções bacterianas (2 vias — RDC 471/2021)',
+    motivoEspecial: 'Antimicrobiano (RDC 471/2021 ANVISA) — exige receita em 2 vias, com retenção da 1ª via na farmácia.',
   },
   {
     nome: 'Zolpidem 10mg',
@@ -915,8 +917,9 @@ const DATABASE_MEDICAMENTOS: MedicamentoSugestao[] = [
     posologia: 'Tomar 1 comprimido por via oral de 12 em 12 horas.',
     quantidade: '14 comprimidos',
     duracao: '7 dias',
-    tipoRecomendado: 'SIMPLES',
-    indicacao: 'Antibiótico / Infecções de Pele/Respiratórias',
+    tipoRecomendado: 'ESPECIAL',
+    indicacao: 'Antibiótico / Infecções de Pele/Respiratórias (2 vias — RDC 471/2021)',
+    motivoEspecial: 'Antimicrobiano (RDC 471/2021 ANVISA) — exige receita em 2 vias, com retenção da 1ª via na farmácia.',
   },
   {
     nome: 'Azitromicina 500mg',
@@ -926,8 +929,9 @@ const DATABASE_MEDICAMENTOS: MedicamentoSugestao[] = [
     posologia: 'Tomar 1 comprimido por via oral ao dia.',
     quantidade: '3 comprimidos',
     duracao: '3 dias',
-    tipoRecomendado: 'SIMPLES',
-    indicacao: 'Antibiótico / Infecções Respiratórias/Garganta',
+    tipoRecomendado: 'ESPECIAL',
+    indicacao: 'Antibiótico / Infecções Respiratórias/Garganta (2 vias — RDC 471/2021)',
+    motivoEspecial: 'Antimicrobiano (RDC 471/2021 ANVISA) — exige receita em 2 vias, com retenção da 1ª via na farmácia.',
   },
   {
     nome: 'Ciprofloxacino 500mg',
@@ -937,8 +941,9 @@ const DATABASE_MEDICAMENTOS: MedicamentoSugestao[] = [
     posologia: 'Tomar 1 comprimido por via oral de 12 em 12 horas.',
     quantidade: '14 comprimidos',
     duracao: '7 dias',
-    tipoRecomendado: 'SIMPLES',
-    indicacao: 'Antibiótico / Infecção Urinária/ITU',
+    tipoRecomendado: 'ESPECIAL',
+    indicacao: 'Antibiótico / Infecção Urinária/ITU (2 vias — RDC 471/2021)',
+    motivoEspecial: 'Antimicrobiano (RDC 471/2021 ANVISA) — exige receita em 2 vias, com retenção da 1ª via na farmácia.',
   },
   {
     nome: 'Nitrofurantoína 100mg',
@@ -948,8 +953,9 @@ const DATABASE_MEDICAMENTOS: MedicamentoSugestao[] = [
     posologia: 'Tomar 1 cápsula por via oral de 6 em 6 horas.',
     quantidade: '28 cápsulas',
     duracao: '7 dias',
-    tipoRecomendado: 'SIMPLES',
-    indicacao: 'Antibiótico / Infecção Urinária / Cistite',
+    tipoRecomendado: 'ESPECIAL',
+    indicacao: 'Antibiótico / Infecção Urinária / Cistite (2 vias — RDC 471/2021)',
+    motivoEspecial: 'Antimicrobiano (RDC 471/2021 ANVISA) — exige receita em 2 vias, com retenção da 1ª via na farmácia.',
   },
   {
     nome: 'Puran T4 75mcg (Levotiroxina)',

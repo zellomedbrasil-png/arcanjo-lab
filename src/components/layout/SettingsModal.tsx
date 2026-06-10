@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X, Key, ShieldCheck, Eye, EyeOff, ExternalLink, Settings } from 'lucide-react';
 import { toast } from '../../lib/toast';
 
@@ -8,21 +8,13 @@ interface SettingsModalProps {
 }
 
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const [geminiKey, setGeminiKey] = useState('');
-  const [openRouterKey, setOpenRouterKey] = useState('');
-  const [groqKey, setGroqKey] = useState('');
+  const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('arcanjo_gemini_key') || '');
+  const [openRouterKey, setOpenRouterKey] = useState(() => localStorage.getItem('arcanjo_openrouter_key') || '');
+  const [groqKey, setGroqKey] = useState(() => localStorage.getItem('arcanjo_groq_key') || '');
 
   const [showGemini, setShowGemini] = useState(false);
   const [showOpenRouter, setShowOpenRouter] = useState(false);
   const [showGroq, setShowGroq] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setGeminiKey(localStorage.getItem('arcanjo_gemini_key') || '');
-      setOpenRouterKey(localStorage.getItem('arcanjo_openrouter_key') || '');
-      setGroqKey(localStorage.getItem('arcanjo_groq_key') || '');
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -60,7 +52,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
   return (
     <div className="fixed inset-0 bg-neutral-text/40 backdrop-blur-[2px] z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl border border-neutral-border shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+      <form
+        onSubmit={(e) => { e.preventDefault(); handleSave(); }}
+        className="bg-white rounded-2xl border border-neutral-border shadow-xl w-full max-w-md overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+      >
         
         {/* Header */}
         <div className="h-14 flex items-center justify-between px-5 border-b border-neutral-border bg-gray-50/50">
@@ -205,20 +200,21 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         {/* Footer */}
         <div className="p-4 border-t border-neutral-border bg-gray-50/50 flex justify-end gap-2 shrink-0">
           <button
+            type="button"
             onClick={onClose}
             className="px-4 py-2 bg-white hover:bg-neutral-bg border border-neutral-border text-neutral-text text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm hover:shadow"
           >
             Cancelar
           </button>
           <button
-            onClick={handleSave}
+            type="submit"
             className="px-4 py-2 bg-primary hover:bg-primary/95 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-sm hover:shadow-md"
           >
             Salvar Alterações
           </button>
         </div>
 
-      </div>
+      </form>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useReceitaStore } from '../../../store/useReceitaStore';
+import { useReceitaStore, type MedicamentoReceita } from '../../../store/useReceitaStore';
 import { renderMarkdown } from '../../../utils/markdown';
 
 const MEDICO = {
@@ -8,7 +8,7 @@ const MEDICO = {
   cidade: 'Fortaleza/Ceará',
 };
 
-export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { medicamentosOverride?: any[]; textoLivre?: string } = {}) {
+export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string } = {}) {
   const store = useReceitaStore();
   const medicamentos = medicamentosOverride || store.medicamentos;
   const { pacienteNome, pacienteCpf, local, data } = store;

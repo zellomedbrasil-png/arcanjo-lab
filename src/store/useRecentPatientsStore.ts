@@ -36,15 +36,18 @@ export const useRecentPatientsStore = create<RecentPatientsState>()(
           const nomeTrimmed = paciente.nome.trim();
           const cpfTrimmed = paciente.cpf?.trim() || '';
 
+          // Deep clone patients to avoid reference leaks
+          const clonedPatients = state.pacientes.map((p) => ({ ...p }));
+
           // Filter out the existing record of this patient (match by name or CPF if provided)
-          const outros = state.pacientes.filter((p) => {
+          const outros = clonedPatients.filter((p) => {
             const matchNome = p.nome.toLowerCase() === nomeTrimmed.toLowerCase();
             const matchCpf = cpfTrimmed && p.cpf && p.cpf.replace(/\D/g, '') === cpfTrimmed.replace(/\D/g, '');
             return !matchNome && !matchCpf;
           });
 
           // Create the new patient record with current fields merged with any previous ones if found
-          const existente = state.pacientes.find((p) => {
+          const existente = clonedPatients.find((p) => {
             const matchNome = p.nome.toLowerCase() === nomeTrimmed.toLowerCase();
             const matchCpf = cpfTrimmed && p.cpf && p.cpf.replace(/\D/g, '') === cpfTrimmed.replace(/\D/g, '');
             return matchNome || matchCpf;

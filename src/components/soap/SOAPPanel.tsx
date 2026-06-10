@@ -137,6 +137,7 @@ export default function SOAPPanel() {
     syncStatus, setIsPairingModalOpen,
   } = useAppStore();
 
+
   // Análise clínica em tempo real da nota SOAP
   const analisarSOAP = (texto: string) => {
     if (!texto) return { alertBeers: null, escalas: [] as string[], cids: [] as string[] };

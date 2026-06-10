@@ -68,7 +68,7 @@ export function cleanSoapMarkdown(text: string): string {
     // Replace headings formatting: remove hash characters from the beginning of line
     .replace(/^[ \t]*#+[ \t]*/gm, '')
     // Remove all bold/italic markdown characters (* and _)
-    .replace(/[\*_]/g, '')
+    .replace(/[*_]/g, '')
     // Remove emojis and special medical symbols that aren't text
     .replace(/[\u2600-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '')
     // Remove any trailing/leading whitespaces on each line
@@ -87,7 +87,7 @@ export function extractJson(text: string): string {
   if (!text) return '';
 
   // 1. Remove qualquer conteúdo dentro de tags <think> e </think>
-  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  const cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 
   // 2. Busca o primeiro '{' ou '[' e o último '}' ou ']'
   const firstBrace = cleaned.indexOf('{');

@@ -14,6 +14,7 @@ export default function ImprimirDocumento() {
       case 'COMPARECIMENTO': return '🕒 Atestado de Comparecimento';
       case 'APTIDAO': return '💪 Atestado de Aptidão Física';
       case 'ASO': return '🛡️ ASO - Saúde Ocupacional';
+      case 'LIVRE': return '📝 Documento Livre';
       default: return '📄 Documento Médico';
     }
   };

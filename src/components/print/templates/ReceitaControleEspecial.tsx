@@ -1,4 +1,4 @@
-import { useReceitaStore } from '../../../store/useReceitaStore';
+import { useReceitaStore, type MedicamentoReceita } from '../../../store/useReceitaStore';
 import { renderMarkdown } from '../../../utils/markdown';
 
 // ── Dados fixos do médico ──────────────────────────────────────
@@ -10,7 +10,7 @@ const MEDICO = {
 };
 
 // ── Uma via (bloco que se repete 2x) ──────────────────────────
-function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA — PACIENTE'; medicamentosOverride?: any[]; textoLivre?: string }) {
+function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA — PACIENTE'; medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string }) {
   const store = useReceitaStore();
   const medicamentos = medicamentosOverride || store.medicamentos;
   const isTextoLivre = !!(textoLivre && textoLivre.trim());
@@ -318,7 +318,7 @@ function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª
 }
 
 // ── Componente exportado: A4 com 2 vias ───────────────────────
-export default function ReceitaControleEspecial({ medicamentosOverride, textoLivre }: { medicamentosOverride?: any[]; textoLivre?: string } = {}) {
+export default function ReceitaControleEspecial({ medicamentosOverride, textoLivre }: { medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string } = {}) {
   return (
     <div
       className="bg-white"

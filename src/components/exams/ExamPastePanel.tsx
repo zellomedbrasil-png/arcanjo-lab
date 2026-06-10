@@ -10,7 +10,7 @@ import {
   AlertTriangle, ChevronDown, ChevronUp, FileText, Wand2, Trash2,
   Pencil, Check, Plus, Square
 } from 'lucide-react';
-import { cancelAIRequest } from '../../config/gemini';
+import { cancelAIRequest, getDefaultModelId, AI_MODELS } from '../../config/gemini';
 
 export default function ExamPastePanel() {
   const [textoExames, setTextoExames] = useState('');
@@ -25,6 +25,12 @@ export default function ExamPastePanel() {
 
   const { genero, setExamesSelecionados, setJustificativa } = useAppStore();
   const elapsed = useElapsedTimer(isLoading);
+
+  const getActiveModelLabel = () => {
+    const modelId = getDefaultModelId();
+    const model = AI_MODELS.find((m) => m.id === modelId || m.id.replace('google/', '') === modelId);
+    return model ? model.badge : 'Gemini 3 Flash';
+  };
 
   const handleOrganizar = async () => {
     if (!textoExames.trim()) {
@@ -205,39 +211,46 @@ export default function ExamPastePanel() {
           </div>
 
           {/* Botões */}
-          <div className="flex gap-2.5">
-            <button
-              onClick={isLoading ? cancelAIRequest : handleOrganizar}
-              disabled={!isLoading && !textoExames.trim()}
-              className={`flex-1 flex items-center justify-center gap-2 px-4.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                isLoading
-                  ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-100'
-                  : !textoExames.trim()
-                  ? 'bg-gray-100 text-neutral-text-muted cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
-              }`}
-            >
-              {isLoading ? (
-                <>
-                  <Square size={13} fill="white" />
-                  {elapsed ? `Parar (${elapsed}s)` : 'Parar'}
-                </>
-              ) : (
-                <>
-                  <Sparkles size={13} />
-                  Organizar com IA
-                </>
-              )}
-            </button>
-            {(textoExames || resultado) && (
+          <div className="space-y-2.5">
+            <div className="flex gap-2.5">
               <button
-                onClick={limparTudo}
-                className="flex items-center gap-1.5 px-4 py-3 rounded-lg text-xs font-semibold text-neutral-text-muted hover:text-red-600 hover:bg-red-50 border border-neutral-border bg-white transition-all cursor-pointer"
+                onClick={isLoading ? cancelAIRequest : handleOrganizar}
+                disabled={!isLoading && !textoExames.trim()}
+                className={`flex-1 flex items-center justify-center gap-2 px-4.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  isLoading
+                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-100'
+                    : !textoExames.trim()
+                    ? 'bg-gray-100 text-neutral-text-muted cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                }`}
               >
-                <Trash2 size={13} />
-                Limpar
+                {isLoading ? (
+                  <>
+                    <Square size={13} fill="white" />
+                    {elapsed ? `Parar (${elapsed}s)` : 'Parar'}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={13} />
+                    Organizar com IA
+                  </>
+                )}
               </button>
-            )}
+              {(textoExames || resultado) && (
+                <button
+                  onClick={limparTudo}
+                  className="flex items-center gap-1.5 px-4 py-3 rounded-lg text-xs font-semibold text-neutral-text-muted hover:text-red-600 hover:bg-red-50 border border-neutral-border bg-white transition-all cursor-pointer"
+                >
+                  <Trash2 size={13} />
+                  Limpar
+                </button>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center text-[10px] text-neutral-text-muted font-semibold select-none px-0.5 pt-1">
+              <span>IA ativa para processamento:</span>
+              <span className="text-blue-600 bg-blue-50 border border-blue-150 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">{getActiveModelLabel()}</span>
+            </div>
           </div>
 
           {/* Erro */}

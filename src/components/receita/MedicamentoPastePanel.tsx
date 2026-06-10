@@ -9,7 +9,7 @@ import {
   AlertTriangle, ChevronDown, ChevronUp, Pill, Trash2,
   ShieldAlert, Square
 } from 'lucide-react';
-import { cancelAIRequest } from '../../config/gemini';
+import { cancelAIRequest, getDefaultModelId, AI_MODELS } from '../../config/gemini';
 
 export default function MedicamentoPastePanel() {
   const [textoMedicamentos, setTextoMedicamentos] = useState('');
@@ -21,6 +21,12 @@ export default function MedicamentoPastePanel() {
 
   const { setTipoReceita, addMedicamento, updateMedicamento, medicamentos, setAlertas } = useReceitaStore();
   const elapsed = useElapsedTimer(isLoading);
+
+  const getActiveModelLabel = () => {
+    const modelId = getDefaultModelId();
+    const model = AI_MODELS.find((m) => m.id === modelId || m.id.replace('google/', '') === modelId);
+    return model ? model.badge : 'Gemini 3 Flash';
+  };
 
   const handleProcessar = async () => {
     if (!textoMedicamentos.trim()) {
@@ -155,39 +161,46 @@ export default function MedicamentoPastePanel() {
           </div>
 
           {/* Botões */}
-          <div className="flex gap-3">
-            <button
-              onClick={isLoading ? cancelAIRequest : handleProcessar}
-              disabled={!isLoading && !textoMedicamentos.trim()}
-              className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm cursor-pointer ${
-                isLoading
-                  ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-100'
-                  : !textoMedicamentos.trim()
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:shadow-md'
-              }`}
-            >
-              {isLoading ? (
-                <>
-                  <Square size={14} fill="white" />
-                  {elapsed ? `Parar (${elapsed}s)` : 'Parar'}
-                </>
-              ) : (
-                <>
-                  <Sparkles size={16} />
-                  Processar Lista com IA
-                </>
-              )}
-            </button>
-            {(textoMedicamentos || resultado) && (
+          <div className="space-y-2.5">
+            <div className="flex gap-3">
               <button
-                onClick={limparTudo}
-                className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 transition-all"
+                onClick={isLoading ? cancelAIRequest : handleProcessar}
+                disabled={!isLoading && !textoMedicamentos.trim()}
+                className={`flex-1 flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all shadow-sm cursor-pointer ${
+                  isLoading
+                    ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-100'
+                    : !textoMedicamentos.trim()
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:shadow-md'
+                }`}
               >
-                <Trash2 size={14} />
-                Limpar
+                {isLoading ? (
+                  <>
+                    <Square size={14} fill="white" />
+                    {elapsed ? `Parar (${elapsed}s)` : 'Parar'}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={16} />
+                    Processar Lista com IA
+                  </>
+                )}
               </button>
-            )}
+              {(textoMedicamentos || resultado) && (
+                <button
+                  onClick={limparTudo}
+                  className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 transition-all"
+                >
+                  <Trash2 size={14} />
+                  Limpar
+                </button>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center text-[10px] text-gray-450 font-semibold select-none px-0.5 pt-1">
+              <span>IA ativa para processamento:</span>
+              <span className="text-emerald-650 bg-emerald-50/50 border border-emerald-150 px-2.5 py-0.5 rounded-full uppercase tracking-wider font-extrabold">{getActiveModelLabel()}</span>
+            </div>
           </div>
 
           {/* Erro */}

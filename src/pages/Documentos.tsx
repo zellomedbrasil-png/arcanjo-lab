@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useRecentPatientsStore, type PacienteRecente } from '../store/useRecentPatientsStore';
 import { savePatientToHistory } from '../store/patientSync';
+import { useAppStore } from '../store/useAppStore';
+import { getDefaultModelId, AI_MODELS } from '../config/gemini';
 
 const formatCpf = (v: string) => {
   const digits = v.replace(/\D/g, '').slice(0, 11);
@@ -192,13 +194,24 @@ export default function Documentos() {
   const navigate = useNavigate();
   const doc = useDocumentStore();
 
+  const getActiveModelLabel = () => {
+    const modelId = getDefaultModelId();
+    const model = AI_MODELS.find((m) => m.id === modelId || m.id.replace('google/', '') === modelId);
+    return model ? model.badge : 'Gemini 3 Flash';
+  };
+
   const { pacientes: pacientesRecentes } = useRecentPatientsStore();
 
   const handleBlur = () => {
     if (doc.pacienteNome && doc.pacienteNome.trim().length >= 3) {
+      const existing = useRecentPatientsStore.getState().pacientes.find(
+        (p) => p.nome.toLowerCase() === doc.pacienteNome.trim().toLowerCase()
+      );
+      const appStoreGenero = useAppStore.getState().genero;
       savePatientToHistory({
         nome: doc.pacienteNome.trim(),
         cpf: doc.pacienteCpf,
+        genero: existing?.genero || appStoreGenero || 'M',
         dataNascimento: doc.pacienteDataNascimento,
       });
     }
@@ -353,7 +366,8 @@ export default function Documentos() {
             { id: 'ATESTADO', label: 'Atestado Médico', icon: HeartHandshake, color: 'text-rose-600', bg: 'bg-rose-50 text-rose-700 border border-rose-100' },
             { id: 'COMPARECIMENTO', label: 'Comparecimento', icon: Clock, color: 'text-sky-600', bg: 'bg-sky-50 text-sky-700 border border-sky-100' },
             { id: 'APTIDAO', label: 'Aptidão Física', icon: Dumbbell, color: 'text-amber-600', bg: 'bg-amber-50 text-amber-700 border border-amber-100' },
-            { id: 'ASO', label: 'ASO Ocupacional', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50 text-emerald-700 border border-emerald-100' }
+            { id: 'ASO', label: 'ASO Ocupacional', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50 text-emerald-700 border border-emerald-100' },
+            { id: 'LIVRE', label: 'Documento Livre', icon: FileText, color: 'text-violet-600', bg: 'bg-violet-50 text-violet-750 border border-violet-100' }
           ].map((tab) => {
             const isSelected = doc.tipoDocumento === tab.id;
             const Icon = tab.icon;
@@ -381,76 +395,78 @@ export default function Documentos() {
           <div className="flex-1 w-full space-y-6">
             
             {/* Presets Rápidos */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3.5">Modelos Rápidos / Presets</h2>
-              <div className="flex flex-wrap gap-2.5">
-                {doc.tipoDocumento === 'LAUDO' && (
-                  <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Array.from(new Set(PRESETS.LAUDO.map(p => p.categoria))).map((cat) => {
-                      const presetsDaCat = PRESETS.LAUDO.filter(p => p.categoria === cat);
-                      return (
-                        <div key={cat} className="bg-gray-50/50 border border-gray-150 p-3 rounded-2xl flex flex-col gap-2">
-                          <h3 className="text-[10px] font-extrabold text-indigo-650 uppercase tracking-widest flex items-center gap-1.5 border-b border-gray-200/60 pb-1 mb-1">
-                            {cat === 'Cognitivo / Neuro' && '🧠'}
-                            {cat === 'Cardiovascular' && '🫀'}
-                            {cat === 'Insumos / Cuidados' && '🩹'}
-                            {cat === 'Reabilitação' && '♿'}
-                            {cat}
-                          </h3>
-                          <div className="flex flex-wrap gap-1.5">
-                            {presetsDaCat.map((p, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => aplicarPresetLaudo(p)}
-                                className="px-3 py-1.5 bg-white hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 text-indigo-900 rounded-xl text-xs font-semibold transition-all hover:scale-[1.01]"
-                              >
-                                {p.label}
-                              </button>
-                            ))}
+            {doc.tipoDocumento !== 'LIVRE' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3.5">Modelos Rápidos / Presets</h2>
+                <div className="flex flex-wrap gap-2.5">
+                  {doc.tipoDocumento === 'LAUDO' && (
+                    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Array.from(new Set(PRESETS.LAUDO.map(p => p.categoria))).map((cat) => {
+                        const presetsDaCat = PRESETS.LAUDO.filter(p => p.categoria === cat);
+                        return (
+                          <div key={cat} className="bg-gray-50/50 border border-gray-150 p-3 rounded-2xl flex flex-col gap-2">
+                            <h3 className="text-[10px] font-extrabold text-indigo-650 uppercase tracking-widest flex items-center gap-1.5 border-b border-gray-200/60 pb-1 mb-1">
+                              {cat === 'Cognitivo / Neuro' && '🧠'}
+                              {cat === 'Cardiovascular' && '🫀'}
+                              {cat === 'Insumos / Cuidados' && '🩹'}
+                              {cat === 'Reabilitação' && '♿'}
+                              {cat}
+                            </h3>
+                            <div className="flex flex-wrap gap-1.5">
+                              {presetsDaCat.map((p, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => aplicarPresetLaudo(p)}
+                                  className="px-3 py-1.5 bg-white hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 text-indigo-900 rounded-xl text-xs font-semibold transition-all hover:scale-[1.01]"
+                                >
+                                  {p.label}
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {doc.tipoDocumento === 'ATESTADO' && PRESETS.ATESTADO.map((p, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => aplicarPresetAtestado(p)}
-                    className="px-3.5 py-2 bg-rose-50/40 hover:bg-rose-50 border border-rose-100/50 hover:border-rose-200 text-rose-800 rounded-xl text-xs font-semibold transition-all"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                {doc.tipoDocumento === 'COMPARECIMENTO' && PRESETS.COMPARECIMENTO.map((p, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => aplicarPresetComparecimento(p)}
-                    className="px-3.5 py-2 bg-sky-50/40 hover:bg-sky-50 border border-sky-100/50 hover:border-sky-200 text-sky-800 rounded-xl text-xs font-semibold transition-all"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                {doc.tipoDocumento === 'APTIDAO' && PRESETS.APTIDAO.map((p, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => aplicarPresetAptidao(p)}
-                    className="px-3.5 py-2 bg-amber-50/40 hover:bg-amber-50 border border-amber-100/50 hover:border-amber-200 text-amber-800 rounded-xl text-xs font-semibold transition-all"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                {doc.tipoDocumento === 'ASO' && PRESETS.ASO.map((p, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => aplicarPresetAso(p)}
-                    className="px-3.5 py-2 bg-emerald-50/40 hover:bg-emerald-50 border border-emerald-100/50 hover:border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold transition-all"
-                  >
-                    {p.label}
-                  </button>
-                ))}
+                        );
+                      })}
+                    </div>
+                  )}
+                  {doc.tipoDocumento === 'ATESTADO' && PRESETS.ATESTADO.map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => aplicarPresetAtestado(p)}
+                      className="px-3.5 py-2 bg-rose-50/40 hover:bg-rose-50 border border-rose-100/50 hover:border-rose-200 text-rose-800 rounded-xl text-xs font-semibold transition-all"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  {doc.tipoDocumento === 'COMPARECIMENTO' && PRESETS.COMPARECIMENTO.map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => aplicarPresetComparecimento(p)}
+                      className="px-3.5 py-2 bg-sky-50/40 hover:bg-sky-50 border border-sky-100/50 hover:border-sky-200 text-sky-800 rounded-xl text-xs font-semibold transition-all"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  {doc.tipoDocumento === 'APTIDAO' && PRESETS.APTIDAO.map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => aplicarPresetAptidao(p)}
+                      className="px-3.5 py-2 bg-amber-50/40 hover:bg-amber-50 border border-amber-100/50 hover:border-amber-200 text-amber-800 rounded-xl text-xs font-semibold transition-all"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  {doc.tipoDocumento === 'ASO' && PRESETS.ASO.map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => aplicarPresetAso(p)}
+                      className="px-3.5 py-2 bg-emerald-50/40 hover:bg-emerald-50 border border-emerald-100/50 hover:border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold transition-all"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* AI Assistant Panel (For Laudo & Atestado) */}
             {(doc.tipoDocumento === 'LAUDO' || doc.tipoDocumento === 'ATESTADO') && (
@@ -476,7 +492,7 @@ export default function Documentos() {
                     className="w-full px-4 py-3 bg-white/10 hover:bg-white/12 focus:bg-white/15 text-white placeholder-indigo-300/60 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-none border border-white/10 font-medium"
                   />
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-indigo-300 font-semibold">Google Gemini IA</span>
+                    <span className="text-[10px] text-indigo-300 font-semibold">IA Ativa: {getActiveModelLabel()}</span>
                     <button
                       onClick={handleIA}
                       disabled={loadingAi || !aiPrompt.trim()}
@@ -970,6 +986,38 @@ export default function Documentos() {
                       ✗ TRABALHADOR INAPTO
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Form Documento Livre */}
+            {doc.tipoDocumento === 'LIVRE' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-50">
+                  <FileText size={18} className="text-violet-500" />
+                  <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Documento Livre</h2>
+                </div>
+
+                <div>
+                  <label className={labelCls}>Título do Documento (Cabeçalho)</label>
+                  <input
+                    type="text"
+                    value={doc.livreTitulo}
+                    onChange={(e) => doc.setDocumento({ livreTitulo: e.target.value })}
+                    placeholder="Ex: DECLARAÇÃO MÉDICA, RELATÓRIO DE ACOMPANHAMENTO"
+                    className={inputCls}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelCls}>Conteúdo / Corpo do Texto</label>
+                  <textarea
+                    rows={12}
+                    value={doc.livreConteudo}
+                    onChange={(e) => doc.setDocumento({ livreConteudo: e.target.value })}
+                    placeholder="Digite o texto livremente da forma que desejar..."
+                    className={`${inputCls} font-normal leading-relaxed`}
+                  />
                 </div>
               </div>
             )}

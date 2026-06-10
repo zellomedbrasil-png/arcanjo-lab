@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, Smartphone, X, Settings } from 'lucide-react';
 import { supabase } from '../../config/supabase';
@@ -20,7 +20,6 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   const {
     pacienteNome,
-    setQueixa, setSoap, setJustificativa, setIaModel, adicionarConsultaAoHistorico,
     syncRoomCode, syncStatus, setSyncStatus, setIsPairingModalOpen, resetSyncSession,
     quickNotes, setQuickNotes
   } = useAppStore();
@@ -29,89 +28,24 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const syncRef = useRef<SyncService | null>(null);
 
-  // Background Sync Listener
-  useEffect(() => {
-    if (!syncRoomCode) {
-      if (syncRef.current) syncRef.current = null;
-      return;
-    }
-
-    const sync = new SyncService(syncRoomCode);
-    syncRef.current = sync;
-
-    console.log(`[LayoutSync] Subscribing to room: ${syncRoomCode}`);
-    const unsubscribe = sync.subscribe(
-      async (msg) => {
-        if (msg.type === 'MOBILE_CONNECTED') {
-          setSyncStatus('connected');
-          toast.success('Celular conectado em segundo plano!');
-          await sync.publish({
-            type: 'DESKTOP_READY',
-            payload: { pacienteNome }
-          });
-        } else if (msg.type === 'RECORDING_STATUS') {
-          if (msg.payload?.isRecording) {
-            setSyncStatus('recording');
-          } else if (msg.payload?.isTranscribing) {
-            setSyncStatus('transcribing');
-          } else {
-            setSyncStatus('connected');
-          }
-        } else if (msg.type === 'TRANSCRIPTION_RESULT') {
-          setSyncStatus('connected');
-          const text = msg.payload?.text || '';
-          if (text) {
-            await handleProcessMobileTranscription(text);
-          }
-        } else if (msg.type === 'TRIGGER_AI') {
-          const action = msg.payload?.action;
-          if (action === 'SOAP') {
-            await triggerSOAPGeneration();
-          } else if (action === 'JUSTIFICATIVA') {
-            await triggerJustificativaGeneration();
-          }
-        }
-      },
-      (err) => {
-        console.error('[LayoutSync] Connection error:', err);
-        setSyncStatus('waiting');
-      }
-    );
-
-    return () => {
-      unsubscribe();
-    };
-  }, [syncRoomCode]);
-
-  // Keep patient name synced to mobile phone in background
-  useEffect(() => {
-    if (syncStatus !== 'idle' && syncStatus !== 'waiting' && syncRef.current) {
-      syncRef.current.publish({
-        type: 'PATIENT_SYNC',
-        payload: { pacienteNome }
-      });
-    }
-  }, [pacienteNome, syncStatus]);
-
   // Process mobile transcription in the background
-  const handleProcessMobileTranscription = async (text: string) => {
+  const handleProcessMobileTranscription = useCallback(async (text: string) => {
     if (!text || !text.trim()) return;
     
     toast.success('Áudio recebido e transcrito com sucesso!');
     
-    // Append to Quick Notes scratchpad so the doctor doesn't lose anything
-    setQuickNotes(quickNotes ? `${quickNotes}\n\n[Transcrição Celular]: ${text}` : `[Transcrição Celular]: ${text}`);
-    
     const state = useAppStore.getState();
-    setQueixa(state.queixa.trim() ? `${state.queixa}\n${text}` : text);
+    // Append to Quick Notes scratchpad so the doctor doesn't lose anything
+    state.setQuickNotes(state.quickNotes ? `${state.quickNotes}\n\n[Transcrição Celular]: ${text}` : `[Transcrição Celular]: ${text}`);
+    state.setQueixa(state.queixa.trim() ? `${state.queixa}\n${text}` : text);
     
     if (state.pacienteNome.trim()) {
-      adicionarConsultaAoHistorico(state.pacienteNome.trim(), text);
+      state.adicionarConsultaAoHistorico(state.pacienteNome.trim(), text);
     }
-  };
+  }, []);
 
   // Helper trigger generators
-  const triggerSOAPGeneration = async () => {
+  const triggerSOAPGeneration = useCallback(async () => {
     const state = useAppStore.getState();
     if (!state.queixa.trim()) {
       toast.error('Não é possível gerar o SOAP sem uma queixa clínica.');
@@ -130,16 +64,16 @@ export default function Layout({ children }: { children: ReactNode }) {
         prompt: context,
         systemInstruction: SYSTEM_PROMPT_SOAP,
       });
-      setSoap(cleanSoapMarkdown(content));
-      setIaModel(getLastUsedModel());
+      state.setSoap(cleanSoapMarkdown(content));
+      state.setIaModel(getLastUsedModel());
       toast.success('Nota SOAP gerada com sucesso!');
     } catch (err) {
       console.error(err);
       toast.error('Falha ao gerar SOAP.');
     }
-  };
+  }, []);
 
-  const triggerJustificativaGeneration = async () => {
+  const triggerJustificativaGeneration = useCallback(async () => {
     const state = useAppStore.getState();
     if (!state.queixa.trim()) {
       toast.error('Não é possível gerar a justificativa sem uma queixa clínica.');
@@ -158,14 +92,90 @@ export default function Layout({ children }: { children: ReactNode }) {
         prompt: context,
         systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA,
       });
-      setJustificativa(content.toUpperCase());
-      setIaModel(getLastUsedModel());
+      state.setJustificativa(content.toUpperCase());
+      state.setIaModel(getLastUsedModel());
       toast.success('Justificativa clínica gerada!');
     } catch (err) {
       console.error(err);
       toast.error('Falha ao gerar justificativa.');
     }
-  };
+  }, []);
+
+  // Background Sync Listener
+  useEffect(() => {
+    if (!syncRoomCode) {
+      if (syncRef.current) syncRef.current = null;
+      return;
+    }
+
+    const sync = new SyncService(syncRoomCode);
+    syncRef.current = sync;
+
+    console.log(`[LayoutSync] Subscribing to room: ${syncRoomCode}`);
+    const unsubscribe = sync.subscribe(
+      async (msg) => {
+        if (msg.type === 'MOBILE_CONNECTED') {
+          const wasWaiting = useAppStore.getState().syncStatus !== 'connected';
+          setSyncStatus('connected');
+          if (wasWaiting) toast.success('Celular conectado em segundo plano!');
+          const latestState = useAppStore.getState();
+          await sync.publish({
+            type: 'DESKTOP_READY',
+            payload: {
+              pacienteNome: latestState.pacienteNome,
+              groqKey: localStorage.getItem('arcanjo_groq_key') || ''
+            }
+          });
+        } else if (msg.type === 'RECORDING_STATUS') {
+          if (msg.payload?.isRecording) {
+            setSyncStatus('recording');
+          } else if (msg.payload?.isTranscribing) {
+            setSyncStatus('transcribing');
+          } else {
+            setSyncStatus('connected');
+          }
+        } else if (msg.type === 'TRANSCRIPTION_RESULT') {
+          setSyncStatus('connected');
+          const text = msg.payload?.text || '';
+          if (text) {
+            await handleProcessMobileTranscription(text);
+          }
+        } else if (msg.type === 'TRIGGER_AI') {
+          // Qualquer mensagem do celular comprova que ele está pareado
+          if (useAppStore.getState().syncStatus === 'waiting') {
+            setSyncStatus('connected');
+          }
+          const action = msg.payload?.action;
+          if (action === 'SOAP') {
+            await triggerSOAPGeneration();
+          } else if (action === 'JUSTIFICATIVA') {
+            await triggerJustificativaGeneration();
+          }
+        }
+      },
+      (err) => {
+        console.error('[LayoutSync] Connection error:', err);
+        setSyncStatus('waiting');
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [syncRoomCode, handleProcessMobileTranscription, triggerSOAPGeneration, triggerJustificativaGeneration, setSyncStatus]);
+
+  // Keep patient name and API key synced to mobile phone in background
+  useEffect(() => {
+    if (syncStatus !== 'idle' && syncStatus !== 'waiting' && syncRef.current) {
+      syncRef.current.publish({
+        type: 'PATIENT_SYNC',
+        payload: { 
+          pacienteNome,
+          groqKey: localStorage.getItem('arcanjo_groq_key') || ''
+        }
+      });
+    }
+  }, [pacienteNome, syncStatus]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -540,7 +550,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       <ToastContainer />
       <PairingModal />
-      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      {isSettingsOpen && <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />}
     </div>
   );
 }

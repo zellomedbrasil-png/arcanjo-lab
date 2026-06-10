@@ -15,7 +15,7 @@ export default function GravadorMobile() {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [transcriptionText, setTranscriptionText] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => roomId ? null : 'Código de sala (room) inválido ou ausente na URL.');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -25,7 +25,6 @@ export default function GravadorMobile() {
   // Auto-connect to Room
   useEffect(() => {
     if (!roomId) {
-      setError('Código de sala (room) inválido ou ausente na URL.');
       return;
     }
 
@@ -41,11 +40,19 @@ export default function GravadorMobile() {
           if (msg.payload?.pacienteNome) {
             setPacienteNome(msg.payload.pacienteNome);
           }
+          if (msg.payload?.groqKey) {
+            localStorage.setItem('arcanjo_groq_key', msg.payload.groqKey);
+          }
         } else if (msg.type === 'PATIENT_SYNC') {
+          // Qualquer mensagem do desktop comprova que o pareamento está ativo
+          setConnected(true);
           if (msg.payload?.pacienteNome) {
             setPacienteNome(msg.payload.pacienteNome);
           } else {
             setPacienteNome('');
+          }
+          if (msg.payload?.groqKey) {
+            localStorage.setItem('arcanjo_groq_key', msg.payload.groqKey);
           }
         }
       },
@@ -55,9 +62,22 @@ export default function GravadorMobile() {
       }
     );
 
-    // Announce connection to Desktop
+    return () => {
+      unsubscribe();
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, [roomId]);
+
+  // Periodic announcement to desktop, stopping once connected
+  useEffect(() => {
+    if (!roomId || connected) {
+      return;
+    }
+
     const announceConnection = async () => {
-      await sync.publish({ type: 'MOBILE_CONNECTED' });
+      if (syncServiceRef.current) {
+        await syncServiceRef.current.publish({ type: 'MOBILE_CONNECTED' });
+      }
     };
 
     // Retry connection announcement a few times to ensure desktop receives it
@@ -65,26 +85,11 @@ export default function GravadorMobile() {
     const announceInterval = setInterval(announceConnection, 3000);
 
     return () => {
-      unsubscribe();
       clearInterval(announceInterval);
-      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [roomId]);
+  }, [roomId, connected]);
 
-  // Handle Recording Timer
-  useEffect(() => {
-    if (isRecording) {
-      setRecordingTime(0);
-      timerIntervalRef.current = window.setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
-    } else {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
-      }
-    }
-  }, [isRecording]);
+  // Recording timer is handled directly inside startRecording/stopRecording to avoid useEffect setState lints
 
   const formatTime = (timeInSeconds: number) => {
     const mins = Math.floor(timeInSeconds / 60);
@@ -95,6 +100,14 @@ export default function GravadorMobile() {
   const startRecording = async () => {
     audioChunksRef.current = [];
     setError(null);
+
+    // Secure context check for microphone access
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setError('Gravação de áudio indisponível. A gravação requer uma conexão segura (HTTPS) ou localhost para acessar o microfone do celular.');
+      toast.error('Microfone indisponível (requer HTTPS).');
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       
@@ -138,6 +151,10 @@ export default function GravadorMobile() {
 
       mediaRecorder.start();
       setIsRecording(true);
+      setRecordingTime(0);
+      timerIntervalRef.current = window.setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
       
       // Notify desktop that recording started
       if (syncServiceRef.current) {
@@ -150,7 +167,7 @@ export default function GravadorMobile() {
       toast.success('Gravação iniciada...');
     } catch (err) {
       console.error(err);
-      setError('Erro ao acessar microfone. Verifique as permissões de áudio do seu celular.');
+      setError('Erro ao acessar microfone. Verifique se deu permissão de áudio ao navegador no seu celular.');
       toast.error('Sem permissão de microfone.');
     }
   };
@@ -159,6 +176,10 @@ export default function GravadorMobile() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
       
       // Notify desktop that recording stopped and is transcribing
       if (syncServiceRef.current) {
@@ -174,6 +195,11 @@ export default function GravadorMobile() {
     setIsTranscribing(true);
     toast.info('Transcrevendo áudio com Whisper...');
     try {
+      // Validate file size (Whisper API limit is 25MB)
+      if (audioBlob.size > 25 * 1024 * 1024) {
+        throw new Error('O áudio gravado é muito grande (limite de 25MB). Tente fazer gravações mais curtas.');
+      }
+
       // Extract extension from mimeType (e.g. "audio/webm;codecs=opus" -> "webm", "audio/mp4" -> "mp4")
       let extension = 'webm';
       if (mimeType) {
@@ -216,10 +242,10 @@ export default function GravadorMobile() {
         setError('Não foi possível identificar fala no áudio.');
         toast.error('Nenhuma fala detectada.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[MobileMic] Transcription error:', err);
-      const msg = err?.message || 'Erro de rede ou limite de cota atingido.';
-      setError(`Erro na transcrição: ${msg}`);
+      const errMsg = err instanceof Error ? err.message : 'Erro de rede ou limite de cota atingido.';
+      setError(`Erro na transcrição: ${errMsg}`);
       toast.error('Falha ao transcrever.');
       
       // Notify desktop of failure

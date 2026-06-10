@@ -1,11 +1,11 @@
 import { groq } from './groq';
 import { toast } from '../lib/toast';
 
-// ─── API Keys (hardcoded + localStorage override) ─────────────────────────────
+// ─── API Keys (env + localStorage override) ───────────────────────────────────
 
 export function getGeminiApiKey(): string {
   return (
-    (globalThis as any)._customGeminiKey ||
+    (globalThis as typeof globalThis & { _customGeminiKey?: string })._customGeminiKey ||
     localStorage.getItem('arcanjo_gemini_key') ||
     import.meta.env.VITE_GEMINI_API_KEY ||
     ''
@@ -13,16 +13,15 @@ export function getGeminiApiKey(): string {
 }
 
 export function hasCustomGeminiKey(): boolean {
-  const customKey = (globalThis as any)._customGeminiKey || localStorage.getItem('arcanjo_gemini_key');
+  const customKey = (globalThis as typeof globalThis & { _customGeminiKey?: string })._customGeminiKey || localStorage.getItem('arcanjo_gemini_key');
   if (customKey) return true;
-  
-  const envKey = import.meta.env.VITE_GEMINI_API_KEY;
-  return !!envKey && envKey !== 'AIzaSyDDJiGD6GhS2g0NYCWRedgVgrRNwux1PA8';
+
+  return !!import.meta.env.VITE_GEMINI_API_KEY;
 }
 
 export function getOpenRouterApiKey(): string {
   return (
-    (globalThis as any)._customOpenRouterKey ||
+    (globalThis as typeof globalThis & { _customOpenRouterKey?: string })._customOpenRouterKey ||
     localStorage.getItem('arcanjo_openrouter_key') ||
     import.meta.env.VITE_OPENROUTER_API_KEY ||
     ''
@@ -32,7 +31,7 @@ export function getOpenRouterApiKey(): string {
 // ─── Timeout & Abort ──────────────────────────────────────────────────────────
 
 /** Timeout padrão em ms. Alterável pelo usuário. */
-const DEFAULT_TIMEOUT_MS = 12_000;
+const DEFAULT_TIMEOUT_MS = 30_000;
 
 // Referência global ao AbortController ativo — permite cancelar da UI
 let _activeAbortController: AbortController | null = null;
@@ -73,73 +72,49 @@ export interface AIModel {
 
 export const AI_MODELS: AIModel[] = [
   {
+    id: 'google/gemini-3-flash-preview',
+    label: 'Gemini 3 Flash Preview ⚡',
+    badge: 'Gemini 3 Flash (OpenRouter)',
+    provider: 'openrouter',
+    note: 'Padrão — Nova geração do Google experimental',
+    timeoutMs: 25_000,
+  },
+  {
     id: 'llama-3.3-70b-versatile',
     label: 'Llama 3.3 70B (Groq) 🚀',
     badge: 'Llama 3.3 70B (Groq)',
     provider: 'groq',
     note: 'Ultra rápido e preciso',
-    timeoutMs: 5_000,
-  },
-  {
-    id: 'llama-3.1-8b-instant',
-    label: 'Llama 3.1 8B (Groq)',
-    badge: 'Llama 3.1 8B (Groq)',
-    provider: 'groq',
-    note: 'Velocidade instantânea',
-    timeoutMs: 4_000,
-  },
-  {
-    id: 'google/gemini-2.5-flash',
-    label: 'Gemini 2.5 Flash ⚡',
-    badge: 'Gemini 2.5 Flash (OpenRouter)',
-    provider: 'openrouter',
-    note: 'Padrão — rápido e estável',
     timeoutMs: 8_000,
   },
   {
-    id: 'anthropic/claude-3-5-haiku',
-    label: 'Claude 3.5 Haiku',
+    id: 'openai/gpt-5.4-mini',
+    label: 'GPT-5.4 Mini 🧠',
+    badge: 'GPT-5.4 Mini (OpenRouter)',
+    provider: 'openrouter',
+    note: 'Nova geração custo/benefício da OpenAI',
+    timeoutMs: 20_000,
+  },
+  {
+    id: 'anthropic/claude-3.5-haiku',
+    label: 'Claude 3.5 Haiku 🍃',
     badge: 'Claude 3.5 Haiku (OpenRouter)',
     provider: 'openrouter',
-    note: 'Melhor custo/benefício',
-    timeoutMs: 8_000,
+    note: 'Extremamente rápido e refinado',
+    timeoutMs: 20_000,
   },
   {
-    id: 'openai/gpt-4o-mini',
-    label: 'GPT-4o Mini',
-    badge: 'GPT-4o Mini (OpenRouter)',
-    provider: 'openrouter',
-    note: 'Excelente custo/benefício',
-    timeoutMs: 6_000,
-  },
-  {
-    id: 'deepseek/deepseek-chat',
-    label: 'DeepSeek V3',
-    badge: 'DeepSeek V3 (OpenRouter)',
-    provider: 'openrouter',
-    note: 'Raciocínio clínico avançado',
-    timeoutMs: 12_000,
-  },
-  {
-    id: 'anthropic/claude-sonnet-4.6',
-    label: 'Claude Sonnet 4.6 👑',
-    badge: 'Claude Sonnet 4.6 (OpenRouter)',
-    provider: 'openrouter',
-    note: 'Inteligência máxima clínica',
-    timeoutMs: 12_000,
-  },
-  {
-    id: 'google/gemini-2.5-pro',
-    label: 'Gemini 2.5 Pro',
-    badge: 'Gemini 2.5 Pro (OpenRouter)',
-    provider: 'openrouter',
-    note: 'Inteligência máxima do Google',
-    timeoutMs: 12_000,
+    id: 'meta-llama/llama-4-scout-17b-16e-instruct',
+    label: 'Llama 4 Scout 17B (Groq) 🏹',
+    badge: 'Llama 4 Scout 17B (Groq)',
+    provider: 'groq',
+    note: 'Nova geração da Meta experimental',
+    timeoutMs: 10_000,
   },
 ];
 
 export function getDefaultModelId(): string {
-  return localStorage.getItem('arcanjo_selected_model') || 'llama-3.3-70b-versatile';
+  return localStorage.getItem('arcanjo_selected_model') || 'google/gemini-3-flash-preview';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -177,11 +152,11 @@ async function callOpenRouter(
   if (params.systemInstruction) messages.push({ role: 'system', content: params.systemInstruction });
   messages.push({ role: 'user', content: params.prompt });
 
-  const body: any = {
+  const body = {
     model: modelId,
     messages,
     temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-    max_tokens: 1200,
+    max_tokens: 4096,
   };
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -203,13 +178,23 @@ async function callOpenRouter(
     try {
       const errObj = JSON.parse(responseText);
       errMsg = errObj.error?.message || responseText;
-    } catch (_) {}
+    } catch {
+      // ignore parse error, fallback to responseText
+    }
+    if (response.status === 401) {
+      throw new Error(`OpenRouter 401: Chave de API inválida ou não configurada. Verifique suas Configurações de API.`);
+    }
+    if (response.status === 402) {
+      throw new Error(`OpenRouter 402: Saldo insuficiente na sua conta do OpenRouter.`);
+    }
     throw new Error(`OpenRouter ${response.status}: ${errMsg}`);
   }
 
-  let data: any;
-  try { data = JSON.parse(responseText); } catch (_) {
-    throw new Error(`Resposta inválida do OpenRouter: ${responseText.substring(0, 200)}`);
+  let data: { choices?: Array<{ message?: { content?: string } }> };
+  try {
+    data = JSON.parse(responseText);
+  } catch (err) {
+    throw new Error(`Resposta inválida do OpenRouter: ${responseText.substring(0, 200)}`, { cause: err });
   }
 
   const text = data.choices?.[0]?.message?.content || '';
@@ -235,11 +220,11 @@ async function callGroq(
   }
   messages.push({ role: 'user', content: params.prompt });
 
-  const options: any = {
+  const options = {
     model: modelId,
     messages,
     temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-    max_tokens: 1200,
+    max_tokens: 4096,
   };
 
   const completion = await groq.chat.completions.create(options, { signal });
@@ -275,12 +260,12 @@ export async function callGemini(
     contents: [{ parts: [{ text: params.prompt }] }],
     generationConfig: {
       temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-      maxOutputTokens: 1200,
+      maxOutputTokens: 4096,
     },
   };
 
-  // Desativa o "thinking" do Gemini 2.5 — responde 3-5x mais rápido, suficiente para SOAP/justificativa
-  if (modelId.includes('2.5')) {
+  // Desativa o "thinking" do Gemini 2.5/3 — responde 3-5x mais rápido, suficiente para SOAP/justificativa
+  if (modelId.includes('2.5') || modelId.includes('3')) {
     payload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
   }
 
@@ -300,6 +285,9 @@ export async function callGemini(
 
   if (!response.ok) {
     const errText = await response.text().catch(() => '');
+    if (response.status === 429) {
+      throw new Error(`Gemini 429: Limite de cota excedido para o modelo ${modelId}. Se estiver usando a chave gratuita da Google, o Gemini Pro possui limites muito estritos. Tente usar o Gemini 2.5 Flash ou ative o faturamento no Google AI Studio.`);
+    }
     throw new Error(`Gemini ${response.status}: ${errText.substring(0, 200)}`);
   }
 
@@ -328,6 +316,33 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   const modelMeta = AI_MODELS.find((m) => m.id === selectedModelId);
   const timeoutMs = modelMeta?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
+  // Verificar se a chave necessária para o modelo selecionado está presente
+  if (modelMeta) {
+    let hasKey = false;
+    let keyName = '';
+    
+    const hasCustomGemini = hasCustomGeminiKey();
+    const hasEnvGemini = !!import.meta.env.VITE_GEMINI_API_KEY;
+    const hasGemini = hasCustomGemini || hasEnvGemini;
+    
+    if (modelMeta.id.includes('gemini') && hasGemini) {
+      hasKey = true;
+    } else if (modelMeta.provider === 'groq') {
+      hasKey = !!(localStorage.getItem('arcanjo_groq_key') || import.meta.env.VITE_GROQ_API_KEY);
+      keyName = 'Groq';
+    } else if (modelMeta.provider === 'openrouter') {
+      hasKey = !!getOpenRouterApiKey();
+      keyName = 'OpenRouter';
+    } else if (modelMeta.provider === 'gemini') {
+      hasKey = hasGemini;
+      keyName = 'Gemini';
+    }
+
+    if (!hasKey && keyName) {
+      throw new Error(`A chave de API do ${keyName} é necessária para usar o modelo "${modelMeta.label}". Configure-a nas Configurações de API.`);
+    }
+  }
+
   // Fila de modelos a tentar
   const fallbackChain: Array<{ id: string; badge: string; provider: 'gemini' | 'openrouter' | 'groq'; timeoutMs: number }> = [];
 
@@ -345,16 +360,16 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   if (primaryProvider === 'groq') {
     // Se o principal for Groq, fallbacks devem ser fora do Groq (OpenRouter/Gemini Direct)
     fallbackChain.push({
-      id: 'google/gemini-2.5-flash',
-      badge: 'Gemini 2.5 Flash (fallback)',
+      id: 'google/gemini-3-flash-preview',
+      badge: 'Gemini 3 Flash (fallback)',
       provider: 'openrouter',
-      timeoutMs: 8_000,
+      timeoutMs: 25_000,
     });
     fallbackChain.push({
-      id: 'openai/gpt-4o-mini',
-      badge: 'GPT-4o Mini (fallback)',
+      id: 'openai/gpt-5.4-mini',
+      badge: 'GPT-5.4 Mini (fallback)',
       provider: 'openrouter',
-      timeoutMs: 6_000,
+      timeoutMs: 20_000,
     });
   } else {
     // Se o principal for OpenRouter/Gemini, fallback 1 deve ser Groq (ultra rápido e independente)
@@ -362,22 +377,22 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       id: 'llama-3.3-70b-versatile',
       badge: 'Llama 3.3 70B Groq (fallback)',
       provider: 'groq',
-      timeoutMs: 5_000,
+      timeoutMs: 8_000,
     });
-    // Fallback 2: GPT-4o Mini se o selecionado não for ele mesmo
-    if (selectedModelId !== 'openai/gpt-4o-mini') {
+    // Fallback 2: Outro modelo OpenRouter dependendo do selecionado
+    if (selectedModelId !== 'openai/gpt-5.4-mini') {
       fallbackChain.push({
-        id: 'openai/gpt-4o-mini',
-        badge: 'GPT-4o Mini (fallback)',
+        id: 'openai/gpt-5.4-mini',
+        badge: 'GPT-5.4 Mini (fallback)',
         provider: 'openrouter',
-        timeoutMs: 6_000,
+        timeoutMs: 20_000,
       });
     } else {
       fallbackChain.push({
-        id: 'google/gemini-2.5-flash',
-        badge: 'Gemini 2.5 Flash (fallback)',
+        id: 'google/gemini-3-flash-preview',
+        badge: 'Gemini 3 Flash (fallback)',
         provider: 'openrouter',
-        timeoutMs: 8_000,
+        timeoutMs: 25_000,
       });
     }
   }
@@ -400,7 +415,17 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       }
 
       if (targetProvider === 'gemini') {
-        text = await callGemini(params, targetModelId, signal);
+        try {
+          text = await callGemini(params, targetModelId, signal);
+        } catch (geminiDirectErr) {
+          // Se falhar a chamada direta (ex: 429 ou quota), e o original era OpenRouter, tenta OpenRouter para o mesmo modelo antes de ir ao fallback
+          if (model.provider === 'openrouter' && getOpenRouterApiKey()) {
+            console.warn(`Gemini Direct falhou (${(geminiDirectErr as Error).message}). Tentando via OpenRouter para ${model.id}...`);
+            text = await callOpenRouter(params, model.id, signal);
+          } else {
+            throw geminiDirectErr;
+          }
+        }
       } else if (targetProvider === 'groq') {
         text = await callGroq(params, targetModelId, signal);
       } else {
@@ -417,7 +442,7 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       // Cancelamento pelo usuário — para imediatamente, não tenta fallback.
       if (isAbortError(err)) {
         if (signal.reason === 'user_cancel') {
-          throw new Error('Geração cancelada pelo usuário.');
+          throw new Error('Geração cancelada pelo usuário.', { cause: err });
         }
         // Timeout — informa e tenta o próximo
         const isLast = model === fallbackChain[fallbackChain.length - 1];
@@ -474,7 +499,7 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
         ],
         model: 'llama-3.3-70b-versatile',
         temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-        max_tokens: 1200,
+        max_tokens: 4096,
       });
       const text = completion.choices[0]?.message?.content || '';
       if (text.trim()) {
