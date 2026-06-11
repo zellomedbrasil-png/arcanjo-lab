@@ -72,6 +72,14 @@ export interface AIModel {
 
 export const AI_MODELS: AIModel[] = [
   {
+    id: 'google/gemini-3.5-flash',
+    label: 'Gemini 3.5 Flash ⚡',
+    badge: 'Gemini 3.5 Flash',
+    provider: 'openrouter',
+    note: 'Mais recente e inteligente do Google',
+    timeoutMs: 15_000,
+  },
+  {
     id: 'google/gemini-3-flash-preview',
     label: 'Gemini 3 Flash Preview ⚡',
     badge: 'Gemini 3 Flash (OpenRouter)',
@@ -114,7 +122,7 @@ export const AI_MODELS: AIModel[] = [
 ];
 
 export function getDefaultModelId(): string {
-  return localStorage.getItem('arcanjo_selected_model') || 'google/gemini-3-flash-preview';
+  return localStorage.getItem('arcanjo_selected_model') || 'google/gemini-3.5-flash';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -264,8 +272,8 @@ export async function callGemini(
     },
   };
 
-  // Desativa o "thinking" do Gemini 2.5/3 — responde 3-5x mais rápido, suficiente para SOAP/justificativa
-  if (modelId.includes('2.5') || modelId.includes('3')) {
+  // Desativa o "thinking" do Gemini 2.5/3 (exceto 3.5 que gera erro 503 ao definir thinkingBudget: 0 na API direta)
+  if ((modelId.includes('2.5') || modelId.includes('3')) && !modelId.includes('3.5')) {
     payload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
   }
 

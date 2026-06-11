@@ -4,7 +4,21 @@
       "Bash(curl -s https://openrouter.ai/api/v1/models)",
       "Bash(python3 -c ' *)",
       "Bash(node -e ' *)",
-      "Bash(vercel --prod)"
+      "Bash(vercel --prod)",
+      "Bash(cd \"c:\\\\Users\\\\1\\\\.gemini\\\\antigravity\\\\playground\\\\Projetos Médicos\\\\arcanjo.lab\" && sed -E 's/\\(=.{12}\\).*/\\\\1.../' .env .env.local 2>/dev/null)",
+      "Bash(curl -s -m 8 -X POST \"https://ntfy.sh/arcanjo-lab-room-test12345\" -H \"Content-Type: application/json\" -d '{\"type\":\"MOBILE_CONNECTED\"}')",
+      "Bash(curl -s -m 6 \"https://ntfy.sh/arcanjo-lab-room-test12345/sse?since=5m\")",
+      "Bash(curl -s -m 8 -I \"https://ntfy.sh/arcanjo-lab-room-test12345/sse\")",
+      "Bash(npx eslint *)",
+      "Bash(npx vercel *)",
+      "Bash(git reset *)",
+      "Read(//c/tmp/**)",
+      "Bash(curl -s https://arcanjo-lab.vercel.app/)",
+      "Bash(grep -oE \"termo.{0,40}amoxicilina\")",
+      "Bash(curl -s \"https://arcanjo-lab.vercel.app/assets/index-CfErzdgS.js\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\1\\.gemini\\antigravity\\playground\\Projetos Médicos\\arcanjo.lab"
     ]
   }
 }
