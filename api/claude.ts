@@ -1,26 +1,27 @@
 // api/claude.ts
-// Vercel Edge Function — proxy seguro para a API da Anthropic.
+// Vercel Edge Function — proxy seguro para a API da Anthropic com streaming SSE.
 //
 // Coloque este arquivo em /api/claude.ts na RAIZ do projeto.
-// O Edge Runtime suporta até 30s de processamento no plano gratuito (Hobby) da Vercel,
-// evitando os timeouts de 10s das funções serverless tradicionais.
+// Streaming: o Edge Runtime só exige que a resposta COMECE em até 25s.
+// Como o primeiro byte do stream da Anthropic chega em ~1s, o
+// 504 FUNCTION_INVOCATION_TIMEOUT deixa de existir — a conexão fica
+// viva enquanto os tokens chegam.
 
 export const config = { runtime: 'edge' };
 
 // Corrige o erro de compilação TS2591 declarando o objeto process globalmente
 declare const process: { env: { [key: string]: string | undefined } };
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 export default async function handler(req: Request): Promise<Response> {
   // CORS para desenvolvimento local
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
+    return new Response(null, { status: 200, headers: CORS_HEADERS });
   }
 
   if (req.method !== 'POST') {
@@ -34,7 +35,7 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    const { model, max_tokens, system, messages, temperature } = await req.json() as {
+    const body = await req.json() as {
       model?: string;
       max_tokens?: number;
       system?: string;
@@ -50,16 +51,32 @@ export default async function handler(req: Request): Promise<Response> {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: model ?? 'claude-sonnet-4-6',
-        max_tokens: max_tokens ?? 4096,
-        temperature: temperature ?? 0.1,
-        ...(system ? { system } : {}),
-        messages,
+        model: body.model ?? 'claude-sonnet-4-6',
+        max_tokens: body.max_tokens ?? 4096,
+        temperature: body.temperature ?? 0.1,
+        stream: true,
+        ...(body.system ? { system: body.system } : {}),
+        messages: body.messages,
       }),
     });
 
-    const data = await upstream.json();
-    return json(data, upstream.status);
+    // Erro upstream (401/404/429/529...): devolve o corpo e o status reais — nada de engolir.
+    if (!upstream.ok || !upstream.body) {
+      const errText = await upstream.text();
+      return new Response(errText || JSON.stringify({ error: 'upstream error' }), {
+        status: upstream.status,
+        headers: { 'content-type': 'application/json', ...CORS_HEADERS },
+      });
+    }
+
+    // Repassa o stream SSE da Anthropic diretamente ao cliente, sem bufferizar.
+    return new Response(upstream.body, {
+      headers: {
+        'content-type': 'text/event-stream; charset=utf-8',
+        'cache-control': 'no-cache',
+        ...CORS_HEADERS,
+      },
+    });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     return json({ error: msg }, 500);
@@ -69,9 +86,6 @@ export default async function handler(req: Request): Promise<Response> {
 function json(data: unknown, status: number): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      'content-type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
+    headers: { 'content-type': 'application/json', ...CORS_HEADERS },
   });
 }

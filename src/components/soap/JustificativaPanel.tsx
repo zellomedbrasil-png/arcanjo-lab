@@ -107,6 +107,8 @@ Queixa clínica: "${queixa}"`;
       const content = await callAI({
         prompt: buildContext(),
         systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA,
+        // Streaming: preenche o campo progressivamente conforme o texto chega
+        onDelta: (textSoFar) => setJustificativaValue(textSoFar.toUpperCase()),
       });
       setJustificativaValue(content.toUpperCase());
       setIaModel(getLastUsedModel());

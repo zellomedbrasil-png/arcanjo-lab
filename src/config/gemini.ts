@@ -159,6 +159,11 @@ interface AICallParams {
   systemInstruction?: string;
   jsonMode?: boolean;
   temperature?: number;
+  /**
+   * Chamado a cada delta de texto durante streaming (hoje só Anthropic).
+   * Recebe o texto ACUMULADO até o momento — ideal para setState direto.
+   */
+  onDelta?: (textSoFar: string) => void;
 }
 
 let lastUsedModel = '';
@@ -352,12 +357,16 @@ async function callAnthropic(
     max_tokens: number;
     messages: Array<{ role: string; content: string }>;
     temperature: number;
+    stream: true;
     system?: string;
   } = {
     model: modelId,
     max_tokens: 4096,
     messages: [{ role: 'user', content: params.prompt }],
     temperature: typeof params.temperature === 'number' ? params.temperature : 0.1,
+    // Streaming ponta a ponta: o proxy Edge repassa o SSE da Anthropic.
+    // Em dev, o proxy do Vite envia este body verbatim à Anthropic — por isso o stream: true vai aqui também.
+    stream: true,
   };
 
   if (params.systemInstruction) {
@@ -372,9 +381,8 @@ async function callAnthropic(
     body: JSON.stringify(body),
   });
 
-  const responseText = await response.text();
-
-  if (!response.ok) {
+  if (!response.ok || !response.body) {
+    const responseText = await response.text();
     let errMsg = responseText;
     try {
       const errObj = JSON.parse(responseText);
@@ -382,26 +390,60 @@ async function callAnthropic(
     } catch {
       // ignore
     }
+    // Erro real, sem fallback cego — o médico precisa saber o que aconteceu.
     throw new Error(`Anthropic ${response.status}: ${errMsg}`);
   }
 
-  let data: { content?: Array<{ type: string; text: string }>; error?: string };
+  // Leitura do SSE: linhas "data: {json}". O texto vem em eventos
+  // content_block_delta (delta.type === "text_delta"); erros vêm em eventos error.
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+
   try {
-    data = JSON.parse(responseText);
-  } catch (err) {
-    throw new Error(`Resposta inválida do proxy Anthropic: ${responseText.substring(0, 200)}`, { cause: err });
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+        if (!payload) continue;
+
+        let evt: {
+          type?: string;
+          delta?: { type?: string; text?: string };
+          error?: { message?: string };
+        };
+        try {
+          evt = JSON.parse(payload);
+        } catch {
+          // Linha que não é JSON completo (ping/keep-alive) — ignora
+          continue;
+        }
+
+        if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+          fullText += evt.delta.text ?? '';
+          params.onDelta?.(fullText);
+        } else if (evt.type === 'error') {
+          throw new Error(`Anthropic: ${evt.error?.message ?? 'erro no stream'}`);
+        }
+        // Demais eventos (message_start, content_block_start, ping, message_stop) são ignorados.
+      }
+    }
+  } finally {
+    reader.releaseLock();
   }
 
-  if (data.error) {
-    throw new Error(`Anthropic: ${data.error}`);
-  }
-
-  const text = data.content?.[0]?.text || '';
-  if (!text.trim()) throw new Error('Anthropic retornou resposta vazia.');
+  if (!fullText.trim()) throw new Error('Anthropic retornou resposta vazia.');
 
   const m = AI_MODELS.find((m) => m.id === modelId);
   lastUsedModel = m?.badge ?? `Claude (${modelId})`;
-  return text.trim();
+  return fullText.trim();
 }
 
 // ─── Dispatcher principal ──────────────────────────────────────────────────────

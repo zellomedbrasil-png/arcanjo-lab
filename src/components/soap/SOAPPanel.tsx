@@ -328,7 +328,12 @@ Queixa clínica: "${queixa}"`;
     setError(null);
     try {
       const content = await callAI(
-        { prompt: buildContext(), systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA },
+        {
+          prompt: buildContext(),
+          systemInstruction: SYSTEM_PROMPT_JUSTIFICATIVA,
+          // Streaming: preenche o campo progressivamente conforme o texto chega
+          onDelta: (textSoFar) => setJustificativa(textSoFar.toUpperCase()),
+        },
         selectedModelId
       );
       setJustificativa(content.toUpperCase());
@@ -347,14 +352,19 @@ Queixa clínica: "${queixa}"`;
     if (!queixa.trim()) { setError('Informe a queixa clínica.'); return; }
     setIsLoadingSoap(true);
     setError(null);
+    setSoapExpanded(true); // expande antes para o texto aparecer progressivamente
     try {
       const content = await callAI(
-        { prompt: buildContext(), systemInstruction: SYSTEM_PROMPT_SOAP },
+        {
+          prompt: buildContext(),
+          systemInstruction: SYSTEM_PROMPT_SOAP,
+          // Streaming: a nota aparece na tela conforme o texto chega
+          onDelta: (textSoFar) => setSoap(cleanSoapMarkdown(textSoFar)),
+        },
         selectedModelId
       );
       setSoap(cleanSoapMarkdown(content));
       setIaModel(getLastUsedModel());
-      setSoapExpanded(true);
       toast.success('Nota SOAP gerada');
     } catch (err: unknown) {
       const msg = getErrorMessage(err, 'Erro ao gerar SOAP.');
