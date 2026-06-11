@@ -43,6 +43,17 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
+        // Proxy de desenvolvimento: /api/gemini?model=X → Google generateContent.
+        // Injeta a chave do servidor (GEMINI_API_KEY, sem prefixo VITE_) na URL.
+        '/api/gemini': {
+          target: 'https://generativelanguage.googleapis.com',
+          changeOrigin: true,
+          rewrite: (path) => {
+            const query = path.split('?')[1] || '';
+            const model = (new URLSearchParams(query).get('model') || 'gemini-3.5-flash').replace('google/', '');
+            return `/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY || ''}`;
+          },
+        },
       },
     },
   };

@@ -87,9 +87,9 @@ export const AI_MODELS: AIModel[] = [
     id: 'google/gemini-3.5-flash',
     label: 'Gemini 3.5 Flash ⚡',
     badge: 'Gemini 3.5 Flash',
-    provider: 'openrouter',
-    note: 'Mais recente e inteligente do Google',
-    timeoutMs: 15_000,
+    provider: 'gemini',
+    note: 'Mais recente e inteligente do Google (via proxy seguro)',
+    timeoutMs: 30_000,
   },
   {
     id: 'google/gemini-3-flash-preview',
@@ -273,8 +273,10 @@ export async function callGemini(
   modelId = 'gemini-2.5-flash',
   signal?: AbortSignal
 ): Promise<string> {
-  const apiKey = getGeminiApiKey();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+  // Remove eventual prefixo "google/" (vindo dos ids de modelo da UI)
+  modelId = modelId.replace('google/', '');
+  // A chave NÃO vai pelo browser — o proxy /api/gemini injeta GEMINI_API_KEY no servidor.
+  const url = `/api/gemini?model=${encodeURIComponent(modelId)}`;
 
   const payload: {
     contents: Array<{ parts: Array<{ text: string }> }>;
@@ -460,7 +462,11 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
     const hasEnvGemini = !!import.meta.env.VITE_GEMINI_API_KEY;
     const hasGemini = hasCustomGemini || hasEnvGemini;
     
-    if (modelMeta.id.includes('gemini') && hasGemini) {
+    if (modelMeta.provider === 'gemini' || modelMeta.provider === 'anthropic') {
+      // Gemini e Anthropic usam proxy servidor-lado (/api/gemini e /api/claude).
+      // A chave nunca passa pelo browser e o proxy está sempre disponível.
+      hasKey = true;
+    } else if (modelMeta.id.includes('gemini') && hasGemini) {
       hasKey = true;
     } else if (modelMeta.provider === 'groq') {
       hasKey = !!(localStorage.getItem('arcanjo_groq_key') || import.meta.env.VITE_GROQ_API_KEY);
@@ -468,13 +474,6 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
     } else if (modelMeta.provider === 'openrouter') {
       hasKey = !!getOpenRouterApiKey();
       keyName = 'OpenRouter';
-    } else if (modelMeta.provider === 'gemini') {
-      hasKey = hasGemini;
-      keyName = 'Gemini';
-    } else if (modelMeta.provider === 'anthropic') {
-      // Anthropic usa proxy servidor-lado — a chave nunca passa pelo browser
-      // e o proxy /api/claude está sempre disponível.
-      hasKey = true;
     }
 
     if (!hasKey && keyName) {
