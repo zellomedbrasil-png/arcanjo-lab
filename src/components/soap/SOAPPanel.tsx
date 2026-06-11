@@ -51,6 +51,8 @@ REGRAS RÍGIDAS DE FORMATAÇÃO (ZERO MARKDOWN):
 - Utilize exclusivamente LETRAS MAIÚSCULAS para os títulos de seções e subseções.
 - Use hífens simples (-) e pontos para estruturar listas e tabelas.
 - SEM PREÂMBULOS OU CONCLUSÕES: Inicie imediatamente no cabeçalho "1. SOAP EXPRESS" e encerre na assinatura.
+- CONCISÃO CLÍNICA E VELOCIDADE: Seja extremamente focado, objetivo e direto. Não invente anamneses longas ou sintomas fictícios. Limite as seções SUBJETIVO, OBJETIVO e ORIENTAÇÃO AO PACIENTE ao mínimo necessário para o caso. Responda o mais rapidamente possível.
+
 
 MOCK DE ESTRUTURA DO PRONTUÁRIO PREMIUM:
 

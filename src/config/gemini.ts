@@ -92,7 +92,7 @@ export const AI_MODELS: AIModel[] = [
     badge: 'Claude Sonnet 4.6',
     provider: 'anthropic',
     note: 'Modelo de alta performance da Anthropic (Direct API)',
-    timeoutMs: 30_000,
+    timeoutMs: 60_000,
   },
   {
     id: 'google/gemini-3.5-flash',
@@ -351,11 +351,13 @@ async function callAnthropic(
     model: string;
     max_tokens: number;
     messages: Array<{ role: string; content: string }>;
+    temperature: number;
     system?: string;
   } = {
     model: modelId,
     max_tokens: 4096,
     messages: [{ role: 'user', content: params.prompt }],
+    temperature: typeof params.temperature === 'number' ? params.temperature : 0.1,
   };
 
   if (params.systemInstruction) {
