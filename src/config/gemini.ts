@@ -29,9 +29,14 @@ export function getOpenRouterApiKey(): string {
 }
 
 export function getAnthropicApiKey(): string {
+  const localKey = localStorage.getItem('arcanjo_anthropic_key');
+  if (localKey === 'REDACTED_ANTHROPIC_KEY') {
+    localStorage.removeItem('arcanjo_anthropic_key');
+    return import.meta.env.VITE_ANTHROPIC_API_KEY || '';
+  }
   return (
     (globalThis as typeof globalThis & { _customAnthropicKey?: string })._customAnthropicKey ||
-    localStorage.getItem('arcanjo_anthropic_key') ||
+    localKey ||
     import.meta.env.VITE_ANTHROPIC_API_KEY ||
     ''
   );
@@ -146,7 +151,11 @@ export const AI_MODELS: AIModel[] = [
 ];
 
 export function getDefaultModelId(): string {
-  return localStorage.getItem('arcanjo_selected_model') || 'claude-sonnet-4-6';
+  const saved = localStorage.getItem('arcanjo_selected_model');
+  if (saved && AI_MODELS.some(m => m.id === saved)) {
+    return saved;
+  }
+  return 'claude-sonnet-4-6';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
