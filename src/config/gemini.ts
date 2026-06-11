@@ -28,20 +28,9 @@ export function getOpenRouterApiKey(): string {
   );
 }
 
-// Anthropic: a chave reside SOMENTE no servidor (/api/claude). 
+// Anthropic: a chave reside SOMENTE no servidor (/api/claude).
 // O browser nunca vê a chave — não expor via VITE_.
-// Mantemos a função por compatibilidade com código legado, mas ela sempre retorna vazio.
-export function getAnthropicApiKey(): string {
-  // Apaga qualquer chave antiga que possa ter ficado gravada no localStorage
-  const stale = localStorage.getItem('arcanjo_anthropic_key');
-  if (stale) localStorage.removeItem('arcanjo_anthropic_key');
-  return ''; // Chave está no servidor. Não acesse aqui.
-}
-
-// O proxy /api/claude sempre está disponível — retorna true sem verificar chave no browser.
-export function hasCustomAnthropicKey(): boolean {
-  return true;
-}
+// A limpeza da chave antiga do localStorage roda em src/lib/storageCleanup.ts.
 
 // ─── Timeout & Abort ──────────────────────────────────────────────────────────
 
@@ -483,8 +472,8 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       hasKey = hasGemini;
       keyName = 'Gemini';
     } else if (modelMeta.provider === 'anthropic') {
-      // Anthropic usa proxy servidor-lado — a chave nunca passa pelo browser.
-      // hasCustomAnthropicKey() sempre retorna true (proxy sempre disponível).
+      // Anthropic usa proxy servidor-lado — a chave nunca passa pelo browser
+      // e o proxy /api/claude está sempre disponível.
       hasKey = true;
     }
 
