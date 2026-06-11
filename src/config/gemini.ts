@@ -28,6 +28,22 @@ export function getOpenRouterApiKey(): string {
   );
 }
 
+export function getAnthropicApiKey(): string {
+  return (
+    (globalThis as typeof globalThis & { _customAnthropicKey?: string })._customAnthropicKey ||
+    localStorage.getItem('arcanjo_anthropic_key') ||
+    import.meta.env.VITE_ANTHROPIC_API_KEY ||
+    ''
+  );
+}
+
+export function hasCustomAnthropicKey(): boolean {
+  const customKey = (globalThis as typeof globalThis & { _customAnthropicKey?: string })._customAnthropicKey || localStorage.getItem('arcanjo_anthropic_key');
+  if (customKey) return true;
+
+  return !!import.meta.env.VITE_ANTHROPIC_API_KEY;
+}
+
 // ─── Timeout & Abort ──────────────────────────────────────────────────────────
 
 /** Timeout padrão em ms. Alterável pelo usuário. */
@@ -64,7 +80,7 @@ export interface AIModel {
   id: string;
   label: string;
   badge: string;
-  provider: 'gemini' | 'openrouter' | 'groq';
+  provider: 'gemini' | 'openrouter' | 'groq' | 'anthropic';
   note?: string;
   /** Timeout override in ms — slower models get a bit more time */
   timeoutMs?: number;
@@ -72,12 +88,12 @@ export interface AIModel {
 
 export const AI_MODELS: AIModel[] = [
   {
-    id: 'google/gemini-3.1-pro-preview',
-    label: 'Gemini 3.1 Pro Preview 🧠',
-    badge: 'Gemini 3.1 Pro',
-    provider: 'openrouter',
-    note: 'Modelo de raciocínio avançado do Google (exige thinking)',
-    timeoutMs: 60_000,
+    id: 'claude-sonnet-4-6',
+    label: 'Claude Sonnet 4.6 🧠',
+    badge: 'Claude Sonnet 4.6',
+    provider: 'anthropic',
+    note: 'Modelo de alta performance da Anthropic (Direct API)',
+    timeoutMs: 30_000,
   },
   {
     id: 'google/gemini-3.5-flash',
@@ -130,7 +146,7 @@ export const AI_MODELS: AIModel[] = [
 ];
 
 export function getDefaultModelId(): string {
-  return localStorage.getItem('arcanjo_selected_model') || 'google/gemini-3.1-pro-preview';
+  return localStorage.getItem('arcanjo_selected_model') || 'claude-sonnet-4-6';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -319,6 +335,78 @@ export async function callGemini(
   lastUsedModel = m?.badge ?? `Gemini (${modelId})`;
   return text.trim();
 }
+// ─── Anthropic ─────────────────────────────────────────────────────────────────
+
+async function callAnthropic(
+  params: AICallParams,
+  modelId: string,
+  signal?: AbortSignal
+): Promise<string> {
+  const apiKey = getAnthropicApiKey();
+  if (!apiKey) {
+    throw new Error('Chave de API do Anthropic não configurada.');
+  }
+
+  const messages: Array<{ role: string; content: string }> = [
+    { role: 'user', content: params.prompt }
+  ];
+
+  const body: {
+    model: string;
+    max_tokens: number;
+    messages: Array<{ role: string; content: string }>;
+    temperature: number;
+    system?: string;
+  } = {
+    model: modelId,
+    max_tokens: 4096,
+    messages,
+    temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
+  };
+
+  if (params.systemInstruction) {
+    body.system = params.systemInstruction;
+  }
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    signal,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    let errMsg = responseText;
+    try {
+      const errObj = JSON.parse(responseText);
+      errMsg = errObj.error?.message || responseText;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Anthropic ${response.status}: ${errMsg}`);
+  }
+
+  let data: { content?: Array<{ type: string; text: string }> };
+  try {
+    data = JSON.parse(responseText);
+  } catch (err) {
+    throw new Error(`Resposta inválida do Anthropic: ${responseText.substring(0, 200)}`, { cause: err });
+  }
+
+  const text = data.content?.[0]?.text || '';
+  if (!text.trim()) throw new Error('Anthropic retornou resposta vazia.');
+
+  const m = AI_MODELS.find((m) => m.id === modelId);
+  lastUsedModel = m?.badge ?? `Claude (${modelId})`;
+  return text.trim();
+}
 
 // ─── Dispatcher principal ──────────────────────────────────────────────────────
 
@@ -356,6 +444,9 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
     } else if (modelMeta.provider === 'gemini') {
       hasKey = hasGemini;
       keyName = 'Gemini';
+    } else if (modelMeta.provider === 'anthropic') {
+      hasKey = !!getAnthropicApiKey();
+      keyName = 'Anthropic';
     }
 
     if (!hasKey && keyName) {
@@ -364,7 +455,7 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   }
 
   // Fila de modelos a tentar
-  const fallbackChain: Array<{ id: string; badge: string; provider: 'gemini' | 'openrouter' | 'groq'; timeoutMs: number }> = [];
+  const fallbackChain: Array<{ id: string; badge: string; provider: 'gemini' | 'openrouter' | 'groq' | 'anthropic'; timeoutMs: number }> = [];
 
   // 1. O modelo selecionado pelo usuário
   fallbackChain.push({
@@ -446,6 +537,8 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
             throw geminiDirectErr;
           }
         }
+      } else if (targetProvider === 'anthropic') {
+        text = await callAnthropic(params, targetModelId, signal);
       } else if (targetProvider === 'groq') {
         text = await callGroq(params, targetModelId, signal);
       } else {
