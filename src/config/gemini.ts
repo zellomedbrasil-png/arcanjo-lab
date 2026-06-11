@@ -37,6 +37,13 @@ export function getOpenRouterApiKey(): string {
 /** Timeout padrão em ms. Alterável pelo usuário. */
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+/**
+ * Teto de tokens de saída. É um LIMITE, não uma meta — respostas curtas
+ * (ex: justificativa) continuam curtas. Subido de 4096 → 8192 para que o
+ * prontuário SOAP premium (5 seções) nunca seja cortado no meio.
+ */
+const MAX_OUTPUT_TOKENS = 8192;
+
 // Referência global ao AbortController ativo — permite cancelar da UI
 let _activeAbortController: AbortController | null = null;
 
@@ -81,7 +88,7 @@ export const AI_MODELS: AIModel[] = [
     badge: 'Claude Sonnet 4.6',
     provider: 'anthropic',
     note: 'Modelo de alta performance da Anthropic (Direct API)',
-    timeoutMs: 60_000,
+    timeoutMs: 120_000,
   },
   {
     id: 'google/gemini-3.5-flash',
@@ -89,7 +96,7 @@ export const AI_MODELS: AIModel[] = [
     badge: 'Gemini 3.5 Flash',
     provider: 'gemini',
     note: 'Mais recente e inteligente do Google (via proxy seguro)',
-    timeoutMs: 30_000,
+    timeoutMs: 90_000,
   },
   {
     id: 'google/gemini-3-flash-preview',
@@ -97,7 +104,7 @@ export const AI_MODELS: AIModel[] = [
     badge: 'Gemini 3 Flash (OpenRouter)',
     provider: 'openrouter',
     note: 'Padrão — Nova geração do Google experimental',
-    timeoutMs: 25_000,
+    timeoutMs: 60_000,
   },
   {
     id: 'llama-3.3-70b-versatile',
@@ -105,7 +112,7 @@ export const AI_MODELS: AIModel[] = [
     badge: 'Llama 3.3 70B (Groq)',
     provider: 'groq',
     note: 'Ultra rápido e preciso',
-    timeoutMs: 8_000,
+    timeoutMs: 30_000,
   },
   {
     id: 'openai/gpt-5.4-mini',
@@ -113,7 +120,7 @@ export const AI_MODELS: AIModel[] = [
     badge: 'GPT-5.4 Mini (OpenRouter)',
     provider: 'openrouter',
     note: 'Nova geração custo/benefício da OpenAI',
-    timeoutMs: 20_000,
+    timeoutMs: 45_000,
   },
   {
     id: 'anthropic/claude-3.5-haiku',
@@ -121,7 +128,7 @@ export const AI_MODELS: AIModel[] = [
     badge: 'Claude 3.5 Haiku (OpenRouter)',
     provider: 'openrouter',
     note: 'Extremamente rápido e refinado',
-    timeoutMs: 20_000,
+    timeoutMs: 45_000,
   },
   {
     id: 'meta-llama/llama-4-scout-17b-16e-instruct',
@@ -129,7 +136,7 @@ export const AI_MODELS: AIModel[] = [
     badge: 'Llama 4 Scout 17B (Groq)',
     provider: 'groq',
     note: 'Nova geração da Meta experimental',
-    timeoutMs: 10_000,
+    timeoutMs: 30_000,
   },
 ];
 
@@ -185,7 +192,7 @@ async function callOpenRouter(
     model: modelId,
     messages,
     temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-    max_tokens: 4096,
+    max_tokens: MAX_OUTPUT_TOKENS,
   };
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -253,7 +260,7 @@ async function callGroq(
     model: modelId,
     messages,
     temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-    max_tokens: 4096,
+    max_tokens: MAX_OUTPUT_TOKENS,
   };
 
   const completion = await groq.chat.completions.create(options, { signal });
@@ -291,7 +298,7 @@ export async function callGemini(
     contents: [{ parts: [{ text: params.prompt }] }],
     generationConfig: {
       temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-      maxOutputTokens: 4096,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
     },
   };
 
@@ -318,7 +325,7 @@ export async function callGemini(
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
+  if (!response.ok || !response.body) {
     const errText = await response.text().catch(() => '');
     if (response.status === 429) {
       throw new Error(`Gemini 429: Limite de cota excedido para o modelo ${modelId}. Se estiver usando a chave gratuita da Google, o Gemini Pro possui limites muito estritos. Tente usar o Gemini 2.5 Flash ou ative o faturamento no Google AI Studio.`);
@@ -326,13 +333,71 @@ export async function callGemini(
     throw new Error(`Gemini ${response.status}: ${errText.substring(0, 200)}`);
   }
 
-  const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (typeof text !== 'string' || !text.trim()) throw new Error('Gemini: sem texto na resposta.');
+  // Leitura do SSE (streamGenerateContent?alt=sse): linhas "data: {json}".
+  // Cada chunk traz texto incremental em candidates[0].content.parts[].text
+  // e, no último, o finishReason (STOP normal, MAX_TOKENS se cortado, SAFETY se bloqueado).
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+  let finishReason = '';
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payloadStr = trimmed.slice(5).trim();
+        if (!payloadStr) continue;
+
+        let evt: {
+          candidates?: Array<{
+            content?: { parts?: Array<{ text?: string }> };
+            finishReason?: string;
+          }>;
+          error?: { message?: string };
+        };
+        try {
+          evt = JSON.parse(payloadStr);
+        } catch {
+          continue; // chunk JSON incompleto — espera o próximo
+        }
+
+        if (evt.error) throw new Error(`Gemini: ${evt.error.message ?? 'erro no stream'}`);
+
+        const cand = evt.candidates?.[0];
+        const partText = cand?.content?.parts?.map((p) => p.text ?? '').join('') ?? '';
+        if (partText) {
+          fullText += partText;
+          params.onDelta?.(fullText);
+        }
+        if (cand?.finishReason) finishReason = cand.finishReason;
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  if (!fullText.trim()) {
+    if (finishReason === 'SAFETY' || finishReason === 'PROHIBITED_CONTENT') {
+      throw new Error('Gemini bloqueou a resposta por política de segurança. Reformule o caso clínico.');
+    }
+    throw new Error('Gemini: sem texto na resposta.');
+  }
+
+  // Aviso de truncamento — o médico precisa saber que a nota pode estar incompleta.
+  if (finishReason === 'MAX_TOKENS') {
+    toast.error('Atenção: a nota atingiu o limite de tamanho e pode estar incompleta. Gere novamente ou reduza o caso.');
+  }
 
   const m = AI_MODELS.find((m) => m.id === modelId || m.id.replace('google/', '') === modelId);
   lastUsedModel = m?.badge ?? `Gemini (${modelId})`;
-  return text.trim();
+  return fullText.trim();
 }
 // ─── Anthropic (via proxy /api/claude) ────────────────────────────────────────
 // A chave API NÃO é enviada pelo browser. O proxy Vercel (/api/claude.ts)
@@ -352,7 +417,7 @@ async function callAnthropic(
     system?: string;
   } = {
     model: modelId,
-    max_tokens: 4096,
+    max_tokens: MAX_OUTPUT_TOKENS,
     messages: [{ role: 'user', content: params.prompt }],
     temperature: typeof params.temperature === 'number' ? params.temperature : 0.1,
     // Streaming ponta a ponta: o proxy Edge repassa o SSE da Anthropic.
@@ -391,6 +456,7 @@ async function callAnthropic(
   const decoder = new TextDecoder();
   let buffer = '';
   let fullText = '';
+  let stopReason = '';
 
   try {
     while (true) {
@@ -407,7 +473,7 @@ async function callAnthropic(
 
         let evt: {
           type?: string;
-          delta?: { type?: string; text?: string };
+          delta?: { type?: string; text?: string; stop_reason?: string };
           error?: { message?: string };
         };
         try {
@@ -420,6 +486,9 @@ async function callAnthropic(
         if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
           fullText += evt.delta.text ?? '';
           params.onDelta?.(fullText);
+        } else if (evt.type === 'message_delta' && evt.delta?.stop_reason === 'max_tokens') {
+          // A nota atingiu o teto de tokens — avisa que pode estar incompleta.
+          stopReason = 'max_tokens';
         } else if (evt.type === 'error') {
           throw new Error(`Anthropic: ${evt.error?.message ?? 'erro no stream'}`);
         }
@@ -431,6 +500,10 @@ async function callAnthropic(
   }
 
   if (!fullText.trim()) throw new Error('Anthropic retornou resposta vazia.');
+
+  if (stopReason === 'max_tokens') {
+    toast.error('Atenção: a nota atingiu o limite de tamanho e pode estar incompleta. Gere novamente ou reduza o caso.');
+  }
 
   const m = AI_MODELS.find((m) => m.id === modelId);
   lastUsedModel = m?.badge ?? `Claude (${modelId})`;
@@ -505,13 +578,13 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       id: 'google/gemini-3-flash-preview',
       badge: 'Gemini 3 Flash (fallback)',
       provider: 'openrouter',
-      timeoutMs: 25_000,
+      timeoutMs: 60_000,
     });
     fallbackChain.push({
       id: 'openai/gpt-5.4-mini',
       badge: 'GPT-5.4 Mini (fallback)',
       provider: 'openrouter',
-      timeoutMs: 20_000,
+      timeoutMs: 45_000,
     });
   } else {
     // Se o principal for OpenRouter/Gemini, fallback 1 deve ser Groq (ultra rápido e independente)
@@ -519,7 +592,7 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       id: 'llama-3.3-70b-versatile',
       badge: 'Llama 3.3 70B Groq (fallback)',
       provider: 'groq',
-      timeoutMs: 8_000,
+      timeoutMs: 30_000,
     });
     // Fallback 2: Outro modelo OpenRouter dependendo do selecionado
     if (selectedModelId !== 'openai/gpt-5.4-mini') {

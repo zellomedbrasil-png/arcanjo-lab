@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => {
           rewrite: (path) => {
             const query = path.split('?')[1] || '';
             const model = (new URLSearchParams(query).get('model') || 'gemini-3.5-flash').replace('google/', '');
-            return `/v1beta/models/${model}:generateContent?key=${env.GEMINI_API_KEY || ''}`;
+            return `/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${env.GEMINI_API_KEY || ''}`;
           },
         },
       },

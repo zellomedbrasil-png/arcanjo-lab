@@ -52,7 +52,7 @@ export default async function handler(req: Request): Promise<Response> {
       },
       body: JSON.stringify({
         model: body.model ?? 'claude-sonnet-4-6',
-        max_tokens: body.max_tokens ?? 4096,
+        max_tokens: body.max_tokens ?? 8192,
         temperature: body.temperature ?? 0.1,
         stream: true,
         ...(body.system ? { system: body.system } : {}),

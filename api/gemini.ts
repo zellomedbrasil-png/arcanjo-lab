@@ -39,8 +39,10 @@ export default async function handler(req: Request): Promise<Response> {
     // Repassa o corpo (payload Gemini) verbatim
     const payload = await req.text();
 
+    // Streaming SSE: streamGenerateContent com alt=sse devolve linhas "data: {json}".
+    // O primeiro byte chega rápido, evitando 504, e o cliente preenche a nota progressivamente.
     const upstream = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -48,11 +50,22 @@ export default async function handler(req: Request): Promise<Response> {
       }
     );
 
-    // Devolve corpo e status reais (200/400/401/429...) — sem engolir erros.
-    const text = await upstream.text();
-    return new Response(text || JSON.stringify({ error: 'upstream error' }), {
-      status: upstream.status,
-      headers: { 'content-type': 'application/json', ...CORS_HEADERS },
+    // Erro upstream (400/401/429...): devolve corpo e status reais — sem engolir.
+    if (!upstream.ok || !upstream.body) {
+      const errText = await upstream.text();
+      return new Response(errText || JSON.stringify({ error: 'upstream error' }), {
+        status: upstream.status,
+        headers: { 'content-type': 'application/json', ...CORS_HEADERS },
+      });
+    }
+
+    // Repassa o stream SSE do Google diretamente ao cliente, sem bufferizar.
+    return new Response(upstream.body, {
+      headers: {
+        'content-type': 'text/event-stream; charset=utf-8',
+        'cache-control': 'no-cache',
+        ...CORS_HEADERS,
+      },
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
