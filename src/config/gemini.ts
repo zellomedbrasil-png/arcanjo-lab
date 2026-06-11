@@ -72,6 +72,14 @@ export interface AIModel {
 
 export const AI_MODELS: AIModel[] = [
   {
+    id: 'google/gemini-3.1-pro-preview',
+    label: 'Gemini 3.1 Pro Preview 🧠',
+    badge: 'Gemini 3.1 Pro',
+    provider: 'openrouter',
+    note: 'Modelo de raciocínio avançado do Google (exige thinking)',
+    timeoutMs: 60_000,
+  },
+  {
     id: 'google/gemini-3.5-flash',
     label: 'Gemini 3.5 Flash ⚡',
     badge: 'Gemini 3.5 Flash',
@@ -122,7 +130,7 @@ export const AI_MODELS: AIModel[] = [
 ];
 
 export function getDefaultModelId(): string {
-  return localStorage.getItem('arcanjo_selected_model') || 'google/gemini-3.5-flash';
+  return localStorage.getItem('arcanjo_selected_model') || 'google/gemini-3.1-pro-preview';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -272,8 +280,12 @@ export async function callGemini(
     },
   };
 
-  // Desativa o "thinking" do Gemini 2.5/3 (exceto 3.5 que gera erro 503 ao definir thinkingBudget: 0 na API direta)
-  if ((modelId.includes('2.5') || modelId.includes('3')) && !modelId.includes('3.5')) {
+  // Desativa o "thinking" do Gemini 2.5/3 (exceto 3.5 e 3.1-pro que geram erro ao definir thinkingBudget: 0 na API direta)
+  if (
+    (modelId.includes('2.5') || modelId.includes('3')) &&
+    !modelId.includes('3.5') &&
+    !modelId.includes('3.1-pro')
+  ) {
     payload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
   }
 
@@ -489,7 +501,7 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       // Outro erro — tenta próximo com aviso
       const isLast = model === fallbackChain[fallbackChain.length - 1];
       if (!isLast) {
-        console.warn(`${model.id} falhou: ${(err as Error).message}. Tentando fallback...`);
+        console.warn(`${model.id} falhou:`, err, 'Tentando fallback...');
         toast.info('Modelo indisponível. Tentando alternativa...');
       }
       lastErr = err;
