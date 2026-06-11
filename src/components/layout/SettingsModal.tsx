@@ -11,12 +11,10 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [geminiKey, setGeminiKey] = useState(() => localStorage.getItem('arcanjo_gemini_key') || '');
   const [openRouterKey, setOpenRouterKey] = useState(() => localStorage.getItem('arcanjo_openrouter_key') || '');
   const [groqKey, setGroqKey] = useState(() => localStorage.getItem('arcanjo_groq_key') || '');
-  const [anthropicKey, setAnthropicKey] = useState(() => localStorage.getItem('arcanjo_anthropic_key') || '');
 
   const [showGemini, setShowGemini] = useState(false);
   const [showOpenRouter, setShowOpenRouter] = useState(false);
   const [showGroq, setShowGroq] = useState(false);
-  const [showAnthropic, setShowAnthropic] = useState(false);
 
   if (!isOpen) return null;
 
@@ -38,12 +36,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         localStorage.setItem('arcanjo_groq_key', groqKey.trim());
       } else {
         localStorage.removeItem('arcanjo_groq_key');
-      }
-
-      if (anthropicKey.trim()) {
-        localStorage.setItem('arcanjo_anthropic_key', anthropicKey.trim());
-      } else {
-        localStorage.removeItem('arcanjo_anthropic_key');
       }
 
       toast.success('Configurações de API salvas com sucesso!');
@@ -203,40 +195,18 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </p>
           </div>
 
-          {/* Anthropic API Key */}
+          {/* Anthropic — Configurado no Servidor */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-neutral-text flex items-center gap-1.5">
-                <Key size={13} className="text-neutral-text-muted" />
-                Anthropic API Key (Claude)
-              </label>
-              <a 
-                href="https://console.anthropic.com/" 
-                target="_blank" 
-                rel="noreferrer" 
-                className="text-[10px] text-primary hover:underline flex items-center gap-0.5 font-semibold"
-              >
-                Obter Chave <ExternalLink size={8} />
-              </a>
-            </div>
-            <div className="relative">
-              <input
-                type={showAnthropic ? 'text' : 'password'}
-                value={anthropicKey}
-                onChange={(e) => setAnthropicKey(e.target.value)}
-                placeholder="Ex: sk-ant-..."
-                className="w-full pl-3 pr-10 py-2.5 bg-neutral-bg border border-neutral-border rounded-xl text-xs outline-none focus:border-primary focus:ring-1 focus:ring-primary/25 transition-all font-mono"
-              />
-              <button
-                type="button"
-                onClick={() => setShowAnthropic(!showAnthropic)}
-                className="absolute right-3 top-2.5 text-neutral-text-muted hover:text-neutral-text"
-              >
-                {showAnthropic ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
+            <label className="text-xs font-bold text-neutral-text flex items-center gap-1.5">
+              <Key size={13} className="text-neutral-text-muted" />
+              Anthropic Claude
+            </label>
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <ShieldCheck size={14} className="text-emerald-600 shrink-0" />
+              <span className="text-xs text-emerald-800 font-medium">Configurado com segurança no servidor</span>
             </div>
             <p className="text-[9px] text-neutral-text-muted">
-              Necessário para rodar o Claude Sonnet 4.6 diretamente pela API da Anthropic.
+              A chave do Claude Sonnet 4.6 fica no servidor (Vercel). Nunca é exposta no navegador.
             </p>
           </div>
 

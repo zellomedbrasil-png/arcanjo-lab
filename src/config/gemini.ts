@@ -28,25 +28,19 @@ export function getOpenRouterApiKey(): string {
   );
 }
 
+// Anthropic: a chave reside SOMENTE no servidor (/api/claude). 
+// O browser nunca vê a chave — não expor via VITE_.
+// Mantemos a função por compatibilidade com código legado, mas ela sempre retorna vazio.
 export function getAnthropicApiKey(): string {
-  const localKey = localStorage.getItem('arcanjo_anthropic_key');
-  if (localKey === 'REDACTED_ANTHROPIC_KEY') {
-    localStorage.removeItem('arcanjo_anthropic_key');
-    return import.meta.env.VITE_ANTHROPIC_API_KEY || '';
-  }
-  return (
-    (globalThis as typeof globalThis & { _customAnthropicKey?: string })._customAnthropicKey ||
-    localKey ||
-    import.meta.env.VITE_ANTHROPIC_API_KEY ||
-    ''
-  );
+  // Apaga qualquer chave antiga que possa ter ficado gravada no localStorage
+  const stale = localStorage.getItem('arcanjo_anthropic_key');
+  if (stale) localStorage.removeItem('arcanjo_anthropic_key');
+  return ''; // Chave está no servidor. Não acesse aqui.
 }
 
+// O proxy /api/claude sempre está disponível — retorna true sem verificar chave no browser.
 export function hasCustomAnthropicKey(): boolean {
-  const customKey = (globalThis as typeof globalThis & { _customAnthropicKey?: string })._customAnthropicKey || localStorage.getItem('arcanjo_anthropic_key');
-  if (customKey) return true;
-
-  return !!import.meta.env.VITE_ANTHROPIC_API_KEY;
+  return true;
 }
 
 // ─── Timeout & Abort ──────────────────────────────────────────────────────────
@@ -344,48 +338,35 @@ export async function callGemini(
   lastUsedModel = m?.badge ?? `Gemini (${modelId})`;
   return text.trim();
 }
-// ─── Anthropic ─────────────────────────────────────────────────────────────────
+// ─── Anthropic (via proxy /api/claude) ────────────────────────────────────────
+// A chave API NÃO é enviada pelo browser. O proxy Vercel (/api/claude.ts)
+// injeta a chave a partir da variável de ambiente ANTHROPIC_API_KEY.
 
 async function callAnthropic(
   params: AICallParams,
   modelId: string,
   signal?: AbortSignal
 ): Promise<string> {
-  const apiKey = getAnthropicApiKey();
-  if (!apiKey) {
-    throw new Error('Chave de API do Anthropic não configurada.');
-  }
-
-  const messages: Array<{ role: string; content: string }> = [
-    { role: 'user', content: params.prompt }
-  ];
-
   const body: {
     model: string;
     max_tokens: number;
     messages: Array<{ role: string; content: string }>;
-    temperature: number;
     system?: string;
   } = {
     model: modelId,
     max_tokens: 4096,
-    messages,
-    temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
+    messages: [{ role: 'user', content: params.prompt }],
   };
 
   if (params.systemInstruction) {
     body.system = params.systemInstruction;
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  // Chama o proxy local — sem chave no header, sem anthropic-dangerous-direct-browser-access
+  const response = await fetch('/api/claude', {
     method: 'POST',
     signal,
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
 
@@ -395,18 +376,22 @@ async function callAnthropic(
     let errMsg = responseText;
     try {
       const errObj = JSON.parse(responseText);
-      errMsg = errObj.error?.message || responseText;
+      errMsg = errObj.error?.message || errObj.error || responseText;
     } catch {
       // ignore
     }
     throw new Error(`Anthropic ${response.status}: ${errMsg}`);
   }
 
-  let data: { content?: Array<{ type: string; text: string }> };
+  let data: { content?: Array<{ type: string; text: string }>; error?: string };
   try {
     data = JSON.parse(responseText);
   } catch (err) {
-    throw new Error(`Resposta inválida do Anthropic: ${responseText.substring(0, 200)}`, { cause: err });
+    throw new Error(`Resposta inválida do proxy Anthropic: ${responseText.substring(0, 200)}`, { cause: err });
+  }
+
+  if (data.error) {
+    throw new Error(`Anthropic: ${data.error}`);
   }
 
   const text = data.content?.[0]?.text || '';
@@ -454,8 +439,9 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       hasKey = hasGemini;
       keyName = 'Gemini';
     } else if (modelMeta.provider === 'anthropic') {
-      hasKey = !!getAnthropicApiKey();
-      keyName = 'Anthropic';
+      // Anthropic usa proxy servidor-lado — a chave nunca passa pelo browser.
+      // hasCustomAnthropicKey() sempre retorna true (proxy sempre disponível).
+      hasKey = true;
     }
 
     if (!hasKey && keyName) {
@@ -477,7 +463,11 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   // 2. Fallbacks multi-provedor inteligentes
   const primaryProvider = modelMeta?.provider ?? 'openrouter';
 
-  if (primaryProvider === 'groq') {
+  if (primaryProvider === 'anthropic') {
+    // Para debugar o Claude da Anthropic, desativamos totalmente fallbacks.
+    // Assim, se o Claude falhar, o erro estoura diretamente na tela/console.
+    console.info('Anthropic selecionado: fallbacks desativados para debug.');
+  } else if (primaryProvider === 'groq') {
     // Se o principal for Groq, fallbacks devem ser fora do Groq (OpenRouter/Gemini Direct)
     fallbackChain.push({
       id: 'google/gemini-3-flash-preview',
@@ -611,26 +601,28 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   }
 
   // Groq direto como último recurso (usa a chave Groq configurada)
-  try {
-    const groqKey = localStorage.getItem('arcanjo_groq_key') || import.meta.env.VITE_GROQ_API_KEY || '';
-    if (groqKey) {
-      const completion = await groq.chat.completions.create({
-        messages: [
-          ...(params.systemInstruction ? [{ role: 'system' as const, content: params.systemInstruction }] : []),
-          { role: 'user' as const, content: params.prompt },
-        ],
-        model: 'llama-3.3-70b-versatile',
-        temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-        max_tokens: 4096,
-      });
-      const text = completion.choices[0]?.message?.content || '';
-      if (text.trim()) {
-        lastUsedModel = 'Llama 3.3 70B (Groq)';
-        return text.trim();
+  if (primaryProvider !== 'anthropic') {
+    try {
+      const groqKey = localStorage.getItem('arcanjo_groq_key') || import.meta.env.VITE_GROQ_API_KEY || '';
+      if (groqKey) {
+        const completion = await groq.chat.completions.create({
+          messages: [
+            ...(params.systemInstruction ? [{ role: 'system' as const, content: params.systemInstruction }] : []),
+            { role: 'user' as const, content: params.prompt },
+          ],
+          model: 'llama-3.3-70b-versatile',
+          temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
+          max_tokens: 4096,
+        });
+        const text = completion.choices[0]?.message?.content || '';
+        if (text.trim()) {
+          lastUsedModel = 'Llama 3.3 70B (Groq)';
+          return text.trim();
+        }
       }
+    } catch (groqErr) {
+      console.warn('Groq direto também falhou.', groqErr);
     }
-  } catch (groqErr) {
-    console.warn('Groq direto também falhou.', groqErr);
   }
 
   throw lastErr;
