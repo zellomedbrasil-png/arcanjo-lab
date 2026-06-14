@@ -41,13 +41,17 @@ export default function ServicoSelector() {
     convenio === 'ISSEC' ? s.coberturaIssec : convenio === 'IPM' ? s.coberturaIpm : '';
 
   const aplicarJustificativaPadrao = (s: ServicoDef) => {
+    // Aplicar o texto-padrão também seleciona a terapia (evita a guia ficar sem terapia marcada).
+    if (!servicosSelecionados.includes(s.id) && servicosSelecionados.length < 3) {
+      toggleServico(s.id);
+    }
     const atual = justificativaServicos.trim();
     if (atual && !atual.includes(s.justificativaPadrao.slice(0, 30))) {
       setJustificativaServicos(`${atual}\n\n${s.justificativaPadrao}`);
     } else {
       setJustificativaServicos(s.justificativaPadrao);
     }
-    toast.success(`Texto-padrão de ${s.nomeCurto} aplicado à justificativa`);
+    toast.success(`${s.nomeCurto} selecionada · texto-padrão aplicado`);
   };
 
   return (

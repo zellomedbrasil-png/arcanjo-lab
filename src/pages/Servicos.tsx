@@ -8,6 +8,7 @@ import ServicoSelector from '../components/servicos/ServicoSelector';
 import { useAppStore } from '../store/useAppStore';
 import { formatDraftTime } from '../lib/formatters';
 import { getServicoNome } from '../data/servicos';
+import { toast } from '../lib/toast';
 
 export default function Servicos() {
   const navigate = useNavigate();
@@ -35,6 +36,19 @@ export default function Servicos() {
       setServicosSelecionados([]);
       resetForm();
     }
+  };
+
+  // Sempre clicável: em vez de desabilitar em silêncio, avisamos o que falta.
+  const handleGerarGuia = () => {
+    if (!isFormValid) {
+      toast.error('Informe o nome do paciente antes de gerar a guia.');
+      return;
+    }
+    if (total === 0) {
+      toast.error('Selecione ao menos uma terapia (clique no nome/ícone da terapia).');
+      return;
+    }
+    navigate('/servicos/imprimir');
   };
 
   const preview = servicosSelecionados.map(getServicoNome).join(', ');
@@ -95,12 +109,12 @@ export default function Servicos() {
           </div>
 
           <button
-            onClick={() => navigate('/servicos/imprimir')}
-            disabled={!isReadyToPrint}
+            onClick={handleGerarGuia}
+            title={isReadyToPrint ? 'Gerar a guia para impressão' : 'Preencha o paciente e selecione uma terapia'}
             className={`flex shrink-0 items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm cursor-pointer ${
               isReadyToPrint
                 ? 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-md hover:shadow-emerald-100'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-emerald-600/40 text-white hover:bg-emerald-600/60'
             }`}
           >
             <Printer size={15} />
