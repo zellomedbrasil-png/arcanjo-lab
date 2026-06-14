@@ -101,7 +101,7 @@ export default function Servicos() {
                 <span className="text-gray-200 shrink-0">·</span>
                 <span className="flex items-center gap-1 text-emerald-600 font-bold text-xs shrink-0">
                   <HeartPulse size={12} />
-                  {total}/3 terapia(s)
+                  Terapia selecionada
                 </span>
                 {preview && <span className="text-xs text-gray-400 truncate hidden sm:block">{preview}</span>}
               </>

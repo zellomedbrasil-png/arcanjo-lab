@@ -30,21 +30,24 @@ const ICON_POR_ID: Record<string, ElementType> = {
 
 export default function ServicoSelector() {
   const {
-    convenio, servicosSelecionados, toggleServico, setServicosSelecionados,
+    convenio, servicosSelecionados, setServicosSelecionados,
     justificativaServicos, setJustificativaServicos,
   } = useAppStore();
 
   const total = servicosSelecionados.length;
   const regras = convenio === 'ISSEC' ? SERVICO_REGRAS.ISSEC : convenio === 'IPM' ? SERVICO_REGRAS.IPM : null;
 
+  // Guia de Serviço II aceita UM serviço por vez → seleção única.
+  const selecionar = (id: string) => {
+    setServicosSelecionados(servicosSelecionados.includes(id) ? [] : [id]);
+  };
+
   const cobertura = (s: ServicoDef) =>
     convenio === 'ISSEC' ? s.coberturaIssec : convenio === 'IPM' ? s.coberturaIpm : '';
 
   const aplicarJustificativaPadrao = (s: ServicoDef) => {
-    // Aplicar o texto-padrão também seleciona a terapia (evita a guia ficar sem terapia marcada).
-    if (!servicosSelecionados.includes(s.id) && servicosSelecionados.length < 3) {
-      toggleServico(s.id);
-    }
+    // Aplicar o texto-padrão também seleciona a terapia (uma por guia).
+    setServicosSelecionados([s.id]);
     const atual = justificativaServicos.trim();
     if (atual && !atual.includes(s.justificativaPadrao.slice(0, 30))) {
       setJustificativaServicos(`${atual}\n\n${s.justificativaPadrao}`);
@@ -61,17 +64,16 @@ export default function ServicoSelector() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-sm text-neutral-text font-medium">
-              Selecione até <strong>3 terapias</strong> por guia.
+              Selecione <strong>uma terapia</strong> por guia.
             </p>
             <p className="text-xs text-neutral-text-muted mt-0.5">
-              O ISSEC recomenda <strong>uma terapia por guia</strong> (emita guias separadas para tipos distintos de serviço).
+              A Guia de Serviço II (ISSEC) aceita um serviço por vez — emita guias separadas para tipos distintos.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {[0, 1, 2].map(i => (
-              <div key={i} className={`w-8 h-2 rounded-full transition-all ${i < total ? 'bg-emerald-500' : 'bg-slate-200'}`} />
-            ))}
-            <span className="text-xs text-neutral-text-muted ml-1 font-semibold">{total}/3</span>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${total > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
+              {total > 0 ? '1 selecionada' : 'Nenhuma'}
+            </span>
           </div>
         </div>
 
@@ -99,7 +101,7 @@ export default function ServicoSelector() {
                 <span key={id} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-full">
                   <Icon size={11} />
                   {s.nomeCurto}
-                  <button onClick={() => toggleServico(id)} className="ml-1 hover:text-emerald-200 transition-colors cursor-pointer">
+                  <button onClick={() => selecionar(id)} className="ml-1 hover:text-emerald-200 transition-colors cursor-pointer">
                     <X size={11} />
                   </button>
                 </span>
@@ -122,7 +124,6 @@ export default function ServicoSelector() {
                 <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 bg-white">
                   {servicos.map((s) => {
                     const isSelected = servicosSelecionados.includes(s.id);
-                    const isFull = total >= 3 && !isSelected;
                     const Icon = ICON_POR_ID[s.id] ?? ui.icon;
                     const cob = cobertura(s);
                     return (
@@ -131,16 +132,13 @@ export default function ServicoSelector() {
                         className={`relative flex flex-col gap-2 p-3 rounded-lg border text-left transition-all ${
                           isSelected
                             ? `${ui.activeBg} border-transparent text-white shadow-sm`
-                            : isFull
-                              ? 'border-neutral-border bg-slate-50 text-neutral-text-muted/50'
-                              : 'border-neutral-border bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                            : 'border-neutral-border bg-white hover:border-slate-300 hover:bg-slate-50/50'
                         }`}
                       >
                         <button
-                          onClick={() => toggleServico(s.id)}
-                          disabled={isFull}
-                          title={isFull ? 'Limite de 3 terapias atingido' : s.nome}
-                          className="flex items-start gap-2 text-left cursor-pointer disabled:cursor-not-allowed"
+                          onClick={() => selecionar(s.id)}
+                          title={s.nome}
+                          className="flex items-start gap-2 text-left cursor-pointer"
                         >
                           <Icon size={18} className={`shrink-0 mt-0.5 ${isSelected ? 'text-white' : ui.color}`} />
                           <div className="min-w-0">
