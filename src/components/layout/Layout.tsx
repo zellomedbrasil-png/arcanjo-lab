@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, Smartphone, X, Settings } from 'lucide-react';
+import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, HeartPulse, Smartphone, X, Settings } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useAppStore } from '../../store/useAppStore';
 import { ToastContainer } from '../ui/ToastContainer';
@@ -333,6 +333,20 @@ export default function Layout({ children }: { children: ReactNode }) {
           </NavLink>
 
           <NavLink
+            to="/servicos"
+            className={({ isActive }) =>
+              `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
+                isActive
+                  ? 'bg-accent-emerald/10 text-accent-emerald'
+                  : 'text-neutral-text-muted hover:bg-neutral-bg hover:text-neutral-text'
+              }`
+            }
+          >
+            <HeartPulse className="mr-3 h-4 w-4 flex-shrink-0" />
+            Serviços / Terapias
+          </NavLink>
+
+          <NavLink
             to="/receita"
             className={({ isActive }) =>
               `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
@@ -520,7 +534,19 @@ export default function Layout({ children }: { children: ReactNode }) {
           }
         >
           <Stethoscope size={18} />
-          <span className="text-[10px] font-bold mt-1 font-display">Procedimentos</span>
+          <span className="text-[10px] font-bold mt-1 font-display">Procedim.</span>
+        </NavLink>
+
+        <NavLink
+          to="/servicos"
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center flex-1 py-1 text-center transition-colors ${
+              isActive ? 'text-accent-emerald' : 'text-neutral-text-muted hover:text-neutral-text'
+            }`
+          }
+        >
+          <HeartPulse size={18} />
+          <span className="text-[10px] font-bold mt-1 font-display">Serviços</span>
         </NavLink>
 
         <NavLink

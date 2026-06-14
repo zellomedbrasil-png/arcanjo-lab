@@ -17,6 +17,8 @@ interface AppState {
   examesSelecionados: string[];
   procedimentosSelecionados: string[];
   procedimentosPersonalizados: string[]; // Exames livres digitados pelo médico
+  servicosSelecionados: string[]; // Terapias/serviços (aba Serviços)
+  justificativaServicos: string;
   soap: string;
   queixa: string;
   justificativa: string;
@@ -38,6 +40,9 @@ interface AppState {
   toggleProcedimento: (proc: string) => void;
   addProcedimentoPersonalizado: (nome: string) => void;
   removeProcedimentoPersonalizado: (nome: string) => void;
+  toggleServico: (id: string) => void;
+  setServicosSelecionados: (ids: string[]) => void;
+  setJustificativaServicos: (justificativa: string) => void;
   setSoap: (soap: string) => void;
   setQueixa: (queixa: string) => void;
   setJustificativa: (justificativa: string) => void;
@@ -68,6 +73,8 @@ const initialState = {
   examesSelecionados: [],
   procedimentosSelecionados: [] as string[],
   procedimentosPersonalizados: [] as string[],
+  servicosSelecionados: [] as string[],
+  justificativaServicos: '',
   soap: '',
   queixa: '',
   justificativa: '',
@@ -145,6 +152,19 @@ export const useAppStore = create<AppState>()(
         procedimentosPersonalizados: state.procedimentosPersonalizados.filter(n => n !== nome),
         lastSavedAt: touch(),
       })),
+
+      toggleServico: (id) => set((state) => {
+        const selected = state.servicosSelecionados;
+        if (selected.includes(id)) {
+          return { servicosSelecionados: selected.filter((item) => item !== id), lastSavedAt: touch() };
+        }
+        if (selected.length < 3) {
+          return { servicosSelecionados: [...selected, id], lastSavedAt: touch() };
+        }
+        return state;
+      }),
+      setServicosSelecionados: (ids) => set({ servicosSelecionados: ids, lastSavedAt: touch() }),
+      setJustificativaServicos: (justificativaServicos) => set({ justificativaServicos, lastSavedAt: touch() }),
 
       setSoap: (soap) => set({ soap, lastSavedAt: touch() }),
       setQueixa: (queixa) => set({ queixa, lastSavedAt: touch() }),
@@ -247,6 +267,8 @@ export const useAppStore = create<AppState>()(
         examesSelecionados: state.examesSelecionados,
         procedimentosSelecionados: state.procedimentosSelecionados,
         procedimentosPersonalizados: state.procedimentosPersonalizados,
+        servicosSelecionados: state.servicosSelecionados,
+        justificativaServicos: state.justificativaServicos,
         soap: state.soap,
         queixa: state.queixa,
         justificativa: state.justificativa,

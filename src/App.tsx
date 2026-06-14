@@ -3,6 +3,8 @@ import Login from './pages/Login';
 import Prontuario from './pages/Prontuario';
 import ExamesLaboratoriais from './pages/ExamesLaboratoriais';
 import ProcedimentosEletivos from './pages/ProcedimentosEletivos';
+import Servicos from './pages/Servicos';
+import ImprimirServico from './pages/ImprimirServico';
 import Imprimir from './pages/Imprimir';
 import NovaReceita from './pages/NovaReceita';
 import ImprimirReceita from './pages/ImprimirReceita';
@@ -22,6 +24,8 @@ function App() {
         <Route path="/gravador" element={<GravadorMobile />} />
         <Route path="/exames" element={<ExamesLaboratoriais />} />
         <Route path="/procedimentos" element={<ProcedimentosEletivos />} />
+        <Route path="/servicos" element={<Servicos />} />
+        <Route path="/servicos/imprimir" element={<ImprimirServico />} />
         <Route path="/novo" element={<Navigate to="/prontuario" replace />} />
         <Route path="/imprimir" element={<Imprimir />} />
         <Route path="/receita" element={<NovaReceita />} />

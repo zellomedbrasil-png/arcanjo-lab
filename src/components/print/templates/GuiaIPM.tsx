@@ -28,20 +28,33 @@ function formatExamNameForPrint(name: string) {
   }).join('');
 }
 
-export default function GuiaIPM() {
-  const { pacienteNome, numeroBeneficiario, examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados, tipoGuia, justificativa, genero } = useAppStore();
+interface GuiaIPMProps {
+  /** Override dos itens impressos (ex.: terapias da aba Serviços). */
+  itemsOverride?: string[];
+  /** Override da justificativa impressa (ex.: justificativa de serviços). */
+  justificativaOverride?: string;
+}
 
-  const isLab = tipoGuia === 'LABORATORIO';
+export default function GuiaIPM({ itemsOverride, justificativaOverride }: GuiaIPMProps = {}) {
+  const store = useAppStore();
+  const { pacienteNome, numeroBeneficiario, examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados, tipoGuia, genero } = store;
 
-  const itemsList = isLab
-    ? examesSelecionados
-    : (() => {
-        const procs = [
-          ...procedimentosSelecionados,
-          ...(procedimentosPersonalizados ?? []),
-        ];
-        return procs.length > 0 ? procs : [tipoGuia];
-      })();
+  // Quando há override (aba Serviços), ignoramos exames/procedimentos e impomos os itens recebidos.
+  const isServico = itemsOverride !== undefined;
+  const justificativa = justificativaOverride !== undefined ? justificativaOverride : store.justificativa;
+  const isLab = !isServico && tipoGuia === 'LABORATORIO';
+
+  const itemsList = isServico
+    ? (itemsOverride!.length > 0 ? itemsOverride! : [''])
+    : isLab
+      ? examesSelecionados
+      : (() => {
+          const procs = [
+            ...procedimentosSelecionados,
+            ...(procedimentosPersonalizados ?? []),
+          ];
+          return procs.length > 0 ? procs : [tipoGuia];
+        })();
 
   return (
     <div className="p-8 text-[11px] leading-snug font-sans text-black bg-white h-full relative">
