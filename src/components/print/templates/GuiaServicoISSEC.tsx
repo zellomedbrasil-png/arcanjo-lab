@@ -159,23 +159,23 @@ export default function GuiaServicoISSEC() {
         <colgroup>
           <col style={{ width: '10mm' }} />
           <col style={{ width: '92.6mm' }} />
-          <col style={{ width: '55mm' }} />
-          <col style={{ width: '30mm' }} />
+          {Array.from({ length: 8 }).map((_, i) => (<col key={i} style={{ width: '7.5mm' }} />))}
+          <col style={{ width: '25mm' }} />
         </colgroup>
         <tbody>
           <tr>
-            <td colSpan={4} className="text-center" style={{ ...headerCell, fontSize: '11pt' }}>SERVIÇO EXECUTADO</td>
+            <td colSpan={11} className="text-center" style={{ ...headerCell, fontSize: '11pt' }}>SERVIÇO EXECUTADO</td>
           </tr>
           <tr style={{ height: '4.1mm' }}>
             <td style={thBase}>N.º</td>
             <td style={thBase}>PROCEDIMENTO</td>
-            <td style={thBase}>CÓDIGO TABELA</td>
+            <td colSpan={8} style={thBase}>CÓDIGO TABELA</td>
             <td style={{ ...thBase, borderRight: 'none' }}>VALOR R$</td>
           </tr>
           <tr style={{ height: '8mm' }}>
             <td style={tdBase}>01</td>
             <td style={tdBase}></td>
-            <td style={tdBase}></td>
+            {Array.from({ length: 8 }).map((_, i) => (<td key={i} style={tdBase}></td>))}
             <td style={{ ...tdBase, borderRight: 'none' }}></td>
           </tr>
         </tbody>
@@ -183,24 +183,24 @@ export default function GuiaServicoISSEC() {
 
       {/* CÓDIGO DE TRATAMENTO */}
       <div style={{ border: '1.5pt solid black', borderBottom: 'none', padding: '1mm 2mm', fontSize: '10pt', fontWeight: 'bold', width: '187.6mm', boxSizing: 'border-box' }}>
-        CÓDIGO DE TRATAMENTO: <span style={{ borderBottom: '0.5pt solid black', display: 'inline-block', width: '60mm' }}>&nbsp;</span>
+        CÓDIGO DE TRATAMENTO:
       </div>
 
       {/* ═══════ BLOCO 4 – AUTORIZAÇÃO POR SESSÃO ═══════ */}
       <table className="border-collapse" style={{ width: '187.6mm', border: '1.5pt solid black', marginBottom: '2mm', tableLayout: 'fixed' }}>
         <colgroup>
-          <col style={{ width: '55mm' }} />
-          <col style={{ width: '45mm' }} />
-          <col style={{ width: '87.6mm' }} />
+          <col style={{ width: '52mm' }} />
+          <col style={{ width: '38mm' }} />
+          <col style={{ width: '97.6mm' }} />
         </colgroup>
         <tbody>
-          <tr style={{ height: '7mm' }}>
+          <tr style={{ height: '8mm' }}>
             <td style={thBase}>Senha de Autorização</td>
             <td style={thBase}>Data da autorização</td>
             <td style={{ ...thBase, borderRight: 'none' }}>Assinatura do beneficiário ou responsável</td>
           </tr>
-          {Array.from({ length: 10 }).map((_, i) => (
-            <tr key={i} style={{ height: '6.5mm' }}>
+          {Array.from({ length: 15 }).map((_, i) => (
+            <tr key={i} style={{ height: '6mm' }}>
               <td style={tdBase}></td>
               <td style={tdBase}></td>
               <td style={{ ...tdBase, borderRight: 'none' }}></td>
