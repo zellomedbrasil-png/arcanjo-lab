@@ -83,35 +83,33 @@ export default function GuiaServicoISSEC() {
       {/* ═══════ BLOCO 2 – RESERVADO AO MÉDICO REQUISITANTE ═══════ */}
       <table className="border-collapse" style={{ width: '187.6mm', border: '1.5pt solid black', marginBottom: '2mm', tableLayout: 'fixed' }}>
         <colgroup>
-          <col style={{ width: '13.8mm' }} />
-          <col style={{ width: '143.8mm' }} />
-          <col style={{ width: '30mm' }} />
+          <col style={{ width: '13mm' }} />
+          <col style={{ width: '120mm' }} />
+          <col style={{ width: '32.6mm' }} />
+          <col style={{ width: '22mm' }} />
         </colgroup>
         <tbody>
           <tr>
-            <td colSpan={3} className="text-center" style={headerCell}>RESERVADO AO MÉDICO REQUISITANTE</td>
+            <td colSpan={4} className="text-center" style={headerCell}>RESERVADO AO MÉDICO REQUISITANTE</td>
           </tr>
 
-          {/* Nome + Cartão ISSEC */}
+          {/* Nome (2 linhas, largura quase total) + Cartão ISSEC no topo direito */}
           <tr style={{ height: '18mm' }}>
-            <td colSpan={3} style={{ borderBottom: '1pt solid black', padding: 0, height: '18mm' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', height: '18mm', boxSizing: 'border-box' }}>
-                <div style={{ flexGrow: 1, marginRight: '6mm', display: 'flex', flexDirection: 'column', height: '18mm', boxSizing: 'border-box' }}>
-                  <div style={{ height: '4.5mm' }} />
-                  <div style={{ display: 'flex', alignItems: 'baseline', borderBottom: '0.75pt solid black', height: '7mm', boxSizing: 'border-box', paddingLeft: '2mm', paddingBottom: '0.5mm' }}>
-                    <span style={{ fontSize: '10pt', fontWeight: 'bold', marginRight: '2mm', flexShrink: 0 }}>Nome do Beneficiário:</span>
-                    <span style={{ flexGrow: 1, fontSize: '10pt', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pacienteNome}</span>
-                  </div>
-                  <div style={{ borderBottom: '0.75pt solid black', height: '5mm', marginLeft: '2mm', boxSizing: 'border-box' }} />
+            <td colSpan={4} style={{ borderBottom: '1pt solid black', padding: 0, height: '18mm', position: 'relative' }}>
+              {/* Cartão ISSEC — caixa aberta no topo, canto superior direito */}
+              <div style={{ position: 'absolute', right: '2mm', top: '3mm', width: '45mm', height: '9mm', border: '1.25pt solid black', borderTop: 'none', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ position: 'absolute', left: 0, top: 0, width: '6mm', borderTop: '1.25pt solid black' }} />
+                <div style={{ position: 'absolute', right: 0, top: 0, width: '6mm', borderTop: '1.25pt solid black' }} />
+                <div style={{ position: 'absolute', left: '6mm', right: '6mm', top: '-2.5mm', textAlign: 'center', fontSize: '9.5pt', fontWeight: 'bold', lineHeight: '1', whiteSpace: 'nowrap' }}>CARTÃO ISSEC</div>
+                <div style={{ fontSize: '11pt', fontWeight: 'bold', fontFamily: 'monospace', marginTop: '1mm' }}>{numeroBeneficiario}</div>
+              </div>
+              {/* Linhas do nome */}
+              <div style={{ paddingTop: '4mm' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', borderBottom: '0.75pt solid black', height: '7mm', boxSizing: 'border-box', paddingLeft: '2mm', paddingBottom: '0.5mm', marginRight: '50mm' }}>
+                  <span style={{ fontSize: '10pt', fontWeight: 'bold', marginRight: '2mm', flexShrink: 0 }}>Nome do Beneficiário:</span>
+                  <span style={{ flexGrow: 1, fontSize: '10pt', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pacienteNome}</span>
                 </div>
-                <div style={{ width: '47mm', height: '18mm', position: 'relative', flexShrink: 0 }}>
-                  <div style={{ position: 'absolute', right: '2mm', top: '4mm', width: '45mm', height: '8.5mm', border: '1.25pt solid black', borderTop: 'none', boxSizing: 'border-box', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ position: 'absolute', left: 0, top: 0, width: '6mm', borderTop: '1.25pt solid black' }} />
-                    <div style={{ position: 'absolute', right: 0, top: 0, width: '6mm', borderTop: '1.25pt solid black' }} />
-                    <div style={{ position: 'absolute', left: '6mm', right: '6mm', top: '-2.5mm', textAlign: 'center', fontSize: '9.5pt', fontWeight: 'bold', lineHeight: '1', whiteSpace: 'nowrap' }}>CARTÃO ISSEC</div>
-                    <div style={{ fontSize: '11pt', fontWeight: 'bold', fontFamily: 'monospace', marginTop: '1.5mm' }}>{numeroBeneficiario}</div>
-                  </div>
-                </div>
+                <div style={{ borderBottom: '0.75pt solid black', height: '5mm', marginLeft: '2mm', marginRight: '4mm', boxSizing: 'border-box' }} />
               </div>
             </td>
           </tr>
@@ -119,18 +117,18 @@ export default function GuiaServicoISSEC() {
           {/* Subheader: N.º | PROCEDIMENTOS SOLICITADOS | QUANT. */}
           <tr style={{ height: '4.1mm' }}>
             <td style={{ borderRight: '1pt solid black', borderBottom: '1pt solid black', textAlign: 'center', fontWeight: 'bold', fontSize: '9pt' }}>N.º</td>
-            <td style={{ borderRight: '1pt solid black', borderBottom: '1pt solid black', textAlign: 'center', fontWeight: 'bold', fontSize: '10pt' }}>PROCEDIMENTOS SOLICITADOS</td>
+            <td colSpan={2} style={{ borderRight: '1pt solid black', borderBottom: '1pt solid black', textAlign: 'center', fontWeight: 'bold', fontSize: '10pt' }}>PROCEDIMENTOS SOLICITADOS</td>
             <td style={{ borderBottom: '1pt solid black', textAlign: 'center', fontWeight: 'bold', fontSize: '9pt' }}>QUANT.</td>
           </tr>
 
           {/* Linha única 01 (um serviço por guia) */}
           <tr style={{ height: '11mm' }}>
             <td style={{ borderRight: '1pt solid black', borderBottom: '1pt solid black', textAlign: 'center', fontWeight: 'bold', fontSize: '10pt', verticalAlign: 'middle' }}>01</td>
-            <td style={{ borderRight: '1pt solid black', borderBottom: '1pt solid black', padding: '1mm 2mm', fontSize: '10px', fontFamily: 'Arial, Helvetica, sans-serif', textTransform: 'uppercase', verticalAlign: 'middle' }}>{procedimento}</td>
+            <td colSpan={2} style={{ borderRight: '1pt solid black', borderBottom: '1pt solid black', padding: '1mm 2mm', fontSize: '10px', fontFamily: 'Arial, Helvetica, sans-serif', textTransform: 'uppercase', verticalAlign: 'middle' }}>{procedimento}</td>
             <td style={{ borderBottom: '1pt solid black', verticalAlign: 'middle' }}>&nbsp;</td>
           </tr>
 
-          {/* Justificativa | Senha + Data + Carimbo */}
+          {/* Justificativa (esq) | Senha + Data + Carimbo (dir, mais larga que QUANT) */}
           <tr style={{ height: '34mm' }}>
             <td colSpan={2} style={{ borderRight: '1pt solid black', verticalAlign: 'top', padding: '1.5mm 2mm' }}>
               <span style={{ fontSize: '10pt' }}>Justificativa:</span>
@@ -138,18 +136,18 @@ export default function GuiaServicoISSEC() {
                 {justificativaServicos}
               </div>
             </td>
-            <td style={{ padding: 0, verticalAlign: 'top' }}>
-              <div style={{ borderBottom: '1pt solid black', padding: '1.5mm 1.5mm', fontSize: '9pt', height: '14mm', boxSizing: 'border-box' }}>
+            <td colSpan={2} style={{ padding: 0, verticalAlign: 'top' }}>
+              <div style={{ borderBottom: '1pt solid black', padding: '1.5mm 2mm', fontSize: '9.5pt', height: '12mm', boxSizing: 'border-box' }}>
                 Senha de Autorização da Consulta
               </div>
-              <div style={{ padding: '1.5mm', height: 'calc(34mm - 14mm)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div style={{ fontSize: '8.5pt' }}>
-                  Data da solicitação<br />
-                  <span style={{ borderBottom: '0.5pt solid black', display: 'inline-block', width: '6mm' }}>&nbsp;</span>
-                  /<span style={{ borderBottom: '0.5pt solid black', display: 'inline-block', width: '6mm' }}>&nbsp;</span>
-                  /<span style={{ borderBottom: '0.5pt solid black', display: 'inline-block', width: '10mm' }}>&nbsp;</span>
+              <div style={{ padding: '2mm', height: 'calc(34mm - 12mm)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: '9pt', whiteSpace: 'nowrap' }}>
+                  Data da solicitação
+                  <span style={{ borderBottom: '0.5pt solid black', display: 'inline-block', width: '7mm' }}>&nbsp;</span>
+                  /<span style={{ borderBottom: '0.5pt solid black', display: 'inline-block', width: '7mm' }}>&nbsp;</span>
+                  /<span style={{ borderBottom: '0.5pt solid black', display: 'inline-block', width: '11mm' }}>&nbsp;</span>
                 </div>
-                <div style={{ textAlign: 'center', fontSize: '8.5pt' }}>Carimbo e Assinatura do Médico</div>
+                <div style={{ textAlign: 'center', fontSize: '9pt' }}>Carimbo e Assinatura do Médico</div>
               </div>
             </td>
           </tr>
