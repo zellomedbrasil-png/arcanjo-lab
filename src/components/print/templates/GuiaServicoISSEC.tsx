@@ -60,21 +60,21 @@ export default function GuiaServicoISSEC() {
       {/* ═══════ BLOCO 1 – PROCEDIMENTO (tipo de tratamento) ═══════ */}
       <table className="border-collapse" style={{ width: '187.6mm', border: '1.5pt solid black', marginBottom: '2mm', tableLayout: 'fixed' }}>
         <colgroup>
-          <col style={{ width: '57mm' }} />
-          <col style={{ width: '130.6mm' }} />
+          <col style={{ width: '63mm' }} />
+          <col style={{ width: '124.6mm' }} />
         </colgroup>
         <tbody>
           <tr>
             <td colSpan={2} className="text-center" style={headerCell}>PROCEDIMENTO</td>
           </tr>
-          <tr style={{ height: '16mm' }}>
+          <tr style={{ height: '17mm' }}>
             {/* Rótulo + chave tipográfica */}
             <td style={{ borderRight: '1pt solid black', verticalAlign: 'middle', padding: '0 2mm' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5mm', height: '15mm' }}>
-                <span style={{ fontWeight: 'bold', fontSize: '10.5pt', lineHeight: 1.25, textAlign: 'center', flexGrow: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5mm', height: '16mm' }}>
+                <span style={{ fontWeight: 'bold', fontSize: '9.5pt', lineHeight: 1.3, textAlign: 'center', flexGrow: 1, whiteSpace: 'nowrap' }}>
                   TRATAMENTO<br />OU<br />SERVIÇO ESPECIALIZADO
                 </span>
-                <svg width="4mm" height="15mm" viewBox="0 0 10 80" preserveAspectRatio="none" style={{ flexShrink: 0, overflow: 'visible' }}>
+                <svg width="4mm" height="16mm" viewBox="0 0 10 80" preserveAspectRatio="none" style={{ flexShrink: 0, overflow: 'visible' }}>
                   <path
                     d="M 9 2 C 4 2, 4 6, 4 14 L 4 36 C 4 38, 3 40, 1 40 C 3 40, 4 42, 4 44 L 4 66 C 4 74, 4 78, 9 78"
                     stroke="black" strokeWidth="0.8" fill="none" strokeLinecap="round" strokeLinejoin="round"
