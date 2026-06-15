@@ -82,12 +82,12 @@ export default function GuiaServicoISSEC() {
                 </svg>
               </div>
             </td>
-            {/* Opções em área única, sem divisórias verticais */}
-            <td style={{ verticalAlign: 'middle', padding: '0 6mm' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '3mm' }}><span style={{ fontSize: '10pt' }}>Fisioterapia</span><Chk checked={grupo === 'FISIOTERAPIA'} /></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '3mm' }}><span style={{ fontSize: '10pt' }}>Fonoaudiologia</span><Chk checked={grupo === 'FONOAUDIOLOGIA'} /></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '3mm' }}><span style={{ fontSize: '10pt' }}>Psicologia</span><Chk checked={grupo === 'PSICOLOGIA'} /></div>
+            {/* Opções em área única, sem divisórias verticais — cada par "nome + box" colado, pares distribuídos */}
+            <td style={{ verticalAlign: 'middle', padding: '0 8mm' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2mm' }}><span style={{ fontSize: '10pt' }}>Fisioterapia</span><Chk checked={grupo === 'FISIOTERAPIA'} /></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2mm' }}><span style={{ fontSize: '10pt' }}>Fonoaudiologia</span><Chk checked={grupo === 'FONOAUDIOLOGIA'} /></div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2mm' }}><span style={{ fontSize: '10pt' }}>Psicologia</span><Chk checked={grupo === 'PSICOLOGIA'} /></div>
               </div>
             </td>
           </tr>
