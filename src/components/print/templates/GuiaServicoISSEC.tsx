@@ -50,7 +50,12 @@ export default function GuiaServicoISSEC() {
       {/* CABEÇALHO */}
       <div className="flex items-start justify-between" style={{ marginBottom: '1mm' }}>
         <img src={logoIssec2} alt="ISSEC" style={{ height: '16mm', width: 'auto', objectFit: 'contain' }} />
-        <img src={logoIssec} alt="Governo do Estado do Ceará" style={{ height: '16mm', width: 'auto', objectFit: 'contain' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+          <img src={logoIssec} alt="Governo do Estado do Ceará" style={{ height: '16mm', width: 'auto', objectFit: 'contain' }} />
+          <span style={{ fontSize: '8pt', fontStyle: 'italic', marginTop: '0.5mm', color: '#000' }}>
+            Secretaria do Planejamento e Gestão
+          </span>
+        </div>
       </div>
 
       <div className="text-center" style={{ fontSize: '15pt', fontWeight: 'bold', letterSpacing: '0.02em', marginTop: '1mm', marginBottom: '3mm' }}>
@@ -68,8 +73,8 @@ export default function GuiaServicoISSEC() {
             <td colSpan={2} className="text-center" style={headerCell}>PROCEDIMENTO</td>
           </tr>
           <tr style={{ height: '17mm' }}>
-            {/* Rótulo + chave tipográfica */}
-            <td style={{ borderRight: '1pt solid black', verticalAlign: 'middle', padding: '0 2mm' }}>
+            {/* Rótulo + chave tipográfica (sem borda à direita — apenas a chave separa visualmente) */}
+            <td style={{ verticalAlign: 'middle', padding: '0 2mm' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5mm', height: '16mm' }}>
                 <span style={{ fontWeight: 'bold', fontSize: '9.5pt', lineHeight: 1.3, textAlign: 'center', flexGrow: 1, whiteSpace: 'nowrap' }}>
                   TRATAMENTO<br />OU<br />SERVIÇO ESPECIALIZADO
