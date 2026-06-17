@@ -500,9 +500,9 @@ export default function NovaReceita() {
     tipoReceita, pacienteNome, pacienteCpf,
     pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf, pacienteTelefone,
     local, data, medicamentos,
-    modoEntrada, textoLivre, melhorarComIA,
+    modoEntrada, textoLivre, melhorarComIA, prescricaoManual,
     setTipoReceita, setPacienteReceita, addMedicamento, resetReceita, updateMedicamento,
-    setModoEntrada, setTextoLivre, setMelhorarComIA, setAlertas,
+    setModoEntrada, setTextoLivre, setMelhorarComIA, setAlertas, setPrescricaoManual,
   } = useReceitaStore();
 
   const { pacientes: pacientesRecentes } = useRecentPatientsStore();
@@ -558,14 +558,16 @@ export default function NovaReceita() {
   };
 
   const isTextoLivre = modoEntrada === 'TEXTO_LIVRE';
+  const isManual = modoEntrada === 'MANUAL';
   const temTextoLivre = isTextoLivre && textoLivre.trim() !== '';
+  const temManual = isManual && prescricaoManual.trim() !== '';
 
   const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
   const medsSimples = medsComConteudo.filter((m) => m.tipoRecomendado !== 'ESPECIAL');
   const medsEspeciais = medsComConteudo.filter((m) => m.tipoRecomendado === 'ESPECIAL');
-  const temAmbos = !isTextoLivre && medsSimples.length > 0 && medsEspeciais.length > 0;
+  const temAmbos = !isTextoLivre && !isManual && medsSimples.length > 0 && medsEspeciais.length > 0;
   const temMedicamentos = medsComConteudo.length > 0;
-  const podeImprimir = pacienteNome.trim() !== '' && (isTextoLivre ? temTextoLivre : temMedicamentos);
+  const podeImprimir = pacienteNome.trim() !== '' && (isManual ? temManual : isTextoLivre ? temTextoLivre : temMedicamentos);
 
   // Processa o texto livre com a IA e converte em cards estruturados para revisão
   const handleProcessarTextoLivre = async () => {
@@ -895,7 +897,7 @@ export default function NovaReceita() {
                     type="button"
                     onClick={() => setModoEntrada('ESTRUTURADO')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      !isTextoLivre ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                      modoEntrada === 'ESTRUTURADO' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-800'
                     }`}
                   >
                     <LayoutGrid size={13} />
@@ -911,10 +913,38 @@ export default function NovaReceita() {
                     <PenLine size={13} />
                     Texto Livre
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setModoEntrada('MANUAL')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      isManual ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    <FileText size={13} />
+                    Manual
+                  </button>
                 </div>
               </div>
 
-              {isTextoLivre ? (
+              {isManual ? (
+                /* ───── MODO MANUAL (sem IA) ───── */
+                <div className="space-y-4">
+                  <div className="flex items-start gap-2.5 text-xs text-emerald-800 bg-emerald-50/60 border border-emerald-150 rounded-xl p-3.5">
+                    <FileText size={15} className="shrink-0 mt-0.5 text-emerald-500" />
+                    <span className="leading-relaxed">
+                      Prescrição manual, sem intervenção de IA. O texto sera impresso <strong>exatamente como digitado</strong> na receita {tipoReceita === 'ESPECIAL' ? 'de Controle Especial' : 'Branca Simples'} selecionada acima.
+                    </span>
+                  </div>
+
+                  <textarea
+                    value={prescricaoManual}
+                    onChange={(e) => setPrescricaoManual(e.target.value)}
+                    rows={16}
+                    placeholder={`Digite a prescrição completa aqui...\n\nExemplo:\n1) Losartana 50mg ............ 1 comprimido pela manhã\n2) Metformina 850mg ......... 1 comprimido após o jantar\n\nUso contínuo. Retornar em 30 dias.`}
+                    className="w-full border border-gray-200 rounded-xl text-sm py-3.5 px-4 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 resize-y placeholder:text-gray-300 font-mono leading-relaxed"
+                  />
+                </div>
+              ) : isTextoLivre ? (
                 /* ───── MODO TEXTO LIVRE ───── */
                 <div className="space-y-4">
                   <div className="flex items-start gap-2.5 text-xs text-indigo-800 bg-indigo-50/60 border border-indigo-150 rounded-xl p-3.5">
@@ -1091,7 +1121,9 @@ export default function NovaReceita() {
                 <div className="flex-1">
                   <p className="text-sm font-bold text-green-900">Receituário validado e pronto!</p>
                   <p className="text-xs text-green-700 mt-1 leading-relaxed">
-                    {isTextoLivre
+                    {isManual
+                      ? `Prescrição manual · ${tipoReceita === 'SIMPLES' ? 'Receita Branca Simples' : 'Controle Especial (2 vias)'}`
+                      : isTextoLivre
                       ? `Prescrição em texto livre · ${tipoReceita === 'SIMPLES' ? 'Receita Branca Simples' : 'Controle Especial (2 vias)'}`
                       : `${medsComConteudo.length} medicamento(s) configurado(s) · ${temAmbos ? 'Dividido automaticamente em 2 receitas' : tipoReceita === 'SIMPLES' ? 'Receita Branca Simples' : 'Controle Especial (2 vias)'}`}
                   </p>
@@ -1122,17 +1154,17 @@ export default function NovaReceita() {
                     ? 'bg-amber-100 text-amber-800 border border-amber-200' 
                     : 'bg-indigo-100 text-indigo-800 border border-indigo-200'
                 }`}>
-                  {temTextoLivre ? 'Texto Livre' : temAmbos ? 'Receitas Divididas' : tipoReceita === 'SIMPLES' ? '1 Via Simples' : '2 Vias C344'}
+                  {temManual ? 'Manual' : temTextoLivre ? 'Texto Livre' : temAmbos ? 'Receitas Divididas' : tipoReceita === 'SIMPLES' ? '1 Via Simples' : '2 Vias C344'}
                 </span>
               </div>
 
               <div className="bg-gray-100 rounded-xl p-3 flex flex-col items-center gap-4 overflow-y-auto h-[540px] border border-gray-200/50 shadow-inner relative scrollbar-thin">
-                {isTextoLivre ? (
+                {(isManual || isTextoLivre) ? (
                   <div style={{ width: '301.6px', height: '426.5px', overflow: 'hidden' }} className="relative rounded shadow-md border border-gray-300 shrink-0">
                     <div className="origin-top-left" style={{ transform: 'scale(0.38)', width: '21cm', height: '29.7cm', backgroundColor: '#fff' }}>
                       {tipoReceita === 'SIMPLES'
-                        ? <ReceitaBranca textoLivre={textoLivre} />
-                        : <ReceitaControleEspecial textoLivre={textoLivre} />}
+                        ? <ReceitaBranca textoLivre={isManual ? prescricaoManual : textoLivre} />
+                        : <ReceitaControleEspecial textoLivre={isManual ? prescricaoManual : textoLivre} />}
                     </div>
                   </div>
                 ) : temAmbos ? (
@@ -1175,7 +1207,14 @@ export default function NovaReceita() {
               <CheckCircle2 size={15} />
               <span className="font-semibold">{pacienteNome || 'Sem paciente identificado'}</span>
             </div>
-            {isTextoLivre ? (
+            {isManual ? (
+              temManual && (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <span className="font-bold text-xs text-emerald-600">Prescrição manual</span>
+                </>
+              )
+            ) : isTextoLivre ? (
               temTextoLivre && (
                 <>
                   <span className="text-gray-300">·</span>

@@ -6,16 +6,17 @@ import ReceitaControleEspecial from '../components/print/templates/ReceitaContro
 
 export default function ImprimirReceita() {
   const navigate = useNavigate();
-  const { medicamentos, pacienteNome, modoEntrada, textoLivre, tipoReceita } = useReceitaStore();
+  const { medicamentos, pacienteNome, modoEntrada, textoLivre, prescricaoManual, tipoReceita } = useReceitaStore();
 
+  const isManual = modoEntrada === 'MANUAL' && prescricaoManual.trim() !== '';
   const isTextoLivre = modoEntrada === 'TEXTO_LIVRE' && textoLivre.trim() !== '';
 
   const medsValidos = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
   const medsSimples = medsValidos.filter((m) => m.tipoRecomendado !== 'ESPECIAL');
   const medsEspeciais = medsValidos.filter((m) => m.tipoRecomendado === 'ESPECIAL');
 
-  const temAmbos = !isTextoLivre && medsSimples.length > 0 && medsEspeciais.length > 0;
-  const apenasEspecial = isTextoLivre
+  const temAmbos = !isTextoLivre && !isManual && medsSimples.length > 0 && medsEspeciais.length > 0;
+  const apenasEspecial = (isTextoLivre || isManual)
     ? tipoReceita === 'ESPECIAL'
     : medsEspeciais.length > 0 && medsSimples.length === 0;
 
@@ -53,14 +54,14 @@ export default function ImprimirReceita() {
 
       {/* Container A4 */}
       <div className="flex flex-col gap-8 print:gap-0 max-w-[210mm] mx-auto print:w-[210mm] print:m-0">
-        {isTextoLivre ? (
+        {(isManual || isTextoLivre) ? (
           <div
             className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
             style={{ width: '210mm', height: '297mm' }}
           >
             {tipoReceita === 'ESPECIAL'
-              ? <ReceitaControleEspecial textoLivre={textoLivre} />
-              : <ReceitaBranca textoLivre={textoLivre} />}
+              ? <ReceitaControleEspecial textoLivre={isManual ? prescricaoManual : textoLivre} />
+              : <ReceitaBranca textoLivre={isManual ? prescricaoManual : textoLivre} />}
           </div>
         ) : temAmbos ? (
           <>
