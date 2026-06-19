@@ -65,13 +65,8 @@ export function formatExamNameForDisplay(nome: string): string {
 export function cleanSoapMarkdown(text: string): string {
   if (!text) return '';
   return text
-    // Replace headings formatting: remove hash characters from the beginning of line
     .replace(/^[ \t]*#+[ \t]*/gm, '')
-    // Remove all bold/italic markdown characters (* and _)
     .replace(/[*_]/g, '')
-    // Remove emojis and special medical symbols that aren't text
-    .replace(/[\u2600-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDC00-\uDFFF]/g, '')
-    // Remove any trailing/leading whitespaces on each line
     .split('\n')
     .map(line => line.trim())
     .join('\n')
