@@ -5,7 +5,7 @@ import { callAI, getLastUsedModel, getDefaultModelId, AI_MODELS, cancelAIRequest
 import { groq } from '../../config/groq';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
-import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio, ShieldAlert, Activity } from 'lucide-react';
+import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio, ShieldAlert, Activity, HelpCircle, Send } from 'lucide-react';
 import type { ConsultaGravada } from '../../types';
 import { cleanSoapMarkdown } from '../../lib/formatters';
 
@@ -27,100 +27,121 @@ REGRAS:
 - NÃO use formato SOAP, NÃO use bullet points
 - Apenas uma frase clínica direta em português`;
 
-export const SYSTEM_PROMPT_SOAP = `ASSISTENTE CLÍNICO — CONSULTÓRIO PRESENCIAL (GASTROENTEROLOGIA & GERIATRIA)
-Dr. Roberto Arcanjo | CRM-CE 26.155
+export const SYSTEM_PROMPT_SOAP = `ASSISTENTE CLINICO — Dr. Roberto Arcanjo | CRM-CE 26.155
+Geriatria & Gastroenterologia | Fortaleza-CE | Consulta Presencial
 
-PAPEL:
-Você é o assistente de documentação clínica sênior do Dr. Roberto Arcanjo, especialista em geriatria e gastroenterologia presencial em Fortaleza-CE. Sua função é transformar anotações desestruturadas e rápidas em um prontuário médico premium de alto nível clínico, adotando raciocínio diagnóstico aprofundado, termos semiológicos formais e farmacovigilância ativa.
+FUNCAO: Transformar anotacoes rapidas e desestruturadas (voz, abreviacoes, erros foneticos) em prontuario medico completo. Interprete e expanda sem pedir reformulacao.
 
-DIRETRIZES CLÍNICAS PREMIUM (MÁXIMA INTELIGÊNCIA):
-1. Geriatria (Fragilidade & Segurança Geriátrica):
-   - Se o paciente tiver 60 anos ou mais, avalie ativamente a prescrição e o histórico.
-   - Caso identifique qualquer fármaco inapropriado para idosos segundo os Critérios de Beers 2023 / Critérios STOPP (ex: AINEs de uso contínuo, amitriptilina, benzodiazepínicos de meia-vida longa, glimepirida, metoclopramida de uso prolongado, zolpidem), insira proativamente um Alerta de Farmacovigilância na Conduta e sugira a alternativa ideal (ex: desprescrever ou substituir por fármaco mais seguro).
-   - Inclua sempre uma breve menção à funcionalidade básica (ex: "Status funcional preservado" ou "Independência para AVDs" com base no relato).
-2. Gastroenterologia (Escalas & Classificações):
-   - Integre escalas diagnósticas consolidadas na semiologia sempre que houver menção aos sintomas correspondentes (ex: Roma IV para dispepsia/intestino irritável, escala de Bristol para consistência de fezes, classificação de Los Angeles para esofagite, Sydney/OLGA para gastrite, FIB-4 para risco de fibrose hepática, etc.).
-3. Semiologia Técnica Avançada:
-   - Evite termos genéricos ou leigos. Use jargão médico preciso (ex: "astenia", "hiporexia", "pirose retroesternal", "plenitude pós-prandial", "disquezia", "sinal de Blumberg negativo", "sinal de Giordano ausente").
-   - Se o exame físico não for detalhado, descreva um exame físico geral direcionado e condizente (ex: abdomen sem visceromegalias, RHA presentes, indolor; aparelhos cardiopulmonares sem alterações) com base na queixa, ou use a estrutura para preenchimento posterior.
+REGRA ABSOLUTA — NAO INVENTE INFORMACOES:
+- Documente APENAS o que foi informado na entrada.
+- Se sinais vitais, exame fisico ou alergias nao foram fornecidos, NAO preencha com valores ficticios. Omita a subsecao ou escreva "Nao referido".
+- NUNCA crie sintomas, comorbidades ou achados de exame nao mencionados.
+- HMA em texto corrido narrativo, APENAS com dados fornecidos.
 
-REGRAS RÍGIDAS DE FORMATAÇÃO (ZERO MARKDOWN):
-- O prontuário será copiado para um sistema legado que NÃO suporta markdown.
-- NUNCA use caracteres de formatação markdown: sem asteriscos (* ou **), sem hashtags (#), sem sublinhados (_) ou traços horizontais (---).
-- NUNCA use emojis ou ícones.
-- Utilize exclusivamente LETRAS MAIÚSCULAS para os títulos de seções e subseções.
-- Use hífens simples (-) e pontos para estruturar listas e tabelas.
-- SEM PREÂMBULOS OU CONCLUSÕES: Inicie imediatamente no cabeçalho "1. SOAP EXPRESS" e encerre na assinatura.
-- CONCISÃO CLÍNICA E VELOCIDADE: Seja extremamente focado, objetivo e direto. Não invente anamneses longas ou sintomas fictícios. Limite as seções SUBJETIVO, OBJETIVO e ORIENTAÇÃO AO PACIENTE ao mínimo necessário para o caso. Responda o mais rapidamente possível.
+INTELIGENCIA CLINICA (aplicar automaticamente quando pertinente):
 
+GERIATRIA (>=60 anos):
+- Beers 2023 / STOPP-START: sinalizar UMA VEZ farmaco inapropriado, sugerir alternativa, nao repetir
+- Preferencias: mirtazapina > quetiapina (sono/apetite idoso); nortriptilina > amitriptilina (hipotensao postural); mecobalamina > cianocobalamina (B12); colecalciferol ataque 50.000 UI/sem x10 depois 7.000 UI/sem; mirabegrona > anticolinergicos (urgencia urinaria); macrogol 4000 (mercado BR); pantoprazol > omeprazol (CYP2C19); domperidona > metoclopramida
+- Evitar: AINEs, BZDs sem plano de desprescricao, carga anticolinergica
+- Funcionalidade (AVDs) se dados disponiveis
 
-MOCK DE ESTRUTURA DO PRONTUÁRIO PREMIUM:
+GASTROENTEROLOGIA:
+- Escalas quando pertinente: Roma IV, Bristol, Los Angeles, Sydney/OLGA, FIB-4, Forrest
+- H. pylori: quadrupla bismuto 1a linha; PAL alternativa; confirmar falha com Ag fecal antes de 3a linha
+- Suspender IBP 14 dias antes de EDA (urease)
+- GLP-1/GIP: alertar risco aspiracao pre-EDA
+
+FARMACOLOGIA:
+- Controlados: classificar C1 (branca 2 vias, 60 dias), B1 (azul), A1/A3 (amarela) — Portaria 344/98
+- Farmacia Popular: telmisartana NAO; amlodipina SIM
+- Alertar duplicidade ISRS (sindrome serotoninergica)
+- SGLT2i: sick-day rules, risco cetoacidose euglicemica
+- Lactose excipientes: alertar se clinicamente relevante
+
+FORMATACAO (ZERO MARKDOWN):
+- SEM asteriscos, hashtags, sublinhados, emojis, tracos horizontais
+- MAIUSCULAS para titulos de secao
+- Hifens (-) para listas
+- Iniciar direto em "1. SOAP EXPRESS", encerrar na assinatura
+- CONCISO: sem preambulos, sem conclusoes genericas, sem explicacoes academicas desnecessarias
+
+ESTRUTURA:
 
 1. SOAP EXPRESS
 
 SUBJETIVO (S):
 - Identificacao: [Sexo, Idade, Convenio]
-- Queixa Principal: [Linha direta]
-- Historia da Molestia Atual: [Sintomas detalhados, tempo de evolucao, fatores de melhora/piora, exames trazidos]
-- Antecedentes e Comorbidades: [HAS, DM2, dislipidemia, cirurgias prévias]
-- Historico Medicamentoso: [Medicacoes em uso continuo, doses]
-- Alergias: [Nega ou especificar]
-- Estilo de Vida: [Tabagismo, etilismo, atividade fisica]
+- QP: [Direto]
+- HMA: [Texto corrido — APENAS dados fornecidos]
+- Antecedentes: [APENAS os informados]
+- Medicacoes: [APENAS as informadas com doses]
+- Alergias: [Informado ou "Nao referido"]
 
 OBJETIVO (O):
-- Sinais Vitais: [PA, FC, FR, Temp, Sat, Peso, IMC se fornecidos]
-- Exame Fisico Geral: [Estado geral, mucosas, hidratacao, cognitivo basal]
-- Exame Fisico Direcionado (Aparelho Digestivo/Geriátrico): [Abdomen inspeccao, palpaccao, percussao, RHA. Sinais especificos se pertinentes. Exame neurologico/marcha se idoso]
+- Sinais Vitais: [APENAS se fornecidos — senao omitir subsecao]
+- Exame Fisico: [APENAS achados relatados — NAO inventar exame normal generico]
 
-AVALIAÇÃO (A):
-- Hipoteses Diagnosticas: [HD principal com CID-10 e HDs secundarias com CID-10]
-- Gravidade/Risco: [Estratifique o risco cardiovascular, metabolico ou fragilidade senil]
-- Analise de Farmacovigilancia: [Se idoso, mencione Beers/STOPP-START. Alerte se houver risco de duplicidade ou interacao grave]
+AVALIACAO (A):
+- HD principal + CID-10; HDs secundarias + CID-10
+- Estratificacao de risco se pertinente
+- Alerta farmacovigilancia (Beers/STOPP) se aplicavel — UMA VEZ
 
-2. CONDUTA E PRESCRIÇÃO
+2. CONDUTA E PRESCRICAO
 
-MEDICAMENTOS DE USO CONTÍNUO E SINTOMÁTICOS:
-[Nome do Generico] [concentracao] ................ [Qtd] caixas
-- Tomar [posologia expandida: dose, via, frequencia, duracao]
-- Indicacao: [Para que serve de forma resumida e profissional]
+MEDICAMENTOS:
+[Generico] [concentracao] ................ [Qtd] caixas
+- Posologia: [dose, via, frequencia, duracao]
+- Indicacao: [Resumida]
 
-MEDICAMENTOS CONTROLADOS (PORTARIA 344/98):
-[Se houver controlado (Lista A/B1/C1), separar neste bloco. Maximo 2 caixas, validade 30 dias]
-[Nome do Generico] [concentracao] ................ [Qtd] caixas
-- Tomar [posologia expandida]
-- Indicacao: [Para que serve]
+CONTROLADOS — PORTARIA 344/98 (se houver):
+[Lista C1/B1/A]
+[Generico] [concentracao] ................ [Qtd] caixas
+- Posologia completa
+- Indicacao resumida
 
-MEDIDAS NÃO-FARMACOLÓGICAS E SEGURANÇA:
-- [Orientações dietéticas, hidratação, hábitos, orientações de atividade física]
-- Alerta Beers (se aplicável): [Se houver desprescrição ou ajuste necessário para idosos]
+MEDIDAS NAO-FARMACOLOGICAS:
+- [Apenas orientacoes pertinentes ao caso]
 
-EXAMES / RETORNO:
-- Solicito retorno em [X] dias com exames. Interpretação com escalas [nome das escalas clínicas relevantes].
+3. EXAMES SOLICITADOS
+- [EXAME] (TUSS [codigo]): [Justificativa anti-glosa — necessidade medica, nao mencionar hipotese diretamente]
 
-3. EXAMES SOLICITADOS (TUSS)
+4. ORIENTACAO AO PACIENTE
+[Linguagem clara para leigo. Diagnostico suspeito, cuidados, sinais de alerta para PS, retorno]
 
-- [NOME COMPLETO DO EXAME NO PADRÃO TUSS]: [Justificativa clinica curta e direta baseada na queixa]
-
-4. ORIENTAÇÃO AO PACIENTE
-
-[Texto explicativo em primeira pessoa, em linguagem clara e acessível, contendo explicacao do diagnostico suspeito, principais cuidados, sinais de alerta de urgencia para ir ao pronto-socorro e data do proximo retorno]
-
-5. HANDOVER / TRANSIÇÃO DE CUIDADOS
-
-[Resumo executivo de 3-4 linhas contendo o status atual do paciente, condutas mais importantes estabelecidas e as principais pendencias para a proxima consulta]
-
+5. HANDOVER
+[3-4 linhas: status, condutas, pendencias, CID-10]
 
 Dr. Roberto Arcanjo | Geriatria & Gastroenterologia
 CRM-CE: 26.155`;
 
+export const SYSTEM_PROMPT_DUVIDAS = `Voce e um assistente clinico especializado em Geriatria e Gastroenterologia, auxiliando o Dr. Roberto Arcanjo (CRM-CE 26.155) em Fortaleza-CE.
+
+Responda duvidas clinicas fora do contexto da consulta atual: interacoes medicamentosas, doses, protocolos, guidelines, escalas clinicas, CID-10, TUSS, classificacoes, condutas baseadas em evidencia.
+
+REGRAS:
+- Respostas diretas e objetivas, sem rodeios
+- Cite fonte/guideline quando pertinente (ex: Beers 2023, ADA 2024, SBAD, ACR TI-RADS)
+- Use linguagem tecnica medica (o usuario e medico especialista)
+- Se nao tiver certeza, diga explicitamente
+- Formatacao limpa sem markdown (sem asteriscos, hashtags)
+- MAIUSCULAS para titulos, hifens para listas
+- Responda em portugues brasileiro`;
+
 export default function SOAPPanel() {
   const [isLoadingJust, setIsLoadingJust] = useState(false);
   const [isLoadingSoap, setIsLoadingSoap] = useState(false);
+  const [isLoadingDuvida, setIsLoadingDuvida] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [soapExpanded, setSoapExpanded] = useState(true);
+  const [duvidasExpanded, setDuvidasExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedDuvida, setCopiedDuvida] = useState(false);
+  const [perguntaDuvida, setPerguntaDuvida] = useState('');
+  const [respostaDuvida, setRespostaDuvida] = useState('');
   const elapsedJust = useElapsedTimer(isLoadingJust);
   const elapsedSoap = useElapsedTimer(isLoadingSoap);
+  const elapsedDuvida = useElapsedTimer(isLoadingDuvida);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(soap);
@@ -373,6 +394,37 @@ Queixa clínica: "${queixa}"`;
     } finally {
       setIsLoadingSoap(false);
     }
+  };
+
+  const enviarDuvida = async () => {
+    if (!perguntaDuvida.trim()) return;
+    setIsLoadingDuvida(true);
+    setDuvidasExpanded(true);
+    setRespostaDuvida('');
+    try {
+      const content = await callAI(
+        {
+          prompt: perguntaDuvida,
+          systemInstruction: SYSTEM_PROMPT_DUVIDAS,
+          onDelta: (textSoFar) => setRespostaDuvida(cleanSoapMarkdown(textSoFar)),
+        },
+        selectedModelId
+      );
+      setRespostaDuvida(cleanSoapMarkdown(content));
+      toast.success('Resposta gerada');
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, 'Erro ao responder dúvida.');
+      toast.error(msg);
+    } finally {
+      setIsLoadingDuvida(false);
+    }
+  };
+
+  const handleCopyDuvida = () => {
+    navigator.clipboard.writeText(respostaDuvida);
+    setCopiedDuvida(true);
+    toast.success('Resposta copiada!');
+    setTimeout(() => setCopiedDuvida(false), 2000);
   };
 
   return (
@@ -634,6 +686,73 @@ Queixa clínica: "${queixa}"`;
                 <span className="font-semibold text-indigo-500">Pronta para colar em outros sistemas</span>
               )}
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Dúvidas Clínicas — fora do contexto da consulta */}
+      <div className="border border-amber-100/80 rounded-xl overflow-hidden shadow-sm">
+        <button
+          type="button"
+          onClick={() => setDuvidasExpanded(!duvidasExpanded)}
+          className="w-full flex items-center justify-between px-3 py-2 bg-amber-50/40 hover:bg-amber-50 transition-colors text-left"
+        >
+          <div className="flex items-center gap-2">
+            <HelpCircle size={12} className="text-amber-500" />
+            <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">
+              Duvidas Clinicas (Fora do Contexto)
+            </span>
+          </div>
+          {duvidasExpanded ? <ChevronUp size={13} className="text-amber-400" /> : <ChevronDown size={13} className="text-amber-400" />}
+        </button>
+        {duvidasExpanded && (
+          <div className="p-3 bg-white space-y-3">
+            <div className="flex gap-2">
+              <textarea
+                value={perguntaDuvida}
+                onChange={(e) => setPerguntaDuvida(e.target.value)}
+                placeholder="Ex: Qual a dose de ataque de colecalciferol para idoso com vit D < 10? Interacao entre clopidogrel e omeprazol?"
+                className="flex-1 border border-amber-200 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-400 resize-none placeholder:text-gray-400 bg-amber-50/20 focus:bg-white transition-all font-medium leading-relaxed h-16"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !isLoadingDuvida) {
+                    e.preventDefault();
+                    enviarDuvida();
+                  }
+                }}
+              />
+              <button
+                onClick={isLoadingDuvida ? cancelAIRequest : enviarDuvida}
+                disabled={!isLoadingDuvida && !perguntaDuvida.trim()}
+                className={`self-end flex items-center justify-center gap-1.5 px-3 py-2.5 text-white text-xs font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer ${
+                  isLoadingDuvida ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-600 hover:bg-amber-700'
+                }`}
+              >
+                {isLoadingDuvida ? <Square size={12} fill="white" /> : <Send size={13} />}
+                {isLoadingDuvida ? `Parar${elapsedDuvida ? ` ${elapsedDuvida}s` : ''}` : 'Perguntar'}
+              </button>
+            </div>
+            {respostaDuvida && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">Resposta</span>
+                  <button
+                    type="button"
+                    onClick={handleCopyDuvida}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
+                      copiedDuvida
+                        ? 'bg-green-600 text-white'
+                        : 'bg-amber-600 hover:bg-amber-700 text-white'
+                    }`}
+                  >
+                    {copiedDuvida ? <Check size={13} /> : <ClipboardList size={13} />}
+                    {copiedDuvida ? 'Copiado!' : 'Copiar'}
+                  </button>
+                </div>
+                <div className="bg-amber-50/30 border border-amber-100 rounded-xl p-3 text-sm text-gray-800 leading-relaxed whitespace-pre-wrap font-medium">
+                  {respostaDuvida}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
