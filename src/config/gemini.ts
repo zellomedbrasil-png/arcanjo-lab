@@ -196,12 +196,15 @@ async function callOpenRouter(
   if (params.systemInstruction) messages.push({ role: 'system', content: params.systemInstruction });
   messages.push({ role: 'user', content: params.prompt });
 
-  const body = {
+  const useStreaming = !!params.onDelta;
+
+  const body: Record<string, unknown> = {
     model: modelId,
     messages,
     temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
     max_tokens: MAX_OUTPUT_TOKENS,
   };
+  if (useStreaming) body.stream = true;
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -215,9 +218,8 @@ async function callOpenRouter(
     body: JSON.stringify(body),
   });
 
-  const responseText = await response.text();
-
   if (!response.ok) {
+    const responseText = await response.text();
     let errMsg = responseText;
     try {
       const errObj = JSON.parse(responseText);
@@ -233,6 +235,55 @@ async function callOpenRouter(
     }
     throw new Error(`OpenRouter ${response.status}: ${errMsg}`);
   }
+
+  if (useStreaming && response.body) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed.startsWith('data:')) continue;
+          const payload = trimmed.slice(5).trim();
+          if (!payload || payload === '[DONE]') continue;
+
+          let evt: {
+            choices?: Array<{ delta?: { content?: string; reasoning_content?: string } }>;
+            error?: { message?: string };
+          };
+          try {
+            evt = JSON.parse(payload);
+          } catch {
+            continue;
+          }
+
+          if (evt.error) throw new Error(`OpenRouter: ${evt.error.message ?? 'erro no stream'}`);
+
+          const delta = evt.choices?.[0]?.delta;
+          const chunk = delta?.content ?? '';
+          if (chunk) {
+            fullText += chunk;
+            params.onDelta!(fullText);
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    if (!fullText.trim()) throw new Error('OpenRouter retornou resposta vazia.');
+    return fullText.trim();
+  }
+
+  const responseText = await response.text();
 
   let data: { choices?: Array<{ message?: { content?: string } }> };
   try {
