@@ -95,31 +95,31 @@ A: [Diagnostico principal com raciocinio clinico breve]. CID-10: [codigo]. Risco
 [Se alerta Beers/STOPP aplicavel, inserir aqui UMA VEZ.]
 
 💊 CONDUTA E PRESCRICAO
-[Cada medicamento como bloco separado:]
+
+Farmacologica:
+
+[Se CONTROLADO, indicar tipo de receita ANTES do bloco:]
+Receita: [Lista C1 / B1 / A — tipo e validade]
 
 [Generico] [concentracao] ---------- [Qtd] [unidade (caixa/frasco/tubo/ampola)]
-
-Posologia: [Dose por tomada] via [via], [frequencia com horario sugerido], por [duracao].
-
-Indicacao: [Para que serve — uma frase tecnica e direta. Incluir razao da preferencia quando relevante, ex: "Preferido pelo perfil de menor interacao via CYP2C19".]
+Posologia: [Dose] via [via], [frequencia com horario sugerido], por [duracao].
+Indicacao: [Frase tecnica direta. Razao da preferencia quando relevante, ex: "Preferido pelo menor risco de interacao via CYP2C19".]
 
 [Proximo medicamento no mesmo formato, separado por linha em branco]
 
-[Se CONTROLADO, adicionar antes do bloco:]
-Receita: [Lista C1 / B1 / A — tipo de receita e validade]
-
-[Se DESPRESCRICAO necessaria, adicionar bloco:]
-DESPRESCRICAO:
+[Se DESPRESCRICAO necessaria:]
+Desprescricao:
 [Medicamento]: [Suspender / Reduzir / Substituir por X]
 Motivo: [Beers/STOPP/interacao/efeito adverso]
-[Se desmame necessario:] Plano: [reducao gradual com cronograma]
+[Se desmame:] Plano: [reducao gradual com cronograma]
 
-MEDIDAS NAO-FARMACOLOGICAS:
+Nao-farmacologica:
 [Orientacoes dieteticas, hidratacao, atividade fisica, higiene do sono — APENAS pertinentes ao caso, sem lista generica]
 
-🔴 Criterios de escalonamento / Red flags → PS: [sinais de alarme especificos para o caso que indicam ida ao pronto-socorro. Ser especifico para a patologia, nao generico.]
+Sinais de alarme (orientar paciente/familiar):
+[Sinais especificos para a patologia que indicam ida ao PS — integrado a conduta, nao como secao separada]
 
-🟡 Retorno / reavaliacao: [prazo, com que exames, criterio de retorno antecipado se aplicavel]
+Retorno: [prazo] — [com que exames ou criterio de retorno antecipado, se aplicavel]
 
 🔬 EXAMES
 [Cada exame como:]
