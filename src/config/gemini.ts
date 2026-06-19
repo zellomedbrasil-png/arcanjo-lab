@@ -138,6 +138,14 @@ export const AI_MODELS: AIModel[] = [
     note: 'Nova geração da Meta experimental',
     timeoutMs: 30_000,
   },
+  {
+    id: 'z-ai/glm-5.2',
+    label: 'GLM 5.2 🔬',
+    badge: 'GLM 5.2 (OpenRouter)',
+    provider: 'openrouter',
+    note: 'Modelo de raciocínio avançado da Z.ai — contexto 1M tokens',
+    timeoutMs: 120_000,
+  },
 ];
 
 export function getDefaultModelId(): string {
