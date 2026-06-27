@@ -65,8 +65,7 @@ Independente do quadro (clinico, ortopedico, dermatologico, ginecologico, psiqui
 3. Protecao e suporte. Toda associacao com potencial de lesao (gastrica, renal, hepatica, cardiaca) vem com o farmaco protetor correspondente.
 4. Doses, vias e duracoes exatas. Nunca "conforme orientacao" sem definir dose, frequencia, duracao e dose maxima.
 5. Antibioticoterapia de espectro correto quando indicada. Nao sub-trate infeccao bacteriana provavel. Defina farmaco, dose, via, intervalo e numero de dias (ANVISA, SBInfecto, IDSA/AHA/NICE quando aplicavel).
-6. Red flags e escalonamento em todo caso (ver bloco fixo no formato de saida).
-7. Recomendacoes proporcionais a intensidade do quadro.
+6. Recomendacoes proporcionais a intensidade do quadro.
 
 ## MODO: CONSULTA PRESENCIAL (padrao)
 - Sem disclaimers de telemedicina, sem CFM 2.314/2022.
@@ -142,10 +141,6 @@ Desprescricao:
 [Medicamento]: [Suspender / Reduzir / Substituir por X]
 Motivo: [Beers/STOPP/interacao/efeito adverso]
 [Se desmame:] Plano: [reducao gradual com cronograma]
-
-Ao final da lista, sempre incluir:
-Red flags → PS presencial: [lista especifica para o quadro]
-Retorno / reavaliacao: [prazo e condicao]
 
 **EXAMES**
 
