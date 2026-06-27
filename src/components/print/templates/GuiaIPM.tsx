@@ -57,6 +57,8 @@ export default function GuiaIPM({ itemsOverride, justificativaOverride }: GuiaIP
         })();
 
   return (
+    <>
+    <style>{`@media print { @page { size: A4 portrait !important; margin: 0 !important; } }`}</style>
     <div className="p-8 text-[11px] leading-snug font-sans text-black bg-white h-full relative">
       
       {/* Cabeçalho IPM Fiel */}
@@ -318,5 +320,6 @@ export default function GuiaIPM({ itemsOverride, justificativaOverride }: GuiaIP
       </div>
 
     </div>
+    </>
   );
 }

@@ -18,6 +18,8 @@ interface Props {
   operadora?: string;
   registroAns?: string;
   corHeader?: string;
+  itemsOverride?: string[];
+  justificativaOverride?: string;
 }
 
 const borda = '1px solid #000';
@@ -75,21 +77,32 @@ function Secao({ label, cor }: { label: string; cor?: string }) {
   );
 }
 
-export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHeader }: Props) {
+export default function GuiaSADTPadrao({
+  operadora = '',
+  registroAns = '',
+  corHeader,
+  itemsOverride,
+  justificativaOverride,
+}: Props) {
+  const store = useAppStore();
   const {
     pacienteNome, numeroBeneficiario,
-    examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados, tipoGuia, justificativa,
-  } = useAppStore();
+    examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados, tipoGuia,
+  } = store;
 
-  const isLab = tipoGuia === 'LABORATORIO';
+  const isServico = itemsOverride !== undefined;
+  const justificativa = justificativaOverride !== undefined ? justificativaOverride : store.justificativa;
+  const isLab = !isServico && tipoGuia === 'LABORATORIO';
   const dataHoje = new Date().toLocaleDateString('pt-BR');
 
-  const todosItens: string[] = isLab
-    ? examesSelecionados
-    : [
-        ...procedimentosSelecionados.map(p => /^[A-Z0-9_]+$/.test(p) ? getProcedimentoNome(p) : p),
-        ...(procedimentosPersonalizados ?? []),
-      ];
+  const todosItens: string[] = isServico
+    ? (itemsOverride!.length > 0 ? itemsOverride! : [''])
+    : isLab
+      ? examesSelecionados
+      : [
+          ...procedimentosSelecionados.map(p => /^[A-Z0-9_]+$/.test(p) ? getProcedimentoNome(p) : p),
+          ...(procedimentosPersonalizados ?? []),
+        ];
 
   const N_ROWS = 5;
   const porLinha = Math.ceil(todosItens.length / N_ROWS) || 1;
@@ -103,15 +116,18 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
     <>
       <style>{`
         @media print {
-          @page { size: A4 landscape; margin: 0; }
-          body { margin: 0; }
+          @page { size: A4 landscape !important; margin: 3mm !important; }
+          html, body { width: 297mm !important; height: 210mm !important; margin: 0 !important; padding: 0 !important; }
+          body { overflow: visible !important; }
+          .sadt-container { break-inside: avoid; }
+          .sadt-section { break-inside: avoid; }
         }
       `}</style>
 
-      <div style={{
+      <div className="sadt-container" style={{
         width: '100%',
         height: '100%',
-        padding: '4mm',
+        padding: '3mm 4mm',
         fontFamily: 'Arial, Helvetica, sans-serif',
         fontSize: '7px',
         color: '#000',
@@ -119,6 +135,7 @@ export default function GuiaSADTPadrao({ operadora = '', registroAns = '', corHe
         display: 'flex',
         flexDirection: 'column',
         boxSizing: 'border-box',
+        overflow: 'visible',
       }}>
 
         {/* ══ CABEÇALHO ══ */}

@@ -9,20 +9,33 @@ const MEDICO = {
   cidade: 'Fortaleza / Ceará',
 };
 
-export default function GuiaParticular() {
+interface GuiaParticularProps {
+  itemsOverride?: string[];
+  justificativaOverride?: string;
+}
+
+export default function GuiaParticular({ itemsOverride, justificativaOverride }: GuiaParticularProps = {}) {
+  const store = useAppStore();
   const {
     pacienteNome, pacienteCpf, genero, examesSelecionados,
-    procedimentosSelecionados, procedimentosPersonalizados, tipoGuia, justificativa,
-  } = useAppStore();
+    procedimentosSelecionados, procedimentosPersonalizados, tipoGuia,
+  } = store;
 
-  const isLab = tipoGuia === 'LABORATORIO';
-  const todosProcs = [
-    ...procedimentosSelecionados,
-    ...(procedimentosPersonalizados ?? []),
-  ];
+  const isServico = itemsOverride !== undefined;
+  const justificativa = justificativaOverride !== undefined ? justificativaOverride : store.justificativa;
+  const isLab = !isServico && tipoGuia === 'LABORATORIO';
+
+  const todosProcs = isServico
+    ? (itemsOverride!.length > 0 ? itemsOverride! : [''])
+    : [
+        ...procedimentosSelecionados,
+        ...(procedimentosPersonalizados ?? []),
+      ];
   const dataHoje = new Date().toLocaleDateString('pt-BR');
 
   return (
+    <>
+    <style>{`@media print { @page { size: A4 portrait !important; margin: 0 !important; } }`}</style>
     <div className="relative bg-white font-sans text-black h-full overflow-hidden"
       style={{ padding: '40px 44px' }}>
 
@@ -192,5 +205,6 @@ export default function GuiaParticular() {
 
       </div>
     </div>
+    </>
   );
 }

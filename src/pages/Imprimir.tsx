@@ -45,7 +45,7 @@ export default function Imprimir() {
 
       <div className={
         isSADT
-          ? 'max-w-[29.7cm] mx-auto bg-white min-h-[21cm] shadow-xl print:shadow-none print:w-[297mm] print:h-[210mm] print:min-h-0 print:m-0 overflow-hidden relative font-sans text-black'
+          ? 'max-w-[29.7cm] mx-auto bg-white min-h-[21cm] shadow-xl print:shadow-none print:w-[297mm] print:min-h-0 print:m-0 relative font-sans text-black'
           : 'max-w-[21cm] mx-auto bg-white min-h-[29.7cm] shadow-xl print:shadow-none print:w-[21cm] print:h-[29.7cm] print:m-0 overflow-hidden relative font-sans text-black'
       }>
         {({

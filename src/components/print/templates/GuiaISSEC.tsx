@@ -77,6 +77,8 @@ export default function GuiaISSEC() {
   const linhas = getLinhas();
 
   return (
+    <>
+    <style>{`@media print { @page { size: A4 portrait !important; margin: 0 !important; } }`}</style>
     <div
       className="bg-white text-black select-none"
       style={{
@@ -784,6 +786,7 @@ export default function GuiaISSEC() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
