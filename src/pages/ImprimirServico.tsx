@@ -4,11 +4,16 @@ import { useAppStore } from '../store/useAppStore';
 import { Printer, ArrowLeft } from 'lucide-react';
 import GuiaIPM from '../components/print/templates/GuiaIPM';
 import GuiaServicoISSEC from '../components/print/templates/GuiaServicoISSEC';
+import GuiaParticular from '../components/print/templates/GuiaParticular';
+import GuiaSADTPadrao from '../components/print/templates/GuiaSADTPadrao';
 import { getServicoNome } from '../data/servicos';
 
 export default function ImprimirServico() {
   const navigate = useNavigate();
-  const { pacienteNome, convenio, servicosSelecionados, justificativaServicos } = useAppStore();
+  const {
+    pacienteNome, convenio, servicosSelecionados, justificativaServicos,
+    sadtOperadora, sadtRegistroAns
+  } = useAppStore();
 
   useEffect(() => {
     if (!pacienteNome) navigate('/servicos');
@@ -17,13 +22,28 @@ export default function ImprimirServico() {
   if (!pacienteNome) return null;
 
   const terapias = servicosSelecionados.map(getServicoNome);
+  const isSADT = convenio === 'SADT';
 
-  // ISSEC usa a nova Guia de Serviço II. Demais (IPM e afins) usam a Guia IPM já utilizada,
-  // que já contempla TERAPIA como serviço assistencial.
-  const guia =
-    convenio === 'ISSEC'
-      ? <GuiaServicoISSEC />
-      : <GuiaIPM itemsOverride={terapias} justificativaOverride={justificativaServicos} />;
+  const guia = (() => {
+    switch (convenio) {
+      case 'ISSEC':
+        return <GuiaServicoISSEC />;
+      case 'PARTICULAR':
+        return <GuiaParticular itemsOverride={terapias} justificativaOverride={justificativaServicos} />;
+      case 'SADT':
+        return (
+          <GuiaSADTPadrao
+            operadora={sadtOperadora}
+            registroAns={sadtRegistroAns}
+            itemsOverride={terapias}
+            justificativaOverride={justificativaServicos}
+          />
+        );
+      case 'IPM':
+      default:
+        return <GuiaIPM itemsOverride={terapias} justificativaOverride={justificativaServicos} />;
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-gray-200 print:bg-white p-4 print:p-0">
@@ -41,7 +61,11 @@ export default function ImprimirServico() {
         </button>
       </div>
 
-      <div className="max-w-[21cm] mx-auto bg-white min-h-[29.7cm] shadow-xl print:shadow-none print:w-[21cm] print:h-[29.7cm] print:m-0 overflow-hidden relative font-sans text-black">
+      <div className={
+        isSADT
+          ? 'max-w-[29.7cm] mx-auto bg-white h-[21cm] max-h-[21cm] shadow-xl print:shadow-none print:w-[297mm] print:h-[210mm] print:max-h-[210mm] print:min-h-0 print:m-0 overflow-hidden relative font-sans text-black'
+          : 'max-w-[21cm] mx-auto bg-white min-h-[29.7cm] shadow-xl print:shadow-none print:w-[21cm] print:h-[29.7cm] print:m-0 overflow-hidden relative font-sans text-black'
+      }>
         {guia}
       </div>
     </div>

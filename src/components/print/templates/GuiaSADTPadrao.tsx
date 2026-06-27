@@ -117,16 +117,15 @@ export default function GuiaSADTPadrao({
       <style>{`
         @media print {
           @page { size: A4 landscape !important; margin: 3mm !important; }
-          html, body { width: 297mm !important; height: 210mm !important; margin: 0 !important; padding: 0 !important; }
-          body { overflow: visible !important; }
-          .sadt-container { break-inside: avoid; }
-          .sadt-section { break-inside: avoid; }
+          html, body { width: 297mm !important; height: 210mm !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+          .sadt-container { break-inside: avoid; page-break-inside: avoid; page-break-after: avoid; }
         }
       `}</style>
 
       <div className="sadt-container" style={{
         width: '100%',
-        height: '100%',
+        height: '204mm',
+        maxHeight: '204mm',
         padding: '3mm 4mm',
         fontFamily: 'Arial, Helvetica, sans-serif',
         fontSize: '7px',
@@ -135,7 +134,7 @@ export default function GuiaSADTPadrao({
         display: 'flex',
         flexDirection: 'column',
         boxSizing: 'border-box',
-        overflow: 'visible',
+        overflow: 'hidden',
       }}>
 
         {/* ══ CABEÇALHO ══ */}
@@ -347,9 +346,9 @@ export default function GuiaSADTPadrao({
         </div>
 
         {/* ══ 58 - OBSERVAÇÃO ══ */}
-        <div style={{ border: borda, flex: 1, marginBottom: '-1px', minHeight: '24px' }}>
+        <div style={{ border: borda, flex: 1, marginBottom: '-1px', minHeight: '24px', overflow: 'hidden' }}>
           <Secao label="58 - Observação / Justificativa" cor={corSec} />
-          <div style={{ padding: '3px 5px', fontSize: '8px', lineHeight: 1.35, textTransform: 'uppercase', fontWeight: 'normal' }}>
+          <div style={{ padding: '3px 5px', fontSize: '8px', lineHeight: 1.35, textTransform: 'uppercase', fontWeight: 'normal', overflow: 'hidden' }}>
             {justificativa}
           </div>
         </div>
