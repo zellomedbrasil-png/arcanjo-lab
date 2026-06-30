@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => {
             const query = path.split('?')[1] || '';
-            const model = (new URLSearchParams(query).get('model') || 'gemini-3.5-flash').replace('google/', '');
+            const model = (new URLSearchParams(query).get('model') || 'gemini-2.5-flash').replace('google/', '');
             return `/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${env.GEMINI_API_KEY || ''}`;
           },
         },

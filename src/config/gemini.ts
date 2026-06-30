@@ -91,11 +91,11 @@ export const AI_MODELS: AIModel[] = [
     timeoutMs: 120_000,
   },
   {
-    id: 'google/gemini-3.5-flash',
-    label: 'Gemini 3.5 Flash ⚡',
-    badge: 'Gemini 3.5 Flash',
+    id: 'google/gemini-2.5-flash',
+    label: 'Gemini 2.5 Flash ⚡',
+    badge: 'Gemini 2.5 Flash',
     provider: 'gemini',
-    note: 'Mais recente e inteligente do Google (via proxy seguro)',
+    note: 'Mais inteligente do Google — cota generosa (via proxy seguro)',
     timeoutMs: 90_000,
   },
   {
@@ -153,7 +153,7 @@ export function getDefaultModelId(): string {
   if (saved && AI_MODELS.some(m => m.id === saved)) {
     return saved;
   }
-  return 'google/gemini-3.5-flash';
+  return 'google/gemini-2.5-flash';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -336,7 +336,7 @@ async function callGroq(
 
 export async function callGemini(
   params: AICallParams,
-  modelId = 'gemini-2.5-flash',
+  modelId = 'gemini-2.5-flash'
   signal?: AbortSignal
 ): Promise<string> {
   // Remove eventual prefixo "google/" (vindo dos ids de modelo da UI)

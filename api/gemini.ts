@@ -2,7 +2,7 @@
 // Vercel Edge Function — proxy seguro para a API do Google Gemini.
 //
 // A chave (GEMINI_API_KEY) reside SOMENTE no servidor — o browser nunca a vê.
-// O cliente chama: POST /api/gemini?model=gemini-3.5-flash  (corpo = payload Gemini)
+// O cliente chama: POST /api/gemini?model=gemini-2.5-flash  (corpo = payload Gemini)
 // e este proxy injeta a chave e encaminha para o endpoint generateContent do Google.
 
 export const config = { runtime: 'edge' };
@@ -33,7 +33,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   // Modelo vem como query param; remove eventual prefixo "google/"
   const reqUrl = new URL(req.url);
-  const model = (reqUrl.searchParams.get('model') || 'gemini-3.5-flash').replace('google/', '');
+  const model = (reqUrl.searchParams.get('model') || 'gemini-2.5-flash').replace('google/', '');
 
   try {
     // Repassa o corpo (payload Gemini) verbatim
