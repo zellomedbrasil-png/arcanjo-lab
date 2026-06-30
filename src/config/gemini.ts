@@ -336,7 +336,7 @@ async function callGroq(
 
 export async function callGemini(
   params: AICallParams,
-  modelId = 'gemini-2.5-flash'
+  modelId = 'gemini-2.5-flash',
   signal?: AbortSignal
 ): Promise<string> {
   // Remove eventual prefixo "google/" (vindo dos ids de modelo da UI)
@@ -575,7 +575,7 @@ async function callAnthropic(
  * Roteador principal com timeout por modelo e fallback automático.
  *
  * Fluxo de fallback quando timeout ou erro:
- *   Modelo selecionado → Claude 3.5 Haiku → Llama 3.3 70B → Erro
+ *   Modelo selecionado → DeepSeek V4 Flash → GPT-5.5 → Erro
  *
  * Retorna string com o texto gerado.
  * Lança erro somente se todos os fallbacks falharem ou se o usuário cancelou.
@@ -632,10 +632,10 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
     // Assim, se o Claude falhar, o erro estoura diretamente na tela/console.
     console.info('Anthropic selecionado: fallbacks desativados para debug.');
   } else if (primaryProvider === 'groq') {
-    // Se o principal for Groq, fallbacks devem ser fora do Groq (OpenRouter/Gemini Direct)
+    // Se o principal for Groq, fallback para DeepSeek (barato e independente)
     fallbackChain.push({
-      id: 'google/gemini-3.5-flash',
-      badge: 'Gemini 3.5 Flash (fallback)',
+      id: 'deepseek/deepseek-v4-flash',
+      badge: 'DeepSeek V4 Flash (fallback)',
       provider: 'openrouter',
       timeoutMs: 60_000,
     });
@@ -646,12 +646,12 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       timeoutMs: 60_000,
     });
   } else {
-    // Se o principal for OpenRouter/Gemini, fallback 1 deve ser Groq (ultra rápido e independente)
+    // Se o principal for OpenRouter/Gemini, fallback 1 deve ser DeepSeek (barato, contexto 1M, independente)
     fallbackChain.push({
-      id: 'llama-3.3-70b-versatile',
-      badge: 'Llama 3.3 70B Groq (fallback)',
-      provider: 'groq',
-      timeoutMs: 30_000,
+      id: 'deepseek/deepseek-v4-flash',
+      badge: 'DeepSeek V4 Flash (fallback)',
+      provider: 'openrouter',
+      timeoutMs: 60_000,
     });
     // Fallback 2: Outro modelo OpenRouter dependendo do selecionado
     if (selectedModelId !== 'openai/gpt-5.5') {
@@ -734,7 +734,7 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       // Se for erro de Autenticação (401) ou Saldo (402) no OpenRouter, não tenta os outros modelos do OpenRouter
       if (err instanceof Error && (err.message.includes('OpenRouter 401') || err.message.includes('OpenRouter 402'))) {
         console.warn('Erro de autenticação ou saldo no OpenRouter. Pulando próximos fallbacks do OpenRouter.');
-        toast.error('Problema com chaves ou créditos no OpenRouter. Indo para fallback da Groq.');
+        toast.error('Problema com chaves ou créditos no OpenRouter. Tentando fallback alternativo...');
         
         let i = fallbackChain.indexOf(model) + 1;
         while (i < fallbackChain.length) {
@@ -764,28 +764,18 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
     }
   }
 
-  // Groq direto como último recurso (usa a chave Groq configurada)
-  if (primaryProvider !== 'anthropic') {
+  // DeepSeek como último recurso via OpenRouter
+  if (primaryProvider !== 'anthropic' && getOpenRouterApiKey()) {
     try {
-      const groqKey = localStorage.getItem('arcanjo_groq_key') || import.meta.env.VITE_GROQ_API_KEY || '';
-      if (groqKey) {
-        const completion = await groq.chat.completions.create({
-          messages: [
-            ...(params.systemInstruction ? [{ role: 'system' as const, content: params.systemInstruction }] : []),
-            { role: 'user' as const, content: params.prompt },
-          ],
-          model: 'llama-3.3-70b-versatile',
-          temperature: typeof params.temperature === 'number' ? params.temperature : 0.2,
-          max_tokens: 4096,
-        });
-        const text = completion.choices[0]?.message?.content || '';
-        if (text.trim()) {
-          lastUsedModel = 'Llama 3.3 70B (Groq)';
-          return text.trim();
-        }
+      const { signal: lastSignal, clear: lastClear } = createTimeoutSignal(60_000);
+      const text = await callOpenRouter(params, 'deepseek/deepseek-v4-flash', lastSignal);
+      lastClear();
+      if (text.trim()) {
+        lastUsedModel = 'DeepSeek V4 Flash (último recurso)';
+        return text.trim();
       }
-    } catch (groqErr) {
-      console.warn('Groq direto também falhou.', groqErr);
+    } catch (deepseekErr) {
+      console.warn('DeepSeek último recurso também falhou.', deepseekErr);
     }
   }
 
