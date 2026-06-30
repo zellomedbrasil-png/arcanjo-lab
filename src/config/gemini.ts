@@ -99,11 +99,11 @@ export const AI_MODELS: AIModel[] = [
     timeoutMs: 90_000,
   },
   {
-    id: 'google/gemini-3-flash-preview',
-    label: 'Gemini 3 Flash Preview ⚡',
-    badge: 'Gemini 3 Flash (OpenRouter)',
+    id: 'google/gemini-3.5-flash',
+    label: 'Gemini 3.5 Flash ⚡',
+    badge: 'Gemini 3.5 Flash (OpenRouter)',
     provider: 'openrouter',
-    note: 'Padrão — Nova geração do Google experimental',
+    note: 'Mais recente do Google via OpenRouter',
     timeoutMs: 60_000,
   },
   {
@@ -115,19 +115,19 @@ export const AI_MODELS: AIModel[] = [
     timeoutMs: 30_000,
   },
   {
-    id: 'openai/gpt-5.4-mini',
-    label: 'GPT-5.4 Mini 🧠',
-    badge: 'GPT-5.4 Mini (OpenRouter)',
+    id: 'openai/gpt-5.5',
+    label: 'GPT-5.5 🧠',
+    badge: 'GPT-5.5 (OpenRouter)',
     provider: 'openrouter',
-    note: 'Nova geração custo/benefício da OpenAI',
-    timeoutMs: 45_000,
+    note: 'Mais recente da OpenAI via OpenRouter',
+    timeoutMs: 60_000,
   },
   {
-    id: 'anthropic/claude-3.5-haiku',
-    label: 'Claude 3.5 Haiku 🍃',
-    badge: 'Claude 3.5 Haiku (OpenRouter)',
+    id: '~anthropic/claude-haiku-latest',
+    label: 'Claude Haiku 🍃',
+    badge: 'Claude Haiku (OpenRouter)',
     provider: 'openrouter',
-    note: 'Extremamente rápido e refinado',
+    note: 'Mais rápido da Anthropic — sempre a versão mais recente',
     timeoutMs: 45_000,
   },
   {
@@ -634,16 +634,16 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   } else if (primaryProvider === 'groq') {
     // Se o principal for Groq, fallbacks devem ser fora do Groq (OpenRouter/Gemini Direct)
     fallbackChain.push({
-      id: 'google/gemini-3-flash-preview',
-      badge: 'Gemini 3 Flash (fallback)',
+      id: 'google/gemini-3.5-flash',
+      badge: 'Gemini 3.5 Flash (fallback)',
       provider: 'openrouter',
       timeoutMs: 60_000,
     });
     fallbackChain.push({
-      id: 'openai/gpt-5.4-mini',
-      badge: 'GPT-5.4 Mini (fallback)',
+      id: 'openai/gpt-5.5',
+      badge: 'GPT-5.5 (fallback)',
       provider: 'openrouter',
-      timeoutMs: 45_000,
+      timeoutMs: 60_000,
     });
   } else {
     // Se o principal for OpenRouter/Gemini, fallback 1 deve ser Groq (ultra rápido e independente)
@@ -654,19 +654,19 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       timeoutMs: 30_000,
     });
     // Fallback 2: Outro modelo OpenRouter dependendo do selecionado
-    if (selectedModelId !== 'openai/gpt-5.4-mini') {
+    if (selectedModelId !== 'openai/gpt-5.5') {
       fallbackChain.push({
-        id: 'openai/gpt-5.4-mini',
-        badge: 'GPT-5.4 Mini (fallback)',
+        id: 'openai/gpt-5.5',
+        badge: 'GPT-5.5 (fallback)',
         provider: 'openrouter',
-        timeoutMs: 20_000,
+        timeoutMs: 30_000,
       });
     } else {
       fallbackChain.push({
-        id: 'google/gemini-3-flash-preview',
-        badge: 'Gemini 3 Flash (fallback)',
+        id: 'google/gemini-3.5-flash',
+        badge: 'Gemini 3.5 Flash (fallback)',
         provider: 'openrouter',
-        timeoutMs: 25_000,
+        timeoutMs: 30_000,
       });
     }
   }
