@@ -15,7 +15,17 @@
       "Read(//c/tmp/**)",
       "Bash(curl -s https://arcanjo-lab.vercel.app/)",
       "Bash(grep -oE \"termo.{0,40}amoxicilina\")",
-      "Bash(curl -s \"https://arcanjo-lab.vercel.app/assets/index-CfErzdgS.js\")"
+      "Bash(curl -s \"https://arcanjo-lab.vercel.app/assets/index-CfErzdgS.js\")",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "PowerShell(npm run build)",
+      "PowerShell(git add api/claude.ts src/config/gemini.ts src/components/soap/SOAPPanel.tsx src/components/soap/JustificativaPanel.tsx)",
+      "PowerShell(git push origin master)",
+      "PowerShell(git add src/lib/storageCleanup.ts src/main.tsx src/config/gemini.ts)",
+      "PowerShell(vercel --prod --force 2>&1)",
+      "Bash(curl -s \"https://arcanjo-lab.vercel.app/?nocache=$\\(date +%s\\)\")",
+      "Bash(curl -sS -N -D - -o /dev/null --max-time 20 -X POST \"https://arcanjo-lab.vercel.app/api/claude\" -H \"content-type: application/json\" -d '{\"model\":\"claude-sonnet-4-6\",\"max_tokens\":16,\"messages\":[{\"role\":\"user\",\"content\":\"ping\"}]}')",
+      "Bash(curl -s \"https://arcanjo-lab.vercel.app/assets/index-DmkQU8ln.js\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\1\\.gemini\\antigravity\\playground\\Projetos Médicos\\arcanjo.lab"

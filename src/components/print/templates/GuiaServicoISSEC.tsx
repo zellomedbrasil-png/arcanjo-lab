@@ -50,9 +50,9 @@ export default function GuiaServicoISSEC() {
       {/* CABEÇALHO */}
       <div className="flex items-start justify-between" style={{ marginBottom: '1mm' }}>
         <img src={logoIssec2} alt="ISSEC" style={{ height: '16mm', width: 'auto', objectFit: 'contain' }} />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
           <img src={logoIssec} alt="Governo do Estado do Ceará" style={{ height: '16mm', width: 'auto', objectFit: 'contain' }} />
-          <span style={{ fontSize: '8pt', fontStyle: 'italic', marginTop: '0.5mm', color: '#000' }}>
+          <span style={{ fontSize: '7.5pt', fontStyle: 'italic', marginTop: '-2mm', marginLeft: '13.5mm', color: '#000', whiteSpace: 'nowrap' }}>
             Secretaria do Planejamento e Gestão
           </span>
         </div>
@@ -229,7 +229,16 @@ export default function GuiaServicoISSEC() {
       </table>
 
       {/* Carimbo do Credenciado */}
-      <div style={{ border: '1.5pt solid black', padding: '2mm', fontSize: '10pt', fontWeight: 'bold', width: '187.6mm', boxSizing: 'border-box', marginBottom: '2mm' }}>
+      <div style={{
+        border: '1.5pt solid black',
+        padding: '1.5mm 2mm',
+        fontSize: '9.5pt',
+        fontWeight: 'normal',
+        width: '187.6mm',
+        height: '18mm',
+        boxSizing: 'border-box',
+        marginBottom: '2mm',
+      }}>
         Carimbo e Assinatura do Credenciado
       </div>
 

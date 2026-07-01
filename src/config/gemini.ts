@@ -153,7 +153,7 @@ export function getDefaultModelId(): string {
   if (saved && AI_MODELS.some(m => m.id === saved)) {
     return saved;
   }
-  return 'google/gemini-2.5-flash';
+  return 'claude-sonnet-4-6';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
