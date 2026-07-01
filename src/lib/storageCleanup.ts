@@ -8,7 +8,7 @@
 // arcanjo-lab-documento-draft e os campos clínicos do pedido.
 
 const STORAGE_VERSION_KEY = 'arcanjo_storage_version';
-const STORAGE_VERSION = '2'; // incrementar a cada nova limpeza
+const STORAGE_VERSION = '3'; // incrementar a cada nova limpeza
 
 export function runStorageCleanup(): void {
   try {
@@ -18,7 +18,7 @@ export function runStorageCleanup(): void {
     //    A chave atual vive somente no servidor (/api/claude).
     localStorage.removeItem('arcanjo_anthropic_key');
 
-    // 2. Reset one-time do modelo selecionado — volta ao padrão claude-sonnet-4-6.
+    // 2. Reset one-time do modelo selecionado — volta ao padrão claude-sonnet-5.
     localStorage.removeItem('arcanjo_selected_model');
 
     // 3. Badge de modelo antigo dentro do draft persistido do useAppStore.

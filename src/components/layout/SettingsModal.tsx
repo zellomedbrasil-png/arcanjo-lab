@@ -206,7 +206,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <span className="text-xs text-emerald-800 font-medium">Configurado com segurança no servidor</span>
             </div>
             <p className="text-[9px] text-neutral-text-muted">
-              A chave do Claude Sonnet 4.6 fica no servidor (Vercel). Nunca é exposta no navegador.
+              A chave do Claude Sonnet 5 fica no servidor (Vercel). Nunca é exposta no navegador.
             </p>
           </div>
 

@@ -51,7 +51,7 @@ export default async function handler(req: Request): Promise<Response> {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: body.model ?? 'claude-sonnet-4-6',
+        model: body.model ?? 'claude-sonnet-5',
         max_tokens: body.max_tokens ?? 8192,
         temperature: body.temperature ?? 0.1,
         stream: true,

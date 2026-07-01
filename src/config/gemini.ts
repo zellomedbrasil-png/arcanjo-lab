@@ -83,9 +83,9 @@ export interface AIModel {
 
 export const AI_MODELS: AIModel[] = [
   {
-    id: 'claude-sonnet-4-6',
-    label: 'Claude Sonnet 4.6 🧠',
-    badge: 'Claude Sonnet 4.6',
+    id: 'claude-sonnet-5',
+    label: 'Claude Sonnet 5 🧠',
+    badge: 'Claude Sonnet 5',
     provider: 'anthropic',
     note: 'Modelo de alta performance da Anthropic (Direct API)',
     timeoutMs: 120_000,
@@ -153,7 +153,7 @@ export function getDefaultModelId(): string {
   if (saved && AI_MODELS.some(m => m.id === saved)) {
     return saved;
   }
-  return 'claude-sonnet-4-6';
+  return 'claude-sonnet-5';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
