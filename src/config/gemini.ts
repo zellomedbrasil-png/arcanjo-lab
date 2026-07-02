@@ -83,19 +83,19 @@ export interface AIModel {
 
 export const AI_MODELS: AIModel[] = [
   {
-    id: 'claude-sonnet-5',
-    label: 'Claude Sonnet 5 🧠',
-    badge: 'Claude Sonnet 5',
-    provider: 'anthropic',
-    note: 'Modelo de alta performance da Anthropic (Direct API)',
-    timeoutMs: 120_000,
+    id: 'google/gemini-3.1-flash-lite',
+    label: 'Gemini 3.1 Flash Lite ⚡',
+    badge: 'Gemini 3.1 Flash Lite',
+    provider: 'gemini',
+    note: 'Padrão — mais recente e barato do Google, ótimo custo-benefício (via proxy seguro)',
+    timeoutMs: 60_000,
   },
   {
     id: 'google/gemini-2.5-flash',
     label: 'Gemini 2.5 Flash ⚡',
     badge: 'Gemini 2.5 Flash',
     provider: 'gemini',
-    note: 'Mais inteligente do Google — cota generosa (via proxy seguro)',
+    note: 'Mais inteligente do Google, cota generosa (via proxy seguro)',
     timeoutMs: 90_000,
   },
   {
@@ -105,6 +105,14 @@ export const AI_MODELS: AIModel[] = [
     provider: 'openrouter',
     note: 'Mais recente do Google via OpenRouter',
     timeoutMs: 60_000,
+  },
+  {
+    id: 'claude-sonnet-5',
+    label: 'Claude Sonnet 5 🧠',
+    badge: 'Claude Sonnet 5',
+    provider: 'anthropic',
+    note: 'Modelo de alta performance da Anthropic (Direct API) — requer créditos na conta',
+    timeoutMs: 120_000,
   },
   {
     id: 'llama-3.3-70b-versatile',
@@ -153,7 +161,7 @@ export function getDefaultModelId(): string {
   if (saved && AI_MODELS.some(m => m.id === saved)) {
     return saved;
   }
-  return 'claude-sonnet-5';
+  return 'google/gemini-3.1-flash-lite';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -387,6 +395,9 @@ export async function callGemini(
   if (!response.ok || !response.body) {
     const errText = await response.text().catch(() => '');
     if (response.status === 429) {
+      if (errText.includes('prepayment credits are depleted')) {
+        throw new Error(`Gemini 429: Créditos pré-pagos do Google esgotados. Compre créditos em Google AI Studio → Faturamento (o saldo precisa ficar acima de US$ 0).`);
+      }
       throw new Error(`Gemini 429: Limite de cota excedido para o modelo ${modelId}. Se estiver usando a chave gratuita da Google, o Gemini Pro possui limites muito estritos. Tente usar o Gemini 2.5 Flash ou ative o faturamento no Google AI Studio.`);
     }
     throw new Error(`Gemini ${response.status}: ${errText.substring(0, 200)}`);
@@ -505,7 +516,9 @@ async function callAnthropic(
     } catch {
       // ignore
     }
-    // Erro real, sem fallback cego — o médico precisa saber o que aconteceu.
+    if (typeof errMsg === 'string' && errMsg.includes('credit balance is too low')) {
+      throw new Error('Anthropic: créditos esgotados na conta da Anthropic. Compre créditos em console.anthropic.com → Plans & Billing, ou use outro modelo.');
+    }
     throw new Error(`Anthropic ${response.status}: ${errMsg}`);
   }
 
@@ -628,9 +641,20 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   const primaryProvider = modelMeta?.provider ?? 'openrouter';
 
   if (primaryProvider === 'anthropic') {
-    // Para debugar o Claude da Anthropic, desativamos totalmente fallbacks.
-    // Assim, se o Claude falhar, o erro estoura diretamente na tela/console.
-    console.info('Anthropic selecionado: fallbacks desativados para debug.');
+    // Claude indisponível (ex.: sem créditos) não pode travar o médico:
+    // cai para o Gemini nativo e depois DeepSeek.
+    fallbackChain.push({
+      id: 'google/gemini-2.5-flash',
+      badge: 'Gemini 2.5 Flash (fallback)',
+      provider: 'gemini',
+      timeoutMs: 90_000,
+    });
+    fallbackChain.push({
+      id: 'deepseek/deepseek-v4-flash',
+      badge: 'DeepSeek V4 Flash (fallback)',
+      provider: 'openrouter',
+      timeoutMs: 60_000,
+    });
   } else if (primaryProvider === 'groq') {
     // Se o principal for Groq, fallback para DeepSeek (barato e independente)
     fallbackChain.push({
@@ -692,10 +716,12 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
         try {
           text = await callGemini(params, targetModelId, signal);
         } catch (geminiDirectErr) {
-          // Se falhar a chamada direta (ex: 429 ou quota), e o original era OpenRouter, tenta OpenRouter para o mesmo modelo antes de ir ao fallback
-          if (model.provider === 'openrouter' && getOpenRouterApiKey()) {
+          // Se a API nativa do Google falhar (ex: 429 créditos/quota), tenta o MESMO
+          // modelo via OpenRouter antes de descer para o fallback — o médico continua no Gemini.
+          if (model.id.startsWith('google/') && getOpenRouterApiKey()) {
             console.warn(`Gemini Direct falhou (${(geminiDirectErr as Error).message}). Tentando via OpenRouter para ${model.id}...`);
             text = await callOpenRouter(params, model.id, signal);
+            lastUsedModel = `${model.badge} — via OpenRouter`;
           } else {
             throw geminiDirectErr;
           }
@@ -765,7 +791,7 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   }
 
   // DeepSeek como último recurso via OpenRouter
-  if (primaryProvider !== 'anthropic' && getOpenRouterApiKey()) {
+  if (getOpenRouterApiKey()) {
     try {
       const { signal: lastSignal, clear: lastClear } = createTimeoutSignal(60_000);
       const text = await callOpenRouter(params, 'deepseek/deepseek-v4-flash', lastSignal);

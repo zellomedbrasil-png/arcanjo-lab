@@ -217,7 +217,7 @@ export default function GravadorMobile() {
       
       const transcription = await groq.audio.transcriptions.create({
         file: file,
-        model: 'whisper-large-v3',
+        model: 'whisper-large-v3-turbo',
         language: 'pt',
       });
 
@@ -421,7 +421,7 @@ export default function GravadorMobile() {
           </button>
         </div>
         <p className="text-[10px] text-center text-slate-650 leading-relaxed">
-          Arcanjo.Lab Mobile Link — Whisper-large-v3 Transcription Expert.
+          Arcanjo.Lab Mobile Link — Whisper Large v3 Turbo Transcription Expert.
         </p>
       </footer>
 
