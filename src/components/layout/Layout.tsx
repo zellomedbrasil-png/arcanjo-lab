@@ -243,9 +243,14 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {/* Sidebar (Desktop only) */}
       <div className="w-64 bg-neutral-surface border-r border-neutral-border flex flex-col no-print max-lg:hidden">
-        <div className="h-16 flex items-center px-6 border-b border-neutral-border">
-          <Activity className="h-5 w-5 text-primary mr-2.5" />
-          <span className="text-lg font-bold font-display text-neutral-text tracking-tight">Arcanjo.Lab</span>
+        <div className="h-16 flex items-center gap-3 px-5 border-b border-neutral-border">
+          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shadow-sm shrink-0">
+            <Activity className="h-5 w-5 text-white" />
+          </div>
+          <div className="min-w-0 leading-tight">
+            <span className="block text-base font-bold font-display text-neutral-text tracking-tight">Arcanjo.Lab</span>
+            <span className="block text-[10px] font-medium text-neutral-text-muted tracking-wide">Prontuário Inteligente</span>
+          </div>
         </div>
 
         {/* Mobile Sync Widget */}
@@ -289,7 +294,8 @@ export default function Layout({ children }: { children: ReactNode }) {
           )}
         </div>
         
-        <nav className="flex-1 px-3 py-5 space-y-1 animate-in fade-in duration-300">
+        <nav className="flex-1 px-3 py-4 space-y-1 animate-in fade-in duration-300 overflow-y-auto">
+          <p className="px-3 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-text-muted/70">Atendimento</p>
           <NavLink
             to="/prontuario"
             className={({ isActive }) =>
@@ -346,6 +352,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             Serviços / Terapias
           </NavLink>
 
+          <p className="px-3 pt-4 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-text-muted/70">Emissão</p>
           <NavLink
             to="/receita"
             className={({ isActive }) =>
@@ -374,6 +381,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             Documentos
           </NavLink>
 
+          <p className="px-3 pt-4 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-text-muted/70">Sistema</p>
           {/* Quick Notes Toggle Button */}
           <button
             onClick={() => setIsNotesOpen(!isNotesOpen)}
@@ -397,10 +405,19 @@ export default function Layout({ children }: { children: ReactNode }) {
           </button>
         </nav>
 
-        <div className="p-4 border-t border-neutral-border">
+        <div className="p-3 border-t border-neutral-border space-y-1.5">
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-neutral-bg border border-neutral-border">
+            <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[11px] font-bold shrink-0">
+              RA
+            </div>
+            <div className="min-w-0 leading-tight">
+              <p className="text-xs font-bold text-neutral-text truncate">Dr. Roberto Arcanjo</p>
+              <p className="text-[10px] text-neutral-text-muted">CRM/CE 26.155</p>
+            </div>
+          </div>
           <button
             onClick={handleLogout}
-            className="flex items-center w-full px-3 py-2 text-sm font-semibold text-red-650 rounded-md hover:bg-red-50/50 transition-colors"
+            className="flex items-center w-full px-3 py-2 text-sm font-semibold text-red-650 rounded-md hover:bg-red-50/50 transition-colors cursor-pointer"
           >
             <LogOut className="mr-3 h-4 w-4 flex-shrink-0" />
             Sair

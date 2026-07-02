@@ -56,10 +56,10 @@ export default function Servicos() {
   return (
     <Layout>
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 pb-28 max-lg:pb-36 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-bold text-gray-900">Serviços / Terapias</h1>
-            <span className="text-xs text-gray-400">{formatDraftTime(lastSavedAt)}</span>
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl lg:text-2xl font-bold font-display tracking-tight text-neutral-text">Serviços / Terapias</h1>
+            <p className="text-xs text-neutral-text-muted mt-0.5">Sessões terapêuticas e serviços com justificativa · {formatDraftTime(lastSavedAt)}</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden sm:flex items-center gap-1.5 text-xs text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 font-medium">
