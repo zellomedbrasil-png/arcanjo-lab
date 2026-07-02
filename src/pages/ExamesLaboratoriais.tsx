@@ -56,7 +56,7 @@ export default function ExamesLaboratoriais() {
 
   return (
     <Layout>
-      <div className="max-w-[1600px] mx-auto px-6 py-6 pb-28 max-lg:pb-36 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 pb-28 max-lg:pb-36 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -101,7 +101,7 @@ export default function ExamesLaboratoriais() {
       </div>
 
       {/* Fixed bottom footer */}
-      <div className="fixed bottom-0 lg:left-64 left-0 right-0 z-30 lg:z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg px-6 py-3.5 max-lg:bottom-14">
+      <div className="fixed bottom-0 lg:left-64 left-0 right-0 z-30 lg:z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg px-6 py-3.5 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))]">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-6">
           <div className="flex min-w-0 flex-1 items-center gap-3 text-sm overflow-hidden">
             <div className={`flex items-center gap-1.5 shrink-0 ${isFormValid ? 'text-green-600' : 'text-gray-400'}`}>

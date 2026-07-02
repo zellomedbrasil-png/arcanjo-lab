@@ -21,6 +21,30 @@ export default function GravadorMobile() {
   const audioChunksRef = useRef<Blob[]>([]);
   const timerIntervalRef = useRef<number | null>(null);
   const syncServiceRef = useRef<SyncService | null>(null);
+  // Mantém a tela do celular acesa durante a gravação — tela apagada pode
+  // pausar o MediaRecorder em vários aparelhos Android/iOS.
+  const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
+
+  const acquireWakeLock = async () => {
+    try {
+      const nav = navigator as Navigator & { wakeLock?: { request: (type: 'screen') => Promise<{ release: () => Promise<void> }> } };
+      if (nav.wakeLock) {
+        wakeLockRef.current = await nav.wakeLock.request('screen');
+      }
+    } catch {
+      // Sem suporte ou permissão — segue sem manter a tela acesa.
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    try {
+      await wakeLockRef.current?.release();
+    } catch {
+      // já liberado
+    } finally {
+      wakeLockRef.current = null;
+    }
+  };
 
   // Auto-connect to Room
   useEffect(() => {
@@ -65,8 +89,22 @@ export default function GravadorMobile() {
     return () => {
       unsubscribe();
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      releaseWakeLock();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
+
+  // O navegador solta o wake lock quando o app vai para segundo plano;
+  // ao voltar durante uma gravação, readquire para a tela seguir acesa.
+  useEffect(() => {
+    if (!isRecording) return;
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') acquireWakeLock();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRecording]);
 
   // Periodic announcement to desktop, stopping once connected
   useEffect(() => {
@@ -152,6 +190,7 @@ export default function GravadorMobile() {
       mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
+      await acquireWakeLock();
       timerIntervalRef.current = window.setInterval(() => {
         setRecordingTime((prev) => prev + 1);
       }, 1000);
@@ -176,6 +215,7 @@ export default function GravadorMobile() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      await releaseWakeLock();
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
@@ -276,7 +316,7 @@ export default function GravadorMobile() {
 
   if (error && !roomId) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-dvh bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-6 text-center">
         <AlertCircle size={48} className="text-red-500 mb-4 animate-bounce" />
         <h1 className="text-xl font-bold font-display text-white mb-2">Sala não Encontrada</h1>
         <p className="text-sm text-slate-400 max-w-sm leading-relaxed">{error}</p>
@@ -286,7 +326,7 @@ export default function GravadorMobile() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-6 font-sans">
+    <div className="min-h-dvh bg-slate-950 text-slate-100 flex flex-col justify-between px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] font-sans">
       
       {/* Header / Connection Status */}
       <header className="flex items-center justify-between border-b border-slate-900 pb-4">

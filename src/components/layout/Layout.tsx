@@ -184,7 +184,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-neutral-bg max-lg:flex-col">
+    <div className="flex min-h-dvh bg-neutral-bg max-lg:flex-col">
       {/* Top Header Bar for Mobile */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-neutral-border z-40 flex items-center justify-between px-4 no-print shadow-sm">
         <div className="flex items-center">
@@ -192,14 +192,14 @@ export default function Layout({ children }: { children: ReactNode }) {
           <span className="text-md font-bold font-display text-neutral-text tracking-tight">Arcanjo.Lab</span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
           {/* Sync Status Button */}
           <button
             onClick={() => setIsPairingModalOpen(true)}
-            className="relative p-2 rounded-lg hover:bg-neutral-bg text-neutral-text-muted hover:text-neutral-text cursor-pointer transition-colors"
+            className="relative p-2.5 rounded-lg hover:bg-neutral-bg text-neutral-text-muted hover:text-neutral-text cursor-pointer transition-colors"
             title="Sincronização Celular"
           >
-            <Smartphone size={18} className={syncStatus !== 'idle' && syncStatus !== 'waiting' ? 'text-accent-indigo' : 'text-neutral-text-muted'} />
+            <Smartphone size={20} className={syncStatus !== 'idle' && syncStatus !== 'waiting' ? 'text-accent-indigo' : 'text-neutral-text-muted'} />
             <span className={`absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full border border-white ${
               syncStatus === 'connected' ? 'bg-green-500' :
               syncStatus === 'recording' ? 'bg-red-500 animate-pulse' :
@@ -212,10 +212,10 @@ export default function Layout({ children }: { children: ReactNode }) {
           {/* Quick Notes Toggle Button */}
           <button
             onClick={() => setIsNotesOpen(!isNotesOpen)}
-            className="relative p-2 rounded-lg hover:bg-neutral-bg text-neutral-text-muted hover:text-neutral-text cursor-pointer transition-colors"
+            className="relative p-2.5 rounded-lg hover:bg-neutral-bg text-neutral-text-muted hover:text-neutral-text cursor-pointer transition-colors"
             title="Bloco de Notas"
           >
-            <ClipboardList size={18} className={isNotesOpen ? 'text-accent-indigo' : ''} />
+            <ClipboardList size={20} className={isNotesOpen ? 'text-accent-indigo' : ''} />
             {quickNotes.trim().length > 0 && (
               <span className="absolute top-1 right-1 h-1.5 w-1.5 bg-accent-indigo rounded-full" />
             )}
@@ -224,19 +224,19 @@ export default function Layout({ children }: { children: ReactNode }) {
           {/* Settings Button */}
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 rounded-lg hover:bg-neutral-bg text-neutral-text-muted hover:text-neutral-text cursor-pointer transition-colors"
+            className="p-2.5 rounded-lg hover:bg-neutral-bg text-neutral-text-muted hover:text-neutral-text cursor-pointer transition-colors"
             title="Configurações de API"
           >
-            <Settings size={18} />
+            <Settings size={20} />
           </button>
 
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="p-2 rounded-lg hover:bg-red-50 text-red-650 cursor-pointer transition-colors"
+            className="p-2.5 rounded-lg hover:bg-red-50 text-red-650 cursor-pointer transition-colors"
             title="Sair"
           >
-            <LogOut size={18} />
+            <LogOut size={20} />
           </button>
         </div>
       </header>
@@ -417,7 +417,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       )}
 
       {/* Main Content Area + Bloco de Notas Drawer */}
-      <main className="flex-1 flex overflow-y-auto print:overflow-visible relative max-lg:pt-14 max-lg:pb-14">
+      <main className="flex-1 flex overflow-y-auto print:overflow-visible relative max-lg:pt-14 max-lg:pb-[calc(3.5rem+env(safe-area-inset-bottom))]">
         <div className="flex-1 overflow-y-auto">
           {children}
         </div>
@@ -500,7 +500,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       </main>
 
       {/* Bottom Tab Bar for Mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-14 bg-white border-t border-neutral-border z-40 flex justify-around items-center px-2 no-print shadow-[0_-2px_10px_rgba(0,0,0,0.035)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 min-h-14 pb-[env(safe-area-inset-bottom)] bg-white border-t border-neutral-border z-40 flex justify-around items-center px-2 no-print shadow-[0_-2px_10px_rgba(0,0,0,0.035)]">
         <NavLink
           to="/prontuario"
           className={({ isActive }) =>

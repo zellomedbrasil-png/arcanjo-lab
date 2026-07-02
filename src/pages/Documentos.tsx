@@ -603,8 +603,8 @@ export default function Documentos() {
                   <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Conteúdo do Laudo Médico</h2>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2">
                     <label className={labelCls}>Diagnóstico / Hipótese Diagnóstica</label>
                     <input
                       type="text"
@@ -705,7 +705,7 @@ export default function Documentos() {
                     <p className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
                       ♿ Dados Complementares de Reabilitação
                     </p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className={labelCls}>Especialidade / Serviço Solicitado</label>
                         <input
@@ -745,7 +745,7 @@ export default function Documentos() {
                   <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Conteúdo do Atestado</h2>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className={labelCls}>Dias Afastamento</label>
                     <input
@@ -756,7 +756,7 @@ export default function Documentos() {
                       className={inputCls}
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <label className={labelCls}>Código CID-10 (opcional)</label>
                     <input
                       type="text"
@@ -964,7 +964,7 @@ export default function Documentos() {
 
                 <div>
                   <label className={labelCls}>Resultado / Conclusão de Aptidão</label>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <button
                       onClick={() => doc.setDocumento({ asoResultado: 'APTO' })}
                       className={`py-3.5 border-2 rounded-xl text-sm font-bold tracking-wide transition-all ${
@@ -1143,7 +1143,7 @@ export default function Documentos() {
       )}
 
       {/* Sticky bottom bar */}
-      <div className="fixed bottom-0 lg:left-64 left-0 right-0 z-30 lg:z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl px-4 py-4 no-print max-lg:bottom-14">
+      <div className="fixed bottom-0 lg:left-64 left-0 right-0 z-30 lg:z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-xl px-4 py-4 no-print max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))]">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 text-sm">
             <div className={`flex items-center gap-1.5 ${doc.pacienteNome ? 'text-green-600' : 'text-gray-400'}`}>

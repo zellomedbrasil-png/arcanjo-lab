@@ -35,10 +35,23 @@
     background-color: var(--color-neutral-bg);
     color: var(--color-neutral-text);
     font-family: var(--font-body);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* Evita pull-to-refresh acidental durante a consulta */
+    overscroll-behavior-y: contain;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+  }
+
+  /* iOS Safari dá zoom automático em campos com fonte < 16px.
+     Em telas de celular/tablet, força 16px para digitação estável na consulta. */
+  @media screen and (max-width: 1023px) {
+    input, select, textarea {
+      font-size: 16px;
+    }
   }
 }
 
