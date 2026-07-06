@@ -2,7 +2,11 @@ import { useState, useRef, useEffect } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
 import { callAI, getLastUsedModel, getDefaultModelId, AI_MODELS, cancelAIRequest } from '../../config/gemini';
-import { groq } from '../../config/groq';
+import {
+  getTranscriptionEngine, setTranscriptionEngine, TRANSCRIPTION_ENGINES,
+  transcribeAudioBlob, isTimeoutAbort, type TranscriptionEngine,
+} from '../../services/transcription';
+import { startLiveSpeech, isLiveSpeechSupported, type LiveSpeechController } from '../../services/liveSpeech';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio, ShieldAlert, Activity, HelpCircle, Send } from 'lucide-react';
@@ -274,6 +278,11 @@ export default function SOAPPanel() {
   // Seletor de modelo de IA — armazena o model ID diretamente
   const [selectedModelId, setSelectedModelId] = useState<string>(() => getDefaultModelId());
 
+  // Seletor de motor de transcrição (Whisper / Ditado ao vivo Google / Gemini)
+  const [selectedEngine, setSelectedEngine] = useState<TranscriptionEngine>(() => getTranscriptionEngine());
+  const [interimText, setInterimText] = useState('');
+  const liveControllerRef = useRef<LiveSpeechController | null>(null);
+
   const handleProcessMobileTranscription = async (text: string) => {
     if (!text || !text.trim()) return;
     setQueixa(queixa.trim() ? `${queixa}\n${text}` : text);
@@ -291,6 +300,11 @@ export default function SOAPPanel() {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
       }
+      // Encerra o ditado ao vivo caso o painel seja desmontado gravando.
+      if (liveControllerRef.current) {
+        liveControllerRef.current.stop();
+        liveControllerRef.current = null;
+      }
     };
   }, []);
 
@@ -300,7 +314,52 @@ export default function SOAPPanel() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const startTimer = () => {
+    setRecordingTime(0);
+    timerIntervalRef.current = window.setInterval(() => {
+      setRecordingTime((prev) => prev + 1);
+    }, 1000);
+  };
+
+  const clearTimer = () => {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+  };
+
+  // Ditado ao vivo (Web Speech / Google) — texto em tempo real, sem gravar blob.
+  const startLiveDictation = () => {
+    if (!isLiveSpeechSupported()) {
+      toast.error('Ditado ao vivo indisponível neste navegador. Use Chrome/Edge ou troque o motor para Whisper.');
+      return;
+    }
+    try {
+      liveControllerRef.current = startLiveSpeech({
+        lang: 'pt-BR',
+        onPartial: (t) => setInterimText(t),
+        onFinal: (t) => {
+          setInterimText('');
+          // Lê a queixa mais recente do store para não sobrescrever chunks anteriores.
+          const prev = useAppStore.getState().queixa;
+          setQueixa(prev.trim() ? `${prev} ${t}` : t);
+        },
+        onError: (m) => toast.error(m),
+      });
+      setIsRecording(true);
+      startTimer();
+      toast.success('Ditado ao vivo iniciado — pode falar.');
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Falha ao iniciar o ditado ao vivo.'));
+    }
+  };
+
   const startRecording = async () => {
+    if (selectedEngine === 'google-live') {
+      startLiveDictation();
+      return;
+    }
+
     audioChunksRef.current = [];
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -314,18 +373,17 @@ export default function SOAPPanel() {
       };
 
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const mime = mediaRecorder.mimeType || 'audio/webm';
+        const audioBlob = new Blob(audioChunksRef.current, { type: mime });
         stream.getTracks().forEach((track) => track.stop());
-        await transcreverAudio(audioBlob);
+        // Motor lido no momento da parada (whisper/gemini) — live não chega aqui.
+        const engine = getTranscriptionEngine();
+        await transcreverAudio(audioBlob, mime, engine === 'gemini' ? 'gemini' : 'whisper');
       };
 
       mediaRecorder.start();
       setIsRecording(true);
-      setRecordingTime(0);
-
-      timerIntervalRef.current = window.setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
+      startTimer();
 
       toast.success('Gravação iniciada...');
     } catch (err) {
@@ -335,29 +393,28 @@ export default function SOAPPanel() {
   };
 
   const stopRecording = () => {
+    // Ditado ao vivo: encerra o reconhecimento.
+    if (liveControllerRef.current) {
+      liveControllerRef.current.stop();
+      liveControllerRef.current = null;
+      setInterimText('');
+      setIsRecording(false);
+      clearTimer();
+      toast.success('Ditado finalizado.');
+      return;
+    }
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
-      }
+      clearTimer();
     }
   };
 
-  const transcreverAudio = async (audioBlob: Blob) => {
+  const transcreverAudio = async (audioBlob: Blob, mimeType: string, engine: 'whisper' | 'gemini') => {
     setIsTranscribing(true);
-    toast.info('Enviando áudio para transcrição...');
+    toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo com Whisper...');
     try {
-      const file = new File([audioBlob], 'audio.webm', { type: 'audio/webm' });
-
-      const transcription = await groq.audio.transcriptions.create({
-        file: file,
-        model: 'whisper-large-v3-turbo',
-        language: 'pt',
-      });
-
-      const text = transcription.text;
+      const text = await transcribeAudioBlob(audioBlob, mimeType, engine);
       if (text && text.trim()) {
         toast.success('Áudio transcrito com sucesso!');
         await handleProcessMobileTranscription(text);
@@ -365,9 +422,12 @@ export default function SOAPPanel() {
         toast.error('Não foi possível detectar fala no áudio.');
       }
     } catch (err: unknown) {
-      const msg = getErrorMessage(err, 'Erro ao transcrever o áudio.');
       console.error(err);
-      toast.error(msg);
+      if (isTimeoutAbort(err)) {
+        toast.error('Tempo limite na transcrição. Tente novamente ou grave um trecho menor.');
+      } else {
+        toast.error(getErrorMessage(err, 'Erro ao transcrever o áudio.'));
+      }
     } finally {
       setIsTranscribing(false);
     }
@@ -560,7 +620,7 @@ Queixa clínica: "${queixa}"`;
               title="Parar gravação de áudio"
             >
               <Square size={13} fill="white" />
-              Parar ({formatTime(recordingTime)})
+              {selectedEngine === 'google-live' ? 'Parar Ditado' : 'Parar'} ({formatTime(recordingTime)})
             </button>
           ) : isTranscribing ? (
             <button
@@ -574,11 +634,11 @@ Queixa clínica: "${queixa}"`;
             <button
               onClick={startRecording}
               disabled={isLoadingJust || isLoadingSoap}
-              title="Gravar consulta pelo microfone do computador"
+              title={selectedEngine === 'google-live' ? 'Ditar ao vivo pelo microfone do computador' : 'Gravar consulta pelo microfone do computador'}
               className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent-emerald text-white text-xs font-semibold rounded-xl hover:bg-accent-emerald/90 disabled:bg-accent-emerald/40 disabled:text-white/60 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full"
             >
               <Mic size={13} />
-              Gravar Computador
+              {selectedEngine === 'google-live' ? 'Ditar ao Vivo' : 'Gravar Computador'}
             </button>
           )}
 
@@ -614,7 +674,45 @@ Queixa clínica: "${queixa}"`;
               ))}
             </select>
           </div>
+
+          {/* Seletor de Motor de Transcrição (voz → texto) */}
+          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 max-sm:w-full max-sm:col-span-2 shadow-sm">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider select-none shrink-0">Voz:</label>
+            <select
+              value={selectedEngine}
+              disabled={isRecording || isTranscribing}
+              onChange={(e) => {
+                const val = e.target.value as TranscriptionEngine;
+                if (val === 'google-live' && !isLiveSpeechSupported()) {
+                  toast.error('Ditado ao vivo indisponível neste navegador (use Chrome/Edge).');
+                  return;
+                }
+                setSelectedEngine(val);
+                setTranscriptionEngine(val);
+                const eng = TRANSCRIPTION_ENGINES.find((x) => x.id === val);
+                toast.info(`Transcrição: ${eng?.label ?? val}`);
+              }}
+              className="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer border-none focus:ring-0 min-w-0 truncate disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {TRANSCRIPTION_ENGINES.map((eng) => (
+                <option key={eng.id} value={eng.id}>
+                  {eng.label} — {eng.note}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        {/* Texto do ditado ao vivo (parcial) — feedback em tempo real */}
+        {isRecording && selectedEngine === 'google-live' && (
+          <div className="mt-2 flex items-start gap-2 rounded-xl border border-accent-emerald/30 bg-accent-emerald/5 px-3 py-2">
+            <Radio size={13} className="mt-0.5 shrink-0 animate-pulse text-accent-emerald" />
+            <p className="text-xs leading-relaxed text-gray-600">
+              <span className="font-semibold text-accent-emerald">Ouvindo… </span>
+              {interimText || 'fale que o texto aparece no campo de queixa em tempo real.'}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Indicação Clínica — sempre visível para edição manual */}

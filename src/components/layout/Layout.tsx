@@ -122,8 +122,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           await sync.publish({
             type: 'DESKTOP_READY',
             payload: {
-              pacienteNome: latestState.pacienteNome,
-              groqKey: localStorage.getItem('arcanjo_groq_key') || ''
+              pacienteNome: latestState.pacienteNome
             }
           });
         } else if (msg.type === 'RECORDING_STATUS') {
@@ -169,9 +168,8 @@ export default function Layout({ children }: { children: ReactNode }) {
     if (syncStatus !== 'idle' && syncStatus !== 'waiting' && syncRef.current) {
       syncRef.current.publish({
         type: 'PATIENT_SYNC',
-        payload: { 
-          pacienteNome,
-          groqKey: localStorage.getItem('arcanjo_groq_key') || ''
+        payload: {
+          pacienteNome
         }
       });
     }

@@ -8,7 +8,6 @@ export interface SyncMessage {
     isTranscribing?: boolean;
     text?: string;
     action?: 'SOAP' | 'JUSTIFICATIVA';
-    groqKey?: string;
   };
   /** Identificador único da mensagem — usado para deduplicar entre os dois transportes */
   _id?: string;
@@ -189,38 +188,41 @@ export class SyncService {
     const msg: SyncMessage = { ...message, _id: randomId(), _sender: this.instanceId };
     console.log('[SyncService] Publishing:', msg.type);
 
-    let delivered = false;
+    const body = JSON.stringify(msg);
+
+    // Publica nos DOIS transportes EM PARALELO — evita somar as latências
+    // (Supabase + ntfy.sh eram sequenciais, o que atrasava a chegada do texto).
+    const attempts: Array<Promise<boolean>> = [];
 
     // 1) Supabase Realtime (somente quando o canal está realmente inscrito)
     if (this.supabaseChannel && this.supabaseJoined) {
-      try {
-        const status = await this.supabaseChannel.send({
-          type: 'broadcast',
-          event: 'sync-event',
-          payload: msg,
-        });
-        if (status === 'ok') {
-          delivered = true;
-        } else {
-          console.warn(`[SyncService] Supabase send retornou "${status}"`);
-        }
-      } catch (err) {
-        console.warn('[SyncService] Supabase publish falhou', err);
-      }
+      const channel = this.supabaseChannel;
+      attempts.push(
+        channel
+          .send({ type: 'broadcast', event: 'sync-event', payload: msg })
+          .then((status: string) => {
+            if (status !== 'ok') console.warn(`[SyncService] Supabase send retornou "${status}"`);
+            return status === 'ok';
+          })
+          .catch((err: unknown) => {
+            console.warn('[SyncService] Supabase publish falhou', err);
+            return false;
+          }),
+      );
     }
 
     // 2) ntfy.sh — sempre, para garantir a ponte entre lados em transportes diferentes
-    try {
-      const response = await fetch(this.ntfyTopicUrl, {
-        method: 'POST',
-        body: JSON.stringify(msg),
-      });
-      if (response.ok) delivered = true;
-    } catch (err) {
-      console.error('[SyncService] ntfy.sh publish falhou:', err);
-    }
+    attempts.push(
+      fetch(this.ntfyTopicUrl, { method: 'POST', body })
+        .then((response) => response.ok)
+        .catch((err: unknown) => {
+          console.error('[SyncService] ntfy.sh publish falhou:', err);
+          return false;
+        }),
+    );
 
-    return delivered;
+    const results = await Promise.all(attempts);
+    return results.some(Boolean);
   }
 
   public close() {

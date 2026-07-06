@@ -2,7 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Mic, Square, Loader2, Check, RefreshCw, AlertCircle, Smartphone, Wifi, Radio } from 'lucide-react';
 import { SyncService, type SyncMessage } from '../services/syncService';
-import { groq } from '../config/groq';
+import {
+  getTranscriptionEngine, setTranscriptionEngine, TRANSCRIPTION_ENGINES,
+  transcribeAudioBlob, isTimeoutAbort, type TranscriptionEngine,
+} from '../services/transcription';
+import { startLiveSpeech, isLiveSpeechSupported, type LiveSpeechController } from '../services/liveSpeech';
 import { toast } from '../lib/toast';
 
 export default function GravadorMobile() {
@@ -16,11 +20,14 @@ export default function GravadorMobile() {
   const [recordingTime, setRecordingTime] = useState(0);
   const [transcriptionText, setTranscriptionText] = useState('');
   const [error, setError] = useState<string | null>(() => roomId ? null : 'Código de sala (room) inválido ou ausente na URL.');
+  const [selectedEngine, setSelectedEngine] = useState<TranscriptionEngine>(() => getTranscriptionEngine());
+  const [interimText, setInterimText] = useState('');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerIntervalRef = useRef<number | null>(null);
   const syncServiceRef = useRef<SyncService | null>(null);
+  const liveControllerRef = useRef<LiveSpeechController | null>(null);
   // Mantém a tela do celular acesa durante a gravação — tela apagada pode
   // pausar o MediaRecorder em vários aparelhos Android/iOS.
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
@@ -64,9 +71,6 @@ export default function GravadorMobile() {
           if (msg.payload?.pacienteNome) {
             setPacienteNome(msg.payload.pacienteNome);
           }
-          if (msg.payload?.groqKey) {
-            localStorage.setItem('arcanjo_groq_key', msg.payload.groqKey);
-          }
         } else if (msg.type === 'PATIENT_SYNC') {
           // Qualquer mensagem do desktop comprova que o pareamento está ativo
           setConnected(true);
@@ -74,9 +78,6 @@ export default function GravadorMobile() {
             setPacienteNome(msg.payload.pacienteNome);
           } else {
             setPacienteNome('');
-          }
-          if (msg.payload?.groqKey) {
-            localStorage.setItem('arcanjo_groq_key', msg.payload.groqKey);
           }
         }
       },
@@ -89,6 +90,10 @@ export default function GravadorMobile() {
     return () => {
       unsubscribe();
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (liveControllerRef.current) {
+        liveControllerRef.current.stop();
+        liveControllerRef.current = null;
+      }
       releaseWakeLock();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,7 +140,52 @@ export default function GravadorMobile() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Ditado ao vivo (Web Speech / Google): envia cada trecho finalizado ao desktop.
+  const liveAccumRef = useRef('');
+
+  const startLiveDictation = async () => {
+    if (!isLiveSpeechSupported()) {
+      setError('Ditado ao vivo indisponível neste navegador. Use o Chrome do Android ou troque para Whisper.');
+      toast.error('Ditado ao vivo indisponível aqui.');
+      return;
+    }
+    setError(null);
+    liveAccumRef.current = '';
+    try {
+      liveControllerRef.current = startLiveSpeech({
+        lang: 'pt-BR',
+        onPartial: (t) => setInterimText(t),
+        onFinal: (t) => {
+          setInterimText('');
+          liveAccumRef.current = liveAccumRef.current ? `${liveAccumRef.current} ${t}` : t;
+          setTranscriptionText(liveAccumRef.current);
+          // Envia só o trecho novo — o desktop concatena no prontuário.
+          syncServiceRef.current?.publish({ type: 'TRANSCRIPTION_RESULT', payload: { text: t } });
+        },
+        onError: (m) => { setError(m); toast.error(m); },
+      });
+      setIsRecording(true);
+      setRecordingTime(0);
+      await acquireWakeLock();
+      timerIntervalRef.current = window.setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
+      if (syncServiceRef.current) {
+        await syncServiceRef.current.publish({ type: 'RECORDING_STATUS', payload: { isRecording: true } });
+      }
+      toast.success('Ditado ao vivo iniciado...');
+    } catch {
+      setError('Erro ao iniciar o ditado ao vivo.');
+      toast.error('Falha no ditado ao vivo.');
+    }
+  };
+
   const startRecording = async () => {
+    if (selectedEngine === 'google-live') {
+      await startLiveDictation();
+      return;
+    }
+
     audioChunksRef.current = [];
     setError(null);
 
@@ -212,6 +262,26 @@ export default function GravadorMobile() {
   };
 
   const stopRecording = async () => {
+    // Ditado ao vivo: encerra o reconhecimento; o texto já foi enviado em trechos.
+    if (liveControllerRef.current) {
+      liveControllerRef.current.stop();
+      liveControllerRef.current = null;
+      setInterimText('');
+      setIsRecording(false);
+      await releaseWakeLock();
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      if (syncServiceRef.current) {
+        await syncServiceRef.current.publish({
+          type: 'RECORDING_STATUS',
+          payload: { isRecording: false, isTranscribing: false }
+        });
+      }
+      return;
+    }
+
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
@@ -220,7 +290,7 @@ export default function GravadorMobile() {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
-      
+
       // Notify desktop that recording stopped and is transcribing
       if (syncServiceRef.current) {
         await syncServiceRef.current.publish({
@@ -233,35 +303,10 @@ export default function GravadorMobile() {
 
   const transcreverAudio = async (audioBlob: Blob, mimeType: string) => {
     setIsTranscribing(true);
-    toast.info('Transcrevendo áudio com Whisper...');
+    const engine = getTranscriptionEngine() === 'gemini' ? 'gemini' : 'whisper';
+    toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo áudio com Whisper...');
     try {
-      // Validate file size (Whisper API limit is 25MB)
-      if (audioBlob.size > 25 * 1024 * 1024) {
-        throw new Error('O áudio gravado é muito grande (limite de 25MB). Tente fazer gravações mais curtas.');
-      }
-
-      // Extract extension from mimeType (e.g. "audio/webm;codecs=opus" -> "webm", "audio/mp4" -> "mp4")
-      let extension = 'webm';
-      if (mimeType) {
-        const cleanMime = mimeType.split(';')[0];
-        extension = cleanMime.split('/')[1] || 'webm';
-      }
-      
-      // Map common web container formats to Whisper supported extensions
-      if (extension === 'x-m4a' || extension === 'aac') {
-        extension = 'm4a';
-      }
-
-      console.log(`[MobileMic] Creating transcription file with extension: audio.${extension}`);
-      const file = new File([audioBlob], `audio.${extension}`, { type: mimeType || 'audio/webm' });
-      
-      const transcription = await groq.audio.transcriptions.create({
-        file: file,
-        model: 'whisper-large-v3-turbo',
-        language: 'pt',
-      });
-
-      const text = transcription.text;
+      const text = await transcribeAudioBlob(audioBlob, mimeType, engine);
       if (text && text.trim()) {
         setTranscriptionText(text);
         toast.success('Áudio transcrito com sucesso!');
@@ -284,7 +329,9 @@ export default function GravadorMobile() {
       }
     } catch (err: unknown) {
       console.error('[MobileMic] Transcription error:', err);
-      const errMsg = err instanceof Error ? err.message : 'Erro de rede ou limite de cota atingido.';
+      const errMsg = isTimeoutAbort(err)
+        ? 'Tempo limite na transcrição. Tente novamente ou grave um trecho menor.'
+        : (err instanceof Error ? err.message : 'Erro de rede ou limite de cota atingido.');
       setError(`Erro na transcrição: ${errMsg}`);
       toast.error('Falha ao transcrever.');
       
@@ -394,7 +441,9 @@ export default function GravadorMobile() {
           ) : isTranscribing ? (
             <div className="relative h-32 w-32 rounded-full bg-slate-900 text-indigo-400 flex flex-col items-center justify-center border-4 border-indigo-500/20">
               <Loader2 size={36} className="animate-spin mb-1" />
-              <span className="text-[10px] font-bold tracking-wider uppercase text-indigo-300">Whisper...</span>
+              <span className="text-[10px] font-bold tracking-wider uppercase text-indigo-300">
+                {getTranscriptionEngine() === 'gemini' ? 'Gemini...' : 'Whisper...'}
+              </span>
             </div>
           ) : (
             <button
@@ -402,7 +451,9 @@ export default function GravadorMobile() {
               className="relative h-32 w-32 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex flex-col items-center justify-center shadow-lg shadow-indigo-950/50 border-4 border-indigo-500/30 transition-all active:scale-95 cursor-pointer"
             >
               <Mic size={40} className="mb-1" />
-              <span className="text-xs font-bold uppercase tracking-wider">Gravar</span>
+              <span className="text-xs font-bold uppercase tracking-wider">
+                {selectedEngine === 'google-live' ? 'Ditar' : 'Gravar'}
+              </span>
             </button>
           )}
         </div>
@@ -410,9 +461,15 @@ export default function GravadorMobile() {
         {/* Status description */}
         <div className="text-center max-w-xs px-4">
           {isRecording ? (
-            <p className="text-sm text-red-400 font-medium animate-pulse flex items-center justify-center gap-1.5">
-              <Radio size={14} /> Gravando áudio...
-            </p>
+            selectedEngine === 'google-live' ? (
+              <p className="text-sm text-emerald-400 font-medium flex items-center justify-center gap-1.5">
+                <Radio size={14} className="animate-pulse" /> Ditando ao vivo...
+              </p>
+            ) : (
+              <p className="text-sm text-red-400 font-medium animate-pulse flex items-center justify-center gap-1.5">
+                <Radio size={14} /> Gravando áudio...
+              </p>
+            )
           ) : isTranscribing ? (
             <p className="text-sm text-indigo-400 font-medium">Processando e transcrevendo com IA...</p>
           ) : (
@@ -421,6 +478,13 @@ export default function GravadorMobile() {
             </p>
           )}
         </div>
+
+        {/* Texto do ditado ao vivo (parcial) */}
+        {isRecording && selectedEngine === 'google-live' && interimText && (
+          <div className="w-full max-w-sm bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3 text-left">
+            <p className="text-xs text-emerald-200/90 leading-relaxed">{interimText}</p>
+          </div>
+        )}
 
         {/* Live status error */}
         {error && (
@@ -444,6 +508,33 @@ export default function GravadorMobile() {
 
       {/* Actions Footer */}
       <footer className="space-y-3 pt-4 border-t border-slate-900">
+        {/* Seletor de motor de transcrição */}
+        <div className="flex items-center gap-2 bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2">
+          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider shrink-0">Voz:</label>
+          <select
+            value={selectedEngine}
+            disabled={isRecording || isTranscribing}
+            onChange={(e) => {
+              const val = e.target.value as TranscriptionEngine;
+              if (val === 'google-live' && !isLiveSpeechSupported()) {
+                toast.error('Ditado ao vivo indisponível neste navegador (use o Chrome).');
+                return;
+              }
+              setSelectedEngine(val);
+              setTranscriptionEngine(val);
+              const eng = TRANSCRIPTION_ENGINES.find((x) => x.id === val);
+              toast.info(`Transcrição: ${eng?.label ?? val}`);
+            }}
+            className="flex-1 bg-transparent text-xs font-bold text-slate-200 outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {TRANSCRIPTION_ENGINES.map((eng) => (
+              <option key={eng.id} value={eng.id} className="bg-slate-900 text-slate-200">
+                {eng.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => triggerAI('SOAP')}
@@ -461,7 +552,7 @@ export default function GravadorMobile() {
           </button>
         </div>
         <p className="text-[10px] text-center text-slate-650 leading-relaxed">
-          Arcanjo.Lab Mobile Link — Whisper Large v3 Turbo Transcription Expert.
+          Arcanjo.Lab Mobile Link — {TRANSCRIPTION_ENGINES.find((e) => e.id === selectedEngine)?.label ?? 'Transcrição'}
         </p>
       </footer>
 
