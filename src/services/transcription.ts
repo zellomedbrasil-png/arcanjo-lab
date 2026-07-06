@@ -235,7 +235,14 @@ export async function transcribeAudioBlob(
 
   // whisper
   const { signal, clear } = timeoutSignal(WHISPER_TIMEOUT_MS);
+  const hasClientKey = !!(localStorage.getItem('arcanjo_groq_key') || import.meta.env.VITE_GROQ_API_KEY);
   try {
+    // Em DEV o proxy /api/groq-transcribe não existe (Vite não roda as edge functions).
+    // Com chave client-side, transcreve direto — sem o fetch que falharia e polui o console.
+    if (import.meta.env.DEV && hasClientKey) {
+      return await transcribeWhisperClient(blob, mimeType, signal);
+    }
+
     const viaProxy = await transcribeWhisperProxy(blob, mimeType, signal).catch((err) => {
       // Erro de rede no proxy → tenta fallback client-side. Erros HTTP reais sobem.
       if (err instanceof Error && err.message.startsWith('Whisper ')) throw err;
@@ -244,7 +251,6 @@ export async function transcribeAudioBlob(
     if (viaProxy !== null) return viaProxy;
 
     // Fallback: chave client-side (desktop). No celular não há chave → erro claro.
-    const hasClientKey = !!(localStorage.getItem('arcanjo_groq_key') || import.meta.env.VITE_GROQ_API_KEY);
     if (!hasClientKey) {
       throw new Error('Transcrição Whisper indisponível: configure GROQ_API_KEY no servidor (Vercel).');
     }

@@ -143,6 +143,24 @@ export default function GravadorMobile() {
   // Ditado ao vivo (Web Speech / Google): envia cada trecho finalizado ao desktop.
   const liveAccumRef = useRef('');
 
+  // Reset idempotente do estado do ditado ao vivo (fim, erro fatal ou stop).
+  const finalizeLive = async () => {
+    liveControllerRef.current = null;
+    setInterimText('');
+    setIsRecording(false);
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    await releaseWakeLock();
+    if (syncServiceRef.current) {
+      await syncServiceRef.current.publish({
+        type: 'RECORDING_STATUS',
+        payload: { isRecording: false, isTranscribing: false }
+      });
+    }
+  };
+
   const startLiveDictation = async () => {
     if (!isLiveSpeechSupported()) {
       setError('Ditado ao vivo indisponível neste navegador. Use o Chrome do Android ou troque para Whisper.');
@@ -163,6 +181,8 @@ export default function GravadorMobile() {
           syncServiceRef.current?.publish({ type: 'TRANSCRIPTION_RESULT', payload: { text: t } });
         },
         onError: (m) => { setError(m); toast.error(m); },
+        // Fim da sessão reseta a UI — evita ficar preso em "gravando".
+        onEnd: () => { finalizeLive(); },
       });
       setIsRecording(true);
       setRecordingTime(0);
@@ -175,6 +195,7 @@ export default function GravadorMobile() {
       }
       toast.success('Ditado ao vivo iniciado...');
     } catch {
+      await finalizeLive();
       setError('Erro ao iniciar o ditado ao vivo.');
       toast.error('Falha no ditado ao vivo.');
     }
@@ -265,20 +286,7 @@ export default function GravadorMobile() {
     // Ditado ao vivo: encerra o reconhecimento; o texto já foi enviado em trechos.
     if (liveControllerRef.current) {
       liveControllerRef.current.stop();
-      liveControllerRef.current = null;
-      setInterimText('');
-      setIsRecording(false);
-      await releaseWakeLock();
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
-      }
-      if (syncServiceRef.current) {
-        await syncServiceRef.current.publish({
-          type: 'RECORDING_STATUS',
-          payload: { isRecording: false, isTranscribing: false }
-        });
-      }
+      await finalizeLive();
       return;
     }
 

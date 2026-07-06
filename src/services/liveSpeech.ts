@@ -5,9 +5,11 @@
 // do Google — transcreve EM TEMPO REAL enquanto o médico fala, sem upload,
 // sem chave e sem custo. É a rota "nativa do Google" mais rápida.
 //
-// Limitações: só Chrome/Edge (Firefox não implementa), exige internet, e em
-// alguns Androids o reconhecimento para sozinho no silêncio — por isso
-// reiniciamos automaticamente enquanto a sessão estiver ativa.
+// Limitações: só Chrome/Edge (Firefox não implementa), exige internet e acesso
+// aos servidores de voz do Google. Quando o ambiente bloqueia esse acesso ou
+// nega o microfone, a API dispara erros (network, not-allowed, ...). Este
+// módulo trata esses erros como FATAIS — encerra a sessão com uma mensagem
+// clara — e NUNCA entra em loop de reinício (a causa dos "diversos erros").
 
 interface SpeechRecognitionResultLike {
   0: { transcript: string };
@@ -57,9 +59,25 @@ export interface LiveSpeechOptions {
   onPartial?: (interimText: string) => void;
   /** Trecho finalizado — some da parcial e vira definitivo. */
   onFinal: (finalText: string) => void;
+  /** Erro fatal: a sessão vai encerrar. Recebe mensagem amigável. */
   onError?: (message: string) => void;
+  /** Chamado UMA vez quando a sessão termina (por stop, erro fatal ou fim natural). */
   onEnd?: () => void;
 }
+
+// Erros que NÃO reiniciam o reconhecimento — encerram a sessão.
+const FATAL_ERRORS: Record<string, string> = {
+  'not-allowed': 'Permissão de microfone negada. Autorize o microfone no navegador e tente de novo.',
+  'service-not-allowed': 'O serviço de voz do Google não está disponível neste navegador/ambiente. Use o Whisper.',
+  'network': 'Sem acesso ao serviço de voz do Google (rede). Use o Whisper ou tente outra conexão.',
+  'audio-capture': 'Microfone não encontrado. Verifique o dispositivo de áudio.',
+  'language-not-supported': 'Idioma não suportado pelo ditado ao vivo neste navegador.',
+  'bad-grammar': 'Falha de configuração do ditado ao vivo. Use o Whisper.',
+};
+
+// Limite de segurança: mesmo em fim natural, nunca reinicia mais que isto
+// numa mesma sessão (barreira final contra qualquer loop inesperado).
+const MAX_RESTARTS = 120;
 
 /**
  * Inicia o ditado ao vivo. Retorna um controller com stop().
@@ -77,9 +95,19 @@ export function startLiveSpeech(opts: LiveSpeechOptions): LiveSpeechController {
   recognition.interimResults = true;
   recognition.maxAlternatives = 1;
 
-  // active = usuário ainda quer ditar; usamos para reiniciar após pausas.
+  // active   = usuário ainda quer ditar (permite reinício após pausas);
+  // ended    = onEnd já foi disparado (garante chamada única);
+  // restarts = barreira contra loop.
   let active = true;
-  let restarting = false;
+  let ended = false;
+  let restarts = 0;
+
+  const finish = () => {
+    if (ended) return;
+    ended = true;
+    active = false;
+    opts.onEnd?.();
+  };
 
   recognition.onresult = (event) => {
     let interim = '';
@@ -97,33 +125,33 @@ export function startLiveSpeech(opts: LiveSpeechOptions): LiveSpeechController {
   };
 
   recognition.onerror = (event) => {
-    // "no-speech" e "aborted" são transitórios/esperados — não incomodam o usuário.
+    // Transitórios esperados — não são erros para o usuário e não encerram.
     if (event.error === 'no-speech' || event.error === 'aborted') return;
-    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-      active = false;
-      opts.onError?.('Permissão de microfone negada para o ditado ao vivo.');
-      return;
-    }
-    opts.onError?.(`Erro no ditado ao vivo: ${event.error}`);
+
+    // Qualquer outro erro é tratado como fatal: encerra a sessão SEM reiniciar.
+    active = false;
+    const msg = FATAL_ERRORS[event.error] || `Erro no ditado ao vivo: ${event.error}. Use o Whisper.`;
+    opts.onError?.(msg);
+    // O onend vem logo em seguida e dispara finish().
   };
 
   recognition.onend = () => {
-    // Reinicia enquanto o médico não pediu parada (Android encerra no silêncio).
-    if (active && !restarting) {
-      restarting = true;
+    // Reinicia SOMENTE se o usuário ainda quer ditar (fim natural por silêncio,
+    // ex. Android) e dentro do limite de segurança. Erros já zeraram `active`.
+    if (active && restarts < MAX_RESTARTS) {
+      restarts++;
       setTimeout(() => {
-        restarting = false;
-        if (active) {
-          try {
-            recognition.start();
-          } catch {
-            // já rodando ou estado inválido — ignora
-          }
+        if (!active) { finish(); return; }
+        try {
+          recognition.start();
+        } catch {
+          // Estado inválido/duplo start — encerra com segurança.
+          finish();
         }
-      }, 250);
-    } else if (!active) {
-      opts.onEnd?.();
+      }, 300);
+      return;
     }
+    finish();
   };
 
   try {
@@ -139,7 +167,7 @@ export function startLiveSpeech(opts: LiveSpeechOptions): LiveSpeechController {
       try {
         recognition.stop();
       } catch {
-        // ignora
+        finish();
       }
     },
   };

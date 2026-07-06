@@ -328,6 +328,14 @@ export default function SOAPPanel() {
     }
   };
 
+  // Reset idempotente do estado do ditado — chamado no fim/erro da sessão.
+  const finalizeLive = () => {
+    liveControllerRef.current = null;
+    setInterimText('');
+    setIsRecording(false);
+    clearTimer();
+  };
+
   // Ditado ao vivo (Web Speech / Google) — texto em tempo real, sem gravar blob.
   const startLiveDictation = () => {
     if (!isLiveSpeechSupported()) {
@@ -344,12 +352,16 @@ export default function SOAPPanel() {
           const prev = useAppStore.getState().queixa;
           setQueixa(prev.trim() ? `${prev} ${t}` : t);
         },
-        onError: (m) => toast.error(m),
+        onError: (m) => { setError(m); toast.error(m); },
+        // Fim da sessão (stop, erro fatal ou fim natural) reseta a UI —
+        // impede que o painel fique preso em "gravando".
+        onEnd: () => finalizeLive(),
       });
       setIsRecording(true);
       startTimer();
       toast.success('Ditado ao vivo iniciado — pode falar.');
     } catch (err) {
+      finalizeLive();
       toast.error(getErrorMessage(err, 'Falha ao iniciar o ditado ao vivo.'));
     }
   };
@@ -393,13 +405,10 @@ export default function SOAPPanel() {
   };
 
   const stopRecording = () => {
-    // Ditado ao vivo: encerra o reconhecimento.
+    // Ditado ao vivo: encerra o reconhecimento (onEnd faz o reset da UI).
     if (liveControllerRef.current) {
       liveControllerRef.current.stop();
-      liveControllerRef.current = null;
-      setInterimText('');
-      setIsRecording(false);
-      clearTimer();
+      finalizeLive();
       toast.success('Ditado finalizado.');
       return;
     }
