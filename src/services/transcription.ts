@@ -26,19 +26,19 @@ export const TRANSCRIPTION_ENGINES: TranscriptionEngineMeta[] = [
   {
     id: 'whisper',
     label: 'Whisper (Groq) ⚡',
-    note: 'Padrão — grava e transcreve rápido no servidor',
+    note: 'Recomendado — transcrição fiel e estável para consultas médicas',
     live: false,
   },
   {
     id: 'google-live',
     label: 'Ditado ao vivo (Google) 🎙️',
-    note: 'Nativo do Chrome/Edge — texto em tempo real, sem espera',
+    note: 'Tempo real, mas só no Chrome/Edge e depende da rede — menos preciso em termos técnicos',
     live: true,
   },
   {
     id: 'gemini',
     label: 'Gemini (áudio) 🧠',
-    note: 'Áudio nativo do Google via proxy seguro',
+    note: 'Alternativa por IA — pode parafrasear; confira o texto antes de usar',
     live: false,
   },
 ];
