@@ -4,8 +4,9 @@ import { useAppStore } from '../../store/useAppStore';
 import { callAI, getLastUsedModel, getDefaultModelId, AI_MODELS, cancelAIRequest } from '../../config/gemini';
 import {
   getTranscriptionEngine, setTranscriptionEngine, TRANSCRIPTION_ENGINES,
-  transcribeAudioBlob, isTimeoutAbort, type TranscriptionEngine,
+  transcribeSegments, isTimeoutAbort, type TranscriptionEngine,
 } from '../../services/transcription';
+import { SegmentedRecorder } from '../../services/segmentedRecorder';
 import { startLiveSpeech, isLiveSpeechSupported, type LiveSpeechController } from '../../services/liveSpeech';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
@@ -291,8 +292,7 @@ export default function SOAPPanel() {
     }
   };
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const segRecorderRef = useRef<SegmentedRecorder | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -304,6 +304,10 @@ export default function SOAPPanel() {
       if (liveControllerRef.current) {
         liveControllerRef.current.stop();
         liveControllerRef.current = null;
+      }
+      if (segRecorderRef.current) {
+        segRecorderRef.current.abort();
+        segRecorderRef.current = null;
       }
     };
   }, []);
@@ -372,39 +376,24 @@ export default function SOAPPanel() {
       return;
     }
 
-    audioChunksRef.current = [];
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
+      // Gravador segmentado (voz ~20 kbps, partes ≤5 min): nunca estoura o
+      // limite do proxy. Consulta curta = 1 segmento (sem cortes).
+      const recorder = new SegmentedRecorder();
+      segRecorderRef.current = recorder;
+      await recorder.start();
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const mime = mediaRecorder.mimeType || 'audio/webm';
-        const audioBlob = new Blob(audioChunksRef.current, { type: mime });
-        stream.getTracks().forEach((track) => track.stop());
-        // Motor lido no momento da parada (whisper/gemini) — live não chega aqui.
-        const engine = getTranscriptionEngine();
-        await transcreverAudio(audioBlob, mime, engine === 'gemini' ? 'gemini' : 'whisper');
-      };
-
-      mediaRecorder.start();
       setIsRecording(true);
       startTimer();
-
       toast.success('Gravação iniciada...');
     } catch (err) {
       console.error(err);
+      segRecorderRef.current = null;
       toast.error('Não foi possível acessar o microfone. Verifique as permissões.');
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
     // Ditado ao vivo: encerra o reconhecimento (onEnd faz o reset da UI).
     if (liveControllerRef.current) {
       liveControllerRef.current.stop();
@@ -412,18 +401,22 @@ export default function SOAPPanel() {
       toast.success('Ditado finalizado.');
       return;
     }
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+    if (segRecorderRef.current && isRecording) {
+      const recorder = segRecorderRef.current;
+      segRecorderRef.current = null;
       setIsRecording(false);
       clearTimer();
+      const engine = getTranscriptionEngine() === 'gemini' ? 'gemini' : 'whisper';
+      const { segments, mimeType } = await recorder.stop();
+      await transcreverAudio(segments, mimeType, engine);
     }
   };
 
-  const transcreverAudio = async (audioBlob: Blob, mimeType: string, engine: 'whisper' | 'gemini') => {
+  const transcreverAudio = async (segments: Blob[], mimeType: string, engine: 'whisper' | 'gemini') => {
     setIsTranscribing(true);
     toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo com Whisper...');
     try {
-      const text = await transcribeAudioBlob(audioBlob, mimeType, engine);
+      const text = await transcribeSegments(segments, mimeType, engine);
       if (text && text.trim()) {
         toast.success('Áudio transcrito com sucesso!');
         await handleProcessMobileTranscription(text);

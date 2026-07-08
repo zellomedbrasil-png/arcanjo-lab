@@ -100,6 +100,11 @@ async function transcribeWhisperProxy(blob: Blob, mimeType: string, signal: Abor
 
   const text = await response.text();
   if (!response.ok) {
+    // 413 = corpo maior que o limite do Edge (~4,5 MB). Com a gravação em
+    // segmentos isto é raro; mensagem clara em vez do erro técnico cru.
+    if (response.status === 413) {
+      throw new Error('Este trecho de áudio ficou grande demais para o servidor. Grave em partes mais curtas ou use o Ditado ao vivo (sem limite de tamanho).');
+    }
     let msg = text;
     try {
       msg = JSON.parse(text).error || text;
@@ -258,6 +263,25 @@ export async function transcribeAudioBlob(
   } finally {
     clear();
   }
+}
+
+/**
+ * Transcreve uma lista de segmentos de áudio (na ordem) e concatena o texto.
+ * Cada segmento passa por transcribeAudioBlob (proxy Whisper ou Gemini).
+ * Segmentos vazios/sem fala são ignorados.
+ */
+export async function transcribeSegments(
+  segments: Blob[],
+  mimeType: string,
+  engine: Exclude<TranscriptionEngine, 'google-live'>,
+): Promise<string> {
+  const parts: string[] = [];
+  for (const seg of segments) {
+    if (!seg || seg.size === 0) continue;
+    const text = await transcribeAudioBlob(seg, mimeType, engine);
+    if (text && text.trim()) parts.push(text.trim());
+  }
+  return parts.join(' ').trim();
 }
 
 /** Mensagem amigável para erros de abort/timeout. */

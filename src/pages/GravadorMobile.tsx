@@ -4,8 +4,9 @@ import { Mic, Square, Loader2, Check, RefreshCw, AlertCircle, Smartphone, Wifi, 
 import { SyncService, type SyncMessage } from '../services/syncService';
 import {
   getTranscriptionEngine, setTranscriptionEngine, TRANSCRIPTION_ENGINES,
-  transcribeAudioBlob, isTimeoutAbort, type TranscriptionEngine,
+  transcribeSegments, isTimeoutAbort, type TranscriptionEngine,
 } from '../services/transcription';
+import { SegmentedRecorder } from '../services/segmentedRecorder';
 import { startLiveSpeech, isLiveSpeechSupported, type LiveSpeechController } from '../services/liveSpeech';
 import { toast } from '../lib/toast';
 
@@ -23,8 +24,7 @@ export default function GravadorMobile() {
   const [selectedEngine, setSelectedEngine] = useState<TranscriptionEngine>(() => getTranscriptionEngine());
   const [interimText, setInterimText] = useState('');
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const segRecorderRef = useRef<SegmentedRecorder | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
   const syncServiceRef = useRef<SyncService | null>(null);
   const liveControllerRef = useRef<LiveSpeechController | null>(null);
@@ -93,6 +93,10 @@ export default function GravadorMobile() {
       if (liveControllerRef.current) {
         liveControllerRef.current.stop();
         liveControllerRef.current = null;
+      }
+      if (segRecorderRef.current) {
+        segRecorderRef.current.abort();
+        segRecorderRef.current = null;
       }
       releaseWakeLock();
     };
@@ -207,7 +211,6 @@ export default function GravadorMobile() {
       return;
     }
 
-    audioChunksRef.current = [];
     setError(null);
 
     // Secure context check for microphone access
@@ -218,54 +221,19 @@ export default function GravadorMobile() {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      // Determine the best supported mime-type for the device
-      const mimeTypes = [
-        'audio/webm;codecs=opus',
-        'audio/webm',
-        'audio/ogg;codecs=opus',
-        'audio/mp4',
-        'audio/aac',
-        'audio/wav'
-      ];
-      
-      let selectedMimeType = '';
-      for (const type of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          selectedMimeType = type;
-          break;
-        }
-      }
+      // Gravador segmentado: áudio de voz (~20 kbps) em partes ≤5 min, nunca
+      // estoura o limite do proxy. Consulta curta = 1 segmento (sem cortes).
+      const recorder = new SegmentedRecorder();
+      segRecorderRef.current = recorder;
+      await recorder.start();
 
-      console.log(`[MobileMic] Recording with mime-type: ${selectedMimeType}`);
-      
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: selectedMimeType || undefined
-      });
-      
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: selectedMimeType || 'audio/webm' });
-        stream.getTracks().forEach((track) => track.stop());
-        await transcreverAudio(audioBlob, selectedMimeType);
-      };
-
-      mediaRecorder.start();
       setIsRecording(true);
       setRecordingTime(0);
       await acquireWakeLock();
       timerIntervalRef.current = window.setInterval(() => {
         setRecordingTime((prev) => prev + 1);
       }, 1000);
-      
+
       // Notify desktop that recording started
       if (syncServiceRef.current) {
         await syncServiceRef.current.publish({
@@ -273,10 +241,11 @@ export default function GravadorMobile() {
           payload: { isRecording: true }
         });
       }
-      
+
       toast.success('Gravação iniciada...');
     } catch (err) {
       console.error(err);
+      segRecorderRef.current = null;
       setError('Erro ao acessar microfone. Verifique se deu permissão de áudio ao navegador no seu celular.');
       toast.error('Sem permissão de microfone.');
     }
@@ -290,8 +259,9 @@ export default function GravadorMobile() {
       return;
     }
 
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+    if (segRecorderRef.current && isRecording) {
+      const recorder = segRecorderRef.current;
+      segRecorderRef.current = null;
       setIsRecording(false);
       await releaseWakeLock();
       if (timerIntervalRef.current) {
@@ -306,15 +276,18 @@ export default function GravadorMobile() {
           payload: { isRecording: false, isTranscribing: true }
         });
       }
+
+      const { segments, mimeType } = await recorder.stop();
+      await transcreverAudio(segments, mimeType);
     }
   };
 
-  const transcreverAudio = async (audioBlob: Blob, mimeType: string) => {
+  const transcreverAudio = async (segments: Blob[], mimeType: string) => {
     setIsTranscribing(true);
     const engine = getTranscriptionEngine() === 'gemini' ? 'gemini' : 'whisper';
     toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo áudio com Whisper...');
     try {
-      const text = await transcribeAudioBlob(audioBlob, mimeType, engine);
+      const text = await transcribeSegments(segments, mimeType, engine);
       if (text && text.trim()) {
         setTranscriptionText(text);
         toast.success('Áudio transcrito com sucesso!');
