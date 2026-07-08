@@ -17,20 +17,30 @@ export const config = { runtime: 'edge' };
 declare const process: { env: { [key: string]: string | undefined } };
 
 // Prompt de dominio clinico — enviesa o Whisper para o vocabulario medico das
-// especialidades do usuario (Gastroenterologia, Geriatria e Clinica Geral),
-// melhorando o reconhecimento de medicamentos, diagnosticos e exames em pt-BR.
-// Para ampliar: acrescente termos ao final da lista (o Whisper usa ~224 tokens).
+// especialidades do usuario (Gastroenterologia, Geriatria e Clinica Geral).
+// LIMITE DO GROQ: 896 BYTES (UTF-8). Acentos contam 2 bytes; este texto tem
+// ~882 bytes. Para ampliar, troque termos (nao apenas adicione) e mantenha <896;
+// o guard truncatePrompt() abaixo protege contra excesso acidental.
 const MEDICAL_PROMPT =
-  'Transcrição de consulta de Gastroenterologia, Geriatria e Clínica Geral em português do Brasil. ' +
-  'Medicamentos: omeprazol, pantoprazol, esomeprazol, domperidona, bromoprida, ondansetrona, mesalazina, ' +
-  'azatioprina, budesonida, rifaximina, lactulose, metformina, gliclazida, dapagliflozina, empagliflozina, ' +
-  'losartana, anlodipino, espironolactona, furosemida, atorvastatina, rosuvastatina, ezetimiba, clopidogrel, ' +
-  'rivaroxabana, levotiroxina, donepezila, memantina, rivastigmina, quetiapina, sertralina, escitalopram, ' +
-  'gabapentina, pregabalina, dipirona. Diagnósticos: doença do refluxo gastroesofágico, DRGE, gastrite, ' +
-  'úlcera péptica, Helicobacter pylori, síndrome do intestino irritável, doença de Crohn, retocolite ulcerativa, ' +
-  'esteatose hepática, cirrose, pancreatite, diverticulite, disfagia, pirose, melena, demência, doença de Alzheimer, ' +
-  'Parkinson, fragilidade, sarcopenia, delirium, polifarmácia, fibrilação atrial, DPOC. Exames: endoscopia digestiva alta, ' +
-  'colonoscopia, TGO, TGP, gama-GT, TSH, hemoglobina glicada, creatinina, CID-10.';
+  'Consulta de Gastroenterologia, Geriatria e Clínica Geral, português do Brasil. ' +
+  'Medicamentos: omeprazol, pantoprazol, domperidona, bromoprida, ondansetrona, mesalazina, azatioprina, ' +
+  'rifaximina, lactulose, metformina, dapagliflozina, empagliflozina, losartana, anlodipino, espironolactona, ' +
+  'furosemida, atorvastatina, rosuvastatina, clopidogrel, rivaroxabana, levotiroxina, donepezila, memantina, ' +
+  'quetiapina, sertralina, escitalopram, gabapentina, pregabalina, dipirona. Diagnósticos: refluxo ' +
+  'gastroesofágico, gastrite, úlcera péptica, Helicobacter pylori, síndrome do intestino irritável, doença de ' +
+  'Crohn, retocolite ulcerativa, esteatose hepática, cirrose, pancreatite, disfagia, pirose, melena, demência, ' +
+  'Alzheimer, Parkinson, fragilidade, delirium, polifarmácia, fibrilação atrial, DPOC. Exames: endoscopia, ' +
+  'colonoscopia, TSH, hemoglobina glicada, creatinina, CID-10.';
+
+// Garante que o prompt nunca exceda o limite de 896 bytes do Groq (senao 400).
+function truncatePrompt(text: string, maxBytes = 896): string {
+  const enc = new TextEncoder();
+  let out = text;
+  while (enc.encode(out).length > maxBytes) {
+    out = out.slice(0, -16);
+  }
+  return out;
+}
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -74,8 +84,8 @@ export default async function handler(req: Request): Promise<Response> {
     form.append('language', lang);
     form.append('temperature', '0');
     // Prompt de dominio: orienta o Whisper para o vocabulario clinico
-    // (medicamentos, doses, exames, CID), melhorando os termos medicos.
-    form.append('prompt', MEDICAL_PROMPT);
+    // (medicamentos, doses, exames, CID). Truncado a 896 bytes (limite do Groq).
+    form.append('prompt', truncatePrompt(MEDICAL_PROMPT));
     form.append('response_format', 'json');
 
     const upstream = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {

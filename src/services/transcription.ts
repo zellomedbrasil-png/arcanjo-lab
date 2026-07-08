@@ -83,19 +83,18 @@ const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // limite da API Whisper
 const WHISPER_TIMEOUT_MS = 90_000;
 const GEMINI_AUDIO_TIMEOUT_MS = 120_000;
 
-// Prompt de domínio clínico para o fallback client-side (mantém em sincronia
-// com o do proxy api/groq-transcribe.ts). Vocabulário de Gastro/Geriatria/Clínica.
+// Prompt de domínio clínico para o fallback client-side (em sincronia com o do
+// proxy api/groq-transcribe.ts). LIMITE DO GROQ: 896 BYTES UTF-8 (~882 aqui).
 const MEDICAL_PROMPT =
-  'Transcrição de consulta de Gastroenterologia, Geriatria e Clínica Geral em português do Brasil. ' +
-  'Medicamentos: omeprazol, pantoprazol, esomeprazol, domperidona, bromoprida, ondansetrona, mesalazina, ' +
-  'azatioprina, budesonida, rifaximina, lactulose, metformina, gliclazida, dapagliflozina, empagliflozina, ' +
-  'losartana, anlodipino, espironolactona, furosemida, atorvastatina, rosuvastatina, ezetimiba, clopidogrel, ' +
-  'rivaroxabana, levotiroxina, donepezila, memantina, rivastigmina, quetiapina, sertralina, escitalopram, ' +
-  'gabapentina, pregabalina, dipirona. Diagnósticos: doença do refluxo gastroesofágico, DRGE, gastrite, ' +
-  'úlcera péptica, Helicobacter pylori, síndrome do intestino irritável, doença de Crohn, retocolite ulcerativa, ' +
-  'esteatose hepática, cirrose, pancreatite, diverticulite, disfagia, pirose, melena, demência, doença de Alzheimer, ' +
-  'Parkinson, fragilidade, sarcopenia, delirium, polifarmácia, fibrilação atrial, DPOC. Exames: endoscopia digestiva alta, ' +
-  'colonoscopia, TGO, TGP, gama-GT, TSH, hemoglobina glicada, creatinina, CID-10.';
+  'Consulta de Gastroenterologia, Geriatria e Clínica Geral, português do Brasil. ' +
+  'Medicamentos: omeprazol, pantoprazol, domperidona, bromoprida, ondansetrona, mesalazina, azatioprina, ' +
+  'rifaximina, lactulose, metformina, dapagliflozina, empagliflozina, losartana, anlodipino, espironolactona, ' +
+  'furosemida, atorvastatina, rosuvastatina, clopidogrel, rivaroxabana, levotiroxina, donepezila, memantina, ' +
+  'quetiapina, sertralina, escitalopram, gabapentina, pregabalina, dipirona. Diagnósticos: refluxo ' +
+  'gastroesofágico, gastrite, úlcera péptica, Helicobacter pylori, síndrome do intestino irritável, doença de ' +
+  'Crohn, retocolite ulcerativa, esteatose hepática, cirrose, pancreatite, disfagia, pirose, melena, demência, ' +
+  'Alzheimer, Parkinson, fragilidade, delirium, polifarmácia, fibrilação atrial, DPOC. Exames: endoscopia, ' +
+  'colonoscopia, TSH, hemoglobina glicada, creatinina, CID-10.';
 
 // ─── Whisper (Groq) via proxy, com fallback client-side ─────────────────────────
 
