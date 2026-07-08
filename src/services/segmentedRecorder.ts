@@ -13,9 +13,17 @@
 // geram UM único segmento (sem cortes). Assim a duração é praticamente
 // ilimitada SEM perder qualidade de captação.
 
-// Limite por segmento com folga sob os ~4,5 MB do Edge (sobra p/ o último
-// chunk e o overhead do multipart no proxy).
-const SEGMENT_MAX_BYTES = 3_500_000;
+// Bitrate de captação. 96 kbps é alta qualidade para voz (o Whisper não ganha
+// nada acima disso) e foi calibrado (medido no navegador) para que uma consulta
+// de até ~5 min caiba em UM único segmento (~3,85 MB em 5 min, pior caso), sem
+// cortes — o cenário real de uso. Fala real, com pausas, fica ainda menor.
+// Gravações maiores ainda são divididas pela regra de tamanho abaixo; se o
+// aparelho recusar o hint, cai no nativo.
+const CAPTURE_BITRATE = 96_000;
+// Limite por segmento com folga sob os ~4,5 MB do Edge (sobra p/ o último chunk
+// e o overhead do multipart). A 96 kbps, 5 min ≈ 3,85 MB fica abaixo deste
+// limiar → segmento único; só divide se passar de ~5,3 min, nunca dando 413.
+const SEGMENT_MAX_BYTES = 4_200_000;
 // ondataavailable periódico (a cada 2s) para medir o tamanho acumulado.
 const TIMESLICE_MS = 2000;
 
@@ -76,12 +84,19 @@ export class SegmentedRecorder {
     this.currentChunks = [];
     this.currentSize = 0;
 
-    // SEM audioBitsPerSecond → qualidade nativa do navegador (melhor transcrição).
+    // Alta qualidade de voz (110 kbps). Se o aparelho recusar o hint, cai no nativo.
+    const options: MediaRecorderOptions = { audioBitsPerSecond: CAPTURE_BITRATE };
+    if (this.mimeType) options.mimeType = this.mimeType;
+
     let recorder: MediaRecorder;
     try {
-      recorder = new MediaRecorder(this.stream, this.mimeType ? { mimeType: this.mimeType } : undefined);
+      recorder = new MediaRecorder(this.stream, options);
     } catch {
-      recorder = new MediaRecorder(this.stream);
+      try {
+        recorder = new MediaRecorder(this.stream, this.mimeType ? { mimeType: this.mimeType } : undefined);
+      } catch {
+        recorder = new MediaRecorder(this.stream);
+      }
     }
     this.recorder = recorder;
 

@@ -83,11 +83,19 @@ const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // limite da API Whisper
 const WHISPER_TIMEOUT_MS = 90_000;
 const GEMINI_AUDIO_TIMEOUT_MS = 120_000;
 
-// Prompt de domínio clínico para o fallback client-side (o proxy tem o seu próprio).
+// Prompt de domínio clínico para o fallback client-side (mantém em sincronia
+// com o do proxy api/groq-transcribe.ts). Vocabulário de Gastro/Geriatria/Clínica.
 const MEDICAL_PROMPT =
-  'Transcrição de consulta médica em português do Brasil. Podem aparecer termos clínicos, ' +
-  'nomes de medicamentos e doses (mg, ml, comprimidos), exames laboratoriais e de imagem, ' +
-  'códigos CID-10, sinais vitais, comorbidades e nomes próprios de pacientes.';
+  'Transcrição de consulta de Gastroenterologia, Geriatria e Clínica Geral em português do Brasil. ' +
+  'Medicamentos: omeprazol, pantoprazol, esomeprazol, domperidona, bromoprida, ondansetrona, mesalazina, ' +
+  'azatioprina, budesonida, rifaximina, lactulose, metformina, gliclazida, dapagliflozina, empagliflozina, ' +
+  'losartana, anlodipino, espironolactona, furosemida, atorvastatina, rosuvastatina, ezetimiba, clopidogrel, ' +
+  'rivaroxabana, levotiroxina, donepezila, memantina, rivastigmina, quetiapina, sertralina, escitalopram, ' +
+  'gabapentina, pregabalina, dipirona. Diagnósticos: doença do refluxo gastroesofágico, DRGE, gastrite, ' +
+  'úlcera péptica, Helicobacter pylori, síndrome do intestino irritável, doença de Crohn, retocolite ulcerativa, ' +
+  'esteatose hepática, cirrose, pancreatite, diverticulite, disfagia, pirose, melena, demência, doença de Alzheimer, ' +
+  'Parkinson, fragilidade, sarcopenia, delirium, polifarmácia, fibrilação atrial, DPOC. Exames: endoscopia digestiva alta, ' +
+  'colonoscopia, TGO, TGP, gama-GT, TSH, hemoglobina glicada, creatinina, CID-10.';
 
 // ─── Whisper (Groq) via proxy, com fallback client-side ─────────────────────────
 

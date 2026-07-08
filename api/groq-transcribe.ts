@@ -16,12 +16,21 @@ export const config = { runtime: 'edge' };
 // Corrige TS2591 declarando process globalmente no Edge Runtime
 declare const process: { env: { [key: string]: string | undefined } };
 
-// Prompt de dominio clinico — enviesa o Whisper para o vocabulario medico,
-// melhorando o reconhecimento de medicamentos, doses, exames e CID em pt-BR.
+// Prompt de dominio clinico — enviesa o Whisper para o vocabulario medico das
+// especialidades do usuario (Gastroenterologia, Geriatria e Clinica Geral),
+// melhorando o reconhecimento de medicamentos, diagnosticos e exames em pt-BR.
+// Para ampliar: acrescente termos ao final da lista (o Whisper usa ~224 tokens).
 const MEDICAL_PROMPT =
-  'Transcricao de consulta medica em portugues do Brasil. Podem aparecer termos clinicos, ' +
-  'nomes de medicamentos e doses (mg, ml, comprimidos), exames laboratoriais e de imagem, ' +
-  'codigos CID-10, sinais vitais, comorbidades e nomes proprios de pacientes.';
+  'Transcrição de consulta de Gastroenterologia, Geriatria e Clínica Geral em português do Brasil. ' +
+  'Medicamentos: omeprazol, pantoprazol, esomeprazol, domperidona, bromoprida, ondansetrona, mesalazina, ' +
+  'azatioprina, budesonida, rifaximina, lactulose, metformina, gliclazida, dapagliflozina, empagliflozina, ' +
+  'losartana, anlodipino, espironolactona, furosemida, atorvastatina, rosuvastatina, ezetimiba, clopidogrel, ' +
+  'rivaroxabana, levotiroxina, donepezila, memantina, rivastigmina, quetiapina, sertralina, escitalopram, ' +
+  'gabapentina, pregabalina, dipirona. Diagnósticos: doença do refluxo gastroesofágico, DRGE, gastrite, ' +
+  'úlcera péptica, Helicobacter pylori, síndrome do intestino irritável, doença de Crohn, retocolite ulcerativa, ' +
+  'esteatose hepática, cirrose, pancreatite, diverticulite, disfagia, pirose, melena, demência, doença de Alzheimer, ' +
+  'Parkinson, fragilidade, sarcopenia, delirium, polifarmácia, fibrilação atrial, DPOC. Exames: endoscopia digestiva alta, ' +
+  'colonoscopia, TGO, TGP, gama-GT, TSH, hemoglobina glicada, creatinina, CID-10.';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
