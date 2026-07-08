@@ -16,6 +16,13 @@ export const config = { runtime: 'edge' };
 // Corrige TS2591 declarando process globalmente no Edge Runtime
 declare const process: { env: { [key: string]: string | undefined } };
 
+// Prompt de dominio clinico — enviesa o Whisper para o vocabulario medico,
+// melhorando o reconhecimento de medicamentos, doses, exames e CID em pt-BR.
+const MEDICAL_PROMPT =
+  'Transcricao de consulta medica em portugues do Brasil. Podem aparecer termos clinicos, ' +
+  'nomes de medicamentos e doses (mg, ml, comprimidos), exames laboratoriais e de imagem, ' +
+  'codigos CID-10, sinais vitais, comorbidades e nomes proprios de pacientes.';
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -41,6 +48,9 @@ export default async function handler(req: Request): Promise<Response> {
   const reqUrl = new URL(req.url);
   const ext = (reqUrl.searchParams.get('ext') || 'webm').replace(/[^a-z0-9]/gi, '') || 'webm';
   const lang = (reqUrl.searchParams.get('lang') || 'pt').replace(/[^a-z-]/gi, '') || 'pt';
+  // Modelo configuravel por query (?model=). Padrao: whisper-large-v3 completo —
+  // mais preciso que o turbo para termos clinicos (prioriza precisao sobre latencia).
+  const model = (reqUrl.searchParams.get('model') || 'whisper-large-v3').replace(/[^a-z0-9.-]/gi, '') || 'whisper-large-v3';
   const contentType = req.headers.get('content-type') || 'audio/webm';
 
   try {
@@ -51,8 +61,12 @@ export default async function handler(req: Request): Promise<Response> {
 
     const form = new FormData();
     form.append('file', new File([audioBuf], `audio.${ext}`, { type: contentType }));
-    form.append('model', 'whisper-large-v3-turbo');
+    form.append('model', model);
     form.append('language', lang);
+    form.append('temperature', '0');
+    // Prompt de dominio: orienta o Whisper para o vocabulario clinico
+    // (medicamentos, doses, exames, CID), melhorando os termos medicos.
+    form.append('prompt', MEDICAL_PROMPT);
     form.append('response_format', 'json');
 
     const upstream = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {

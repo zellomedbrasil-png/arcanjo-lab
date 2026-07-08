@@ -83,6 +83,12 @@ const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // limite da API Whisper
 const WHISPER_TIMEOUT_MS = 90_000;
 const GEMINI_AUDIO_TIMEOUT_MS = 120_000;
 
+// Prompt de domínio clínico para o fallback client-side (o proxy tem o seu próprio).
+const MEDICAL_PROMPT =
+  'Transcrição de consulta médica em português do Brasil. Podem aparecer termos clínicos, ' +
+  'nomes de medicamentos e doses (mg, ml, comprimidos), exames laboratoriais e de imagem, ' +
+  'códigos CID-10, sinais vitais, comorbidades e nomes próprios de pacientes.';
+
 // ─── Whisper (Groq) via proxy, com fallback client-side ─────────────────────────
 
 async function transcribeWhisperProxy(blob: Blob, mimeType: string, signal: AbortSignal): Promise<string | null> {
@@ -122,7 +128,8 @@ async function transcribeWhisperClient(blob: Blob, mimeType: string, signal: Abo
   const ext = extensionForMime(mimeType);
   const file = new File([blob], `audio.${ext}`, { type: mimeType || 'audio/webm' });
   const transcription = await groq.audio.transcriptions.create(
-    { file, model: 'whisper-large-v3-turbo', language: 'pt' },
+    // whisper-large-v3 completo + prompt clínico = melhor precisão em termos médicos.
+    { file, model: 'whisper-large-v3', language: 'pt', temperature: 0, prompt: MEDICAL_PROMPT },
     { signal },
   );
   return (transcription.text || '').trim();
