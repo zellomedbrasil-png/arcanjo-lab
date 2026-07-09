@@ -103,17 +103,18 @@ export default function GravadorMobile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
 
-  // O navegador solta o wake lock quando o app vai para segundo plano;
-  // ao voltar durante uma gravação, readquire para a tela seguir acesa.
+  // O navegador solta o wake lock quando o app vai para segundo plano; ao voltar
+  // durante a gravação OU a transcrição, readquire para a tela seguir acesa
+  // (evita que o upload seja abortado pelo bloqueio do celular).
   useEffect(() => {
-    if (!isRecording) return;
+    if (!isRecording && !isTranscribing) return;
     const onVisibility = () => {
       if (document.visibilityState === 'visible') acquireWakeLock();
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRecording]);
+  }, [isRecording, isTranscribing]);
 
   // Periodic announcement to desktop, stopping once connected
   useEffect(() => {
@@ -263,7 +264,6 @@ export default function GravadorMobile() {
       const recorder = segRecorderRef.current;
       segRecorderRef.current = null;
       setIsRecording(false);
-      await releaseWakeLock();
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
@@ -277,8 +277,14 @@ export default function GravadorMobile() {
         });
       }
 
-      const { segments, mimeType } = await recorder.stop();
-      await transcreverAudio(segments, mimeType);
+      // Mantém a tela acesa DURANTE a transcrição — se o celular bloquear/for
+      // para segundo plano, o navegador aborta o upload (causa do "Request was aborted").
+      try {
+        const { segments, mimeType } = await recorder.stop();
+        await transcreverAudio(segments, mimeType);
+      } finally {
+        await releaseWakeLock();
+      }
     }
   };
 

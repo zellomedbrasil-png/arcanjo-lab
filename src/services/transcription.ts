@@ -80,8 +80,16 @@ function timeoutSignal(ms: number): { signal: AbortSignal; clear: () => void } {
 }
 
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // limite da API Whisper
-const WHISPER_TIMEOUT_MS = 90_000;
 const GEMINI_AUDIO_TIMEOUT_MS = 120_000;
+
+// Cadeia de tentativas do Whisper: 1ª com o modelo completo (precisão); se
+// falhar (timeout/rede/limite de taxa), cai no turbo — mais rápido e com
+// limites maiores no Groq. Cada tentativa tem seu próprio timeout generoso,
+// pois o upload pelo celular + processamento podem demorar em rede fraca.
+const WHISPER_ATTEMPTS: Array<{ model: string; timeoutMs: number }> = [
+  { model: 'whisper-large-v3', timeoutMs: 120_000 },
+  { model: 'whisper-large-v3-turbo', timeoutMs: 90_000 },
+];
 
 // Prompt de domínio clínico para o fallback client-side (em sincronia com o do
 // proxy api/groq-transcribe.ts). LIMITE DO GROQ: 896 BYTES UTF-8 (~882 aqui).
@@ -98,9 +106,9 @@ const MEDICAL_PROMPT =
 
 // ─── Whisper (Groq) via proxy, com fallback client-side ─────────────────────────
 
-async function transcribeWhisperProxy(blob: Blob, mimeType: string, signal: AbortSignal): Promise<string | null> {
+async function transcribeWhisperProxy(blob: Blob, mimeType: string, signal: AbortSignal, model: string): Promise<string | null> {
   const ext = extensionForMime(mimeType);
-  const url = `/api/groq-transcribe?ext=${encodeURIComponent(ext)}&lang=pt`;
+  const url = `/api/groq-transcribe?ext=${encodeURIComponent(ext)}&lang=pt&model=${encodeURIComponent(model)}`;
   const response = await fetch(url, {
     method: 'POST',
     signal,
@@ -131,15 +139,25 @@ async function transcribeWhisperProxy(blob: Blob, mimeType: string, signal: Abor
   return (data.text || '').trim();
 }
 
-async function transcribeWhisperClient(blob: Blob, mimeType: string, signal: AbortSignal): Promise<string> {
+async function transcribeWhisperClient(blob: Blob, mimeType: string, signal: AbortSignal, model = 'whisper-large-v3'): Promise<string> {
   const ext = extensionForMime(mimeType);
   const file = new File([blob], `audio.${ext}`, { type: mimeType || 'audio/webm' });
   const transcription = await groq.audio.transcriptions.create(
-    // whisper-large-v3 completo + prompt clínico = melhor precisão em termos médicos.
-    { file, model: 'whisper-large-v3', language: 'pt', temperature: 0, prompt: MEDICAL_PROMPT },
+    // modelo completo + prompt clínico = melhor precisão em termos médicos.
+    { file, model, language: 'pt', temperature: 0, prompt: MEDICAL_PROMPT },
     { signal },
   );
   return (transcription.text || '').trim();
+}
+
+/** Erros transitórios que valem uma nova tentativa (abort/timeout, rede, 429, 5xx). */
+function isRetriableWhisperError(err: unknown): boolean {
+  if (isTimeoutAbort(err)) return true;
+  if (err instanceof TypeError) return true; // falha de rede do fetch
+  if (err instanceof Error) {
+    if (/Whisper (429|5\d\d)/.test(err.message)) return true;
+  }
+  return false;
 }
 
 // ─── Gemini áudio nativo via /api/gemini ────────────────────────────────────────
@@ -253,26 +271,56 @@ export async function transcribeAudioBlob(
   }
 
   // whisper
-  const { signal, clear } = timeoutSignal(WHISPER_TIMEOUT_MS);
   const hasClientKey = !!(localStorage.getItem('arcanjo_groq_key') || import.meta.env.VITE_GROQ_API_KEY);
-  try {
-    // Em DEV o proxy /api/groq-transcribe não existe (Vite não roda as edge functions).
-    // Com chave client-side, transcreve direto — sem o fetch que falharia e polui o console.
-    if (import.meta.env.DEV && hasClientKey) {
+
+  // Em DEV o proxy /api/groq-transcribe não existe (Vite não roda as edge functions).
+  // Com chave client-side, transcreve direto — sem o fetch que falharia e polui o console.
+  if (import.meta.env.DEV && hasClientKey) {
+    const { signal, clear } = timeoutSignal(WHISPER_ATTEMPTS[0].timeoutMs);
+    try {
       return await transcribeWhisperClient(blob, mimeType, signal);
+    } finally {
+      clear();
     }
+  }
 
-    const viaProxy = await transcribeWhisperProxy(blob, mimeType, signal).catch((err) => {
-      // Erro de rede no proxy → tenta fallback client-side. Erros HTTP reais sobem.
-      if (err instanceof Error && err.message.startsWith('Whisper ')) throw err;
-      return null;
-    });
-    if (viaProxy !== null) return viaProxy;
-
-    // Fallback: chave client-side (desktop). No celular não há chave → erro claro.
-    if (!hasClientKey) {
-      throw new Error('Transcrição Whisper indisponível: configure GROQ_API_KEY no servidor (Vercel).');
+  // Cadeia de tentativas no proxy: modelo completo → turbo. Retenta em erros
+  // transitórios (timeout/rede/limite de taxa). Erros definitivos (413/formato)
+  // sobem na hora. 501 (proxy sem chave) → cai no fallback client-side.
+  let lastErr: unknown = new Error('Falha na transcrição.');
+  for (const attempt of WHISPER_ATTEMPTS) {
+    const { signal, clear } = timeoutSignal(attempt.timeoutMs);
+    try {
+      const viaProxy = await transcribeWhisperProxy(blob, mimeType, signal, attempt.model);
+      clear();
+      if (viaProxy === null) break; // 501 → fallback client-side
+      return viaProxy;
+    } catch (err) {
+      clear();
+      lastErr = err;
+      // Definitivos: não adianta repetir nem trocar de modelo.
+      if (err instanceof Error && (err.message.includes('grande demais') || /Whisper 40[013]/.test(err.message))) {
+        throw err;
+      }
+      // Transitório → aguarda um instante e tenta a próxima (turbo).
+      if (isRetriableWhisperError(err)) {
+        await new Promise((r) => setTimeout(r, 800));
+        continue;
+      }
+      // Erro de rede genérico do proxy → tenta fallback client-side.
+      break;
     }
+  }
+
+  // Fallback: chave client-side (desktop). No celular não há chave → erro claro.
+  if (!hasClientKey) {
+    if (isTimeoutAbort(lastErr)) {
+      throw new Error('A transcrição demorou demais (rede ou servidor ocupado). Tente novamente.');
+    }
+    throw lastErr instanceof Error ? lastErr : new Error('Transcrição Whisper indisponível.');
+  }
+  const { signal, clear } = timeoutSignal(WHISPER_ATTEMPTS[0].timeoutMs);
+  try {
     return await transcribeWhisperClient(blob, mimeType, signal);
   } finally {
     clear();
