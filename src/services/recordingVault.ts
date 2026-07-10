@@ -56,9 +56,18 @@ function openDB(): Promise<IDBDatabase> {
         store.createIndex('createdAt', 'createdAt', { unique: false });
       }
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const db = req.result;
+      // Se o navegador fechar a conexão (pressão de memória, versionchange),
+      // invalida o cache para a próxima operação reabrir o banco.
+      db.onclose = () => { dbPromise = null; };
+      db.onversionchange = () => { db.close(); dbPromise = null; };
+      resolve(db);
+    };
     req.onerror = () => reject(req.error ?? new Error('Falha ao abrir o cofre de gravações.'));
   });
+  // Falha na abertura NÃO fica cacheada — a próxima chamada tenta de novo.
+  dbPromise.catch(() => { dbPromise = null; });
   return dbPromise;
 }
 
@@ -127,11 +136,42 @@ export async function updateRecording(
   patch: Partial<Omit<StoredRecording, 'id'>>,
 ): Promise<void> {
   const db = await openDB();
-  // Transações SEPARADAS para ler e gravar: um `await` entre operações da mesma
-  // transação pode fazê-la auto-encerrar (TransactionInactiveError). Assim é seguro.
-  const existing = await reqToPromise(tx(db, 'readonly').get(id) as IDBRequest<StoredRecording | undefined>);
-  if (!existing) return;
-  await reqToPromise(tx(db, 'readwrite').put({ ...existing, ...patch }));
+  // get + put na MESMA transação, encadeados por callback (sem `await` no meio,
+  // que auto-encerraria a transação). Atômico: uma exclusão concorrente não pode
+  // acontecer entre a leitura e a escrita — o put não ressuscita registro apagado.
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction(STORE, 'readwrite');
+    const store = transaction.objectStore(STORE);
+    const getReq = store.get(id) as IDBRequest<StoredRecording | undefined>;
+    getReq.onsuccess = () => {
+      if (getReq.result) store.put({ ...getReq.result, ...patch });
+    };
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error ?? new Error('Falha ao atualizar gravação.'));
+    transaction.onabort = () => reject(transaction.error ?? new Error('Atualização de gravação abortada.'));
+  });
+}
+
+/**
+ * Reconciliação na abertura da página: nenhuma transcrição pode estar em
+ * andamento agora, então toda gravação presa em 'transcribing' é resto de uma
+ * sessão interrompida (recarga, aba fechada, escrita perdida). Vira 'failed'
+ * com orientação de reenvio — o selo "Enviando..." nunca mais fica eterno.
+ */
+export async function resetStaleTranscribing(): Promise<void> {
+  try {
+    const all = await listRecordings();
+    for (const rec of all) {
+      if (rec.status === 'transcribing') {
+        await updateRecording(rec.id, {
+          status: 'failed',
+          error: 'Envio interrompido (página recarregada ou tempo esgotado). Toque em Reenviar.',
+        });
+      }
+    }
+  } catch {
+    // reconciliação é best-effort — nunca deve travar a abertura
+  }
 }
 
 /** Remove uma gravação do cofre. */

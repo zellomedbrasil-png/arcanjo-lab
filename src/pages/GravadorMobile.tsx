@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Mic, Square, Loader2, Check, RefreshCw, AlertCircle, Smartphone, Wifi, Radio, Send, Trash2, Download, ShieldCheck } from 'lucide-react';
+import { Mic, Square, Loader2, Check, RefreshCw, AlertCircle, Smartphone, Wifi, Radio, Send, Trash2, Download, ShieldCheck, ClipboardPaste } from 'lucide-react';
 import { SyncService, transcriptDedupeKey, type SyncMessage } from '../services/syncService';
 import {
   getTranscriptionEngine, setTranscriptionEngine, TRANSCRIPTION_ENGINES,
@@ -12,7 +12,7 @@ import { toast } from '../lib/toast';
 import {
   saveRecording, updateRecording, deleteRecording, listRecordings,
   purgeOldRecordings, requestPersistentStorage, recordingToBlob,
-  type StoredRecording,
+  resetStaleTranscribing, type StoredRecording,
 } from '../services/recordingVault';
 
 // Limita qualquer promessa (ex.: escrita no IndexedDB) a `ms`: se não resolver a
@@ -43,12 +43,17 @@ export default function GravadorMobile() {
   // segurança — sobrevivem a falha de transcrição, queda de rede ou recarga.
   const [savedRecordings, setSavedRecordings] = useState<StoredRecording[]>([]);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  // Se a última transcrição chegou de fato ao computador (espelhada).
+  const [lastMirrored, setLastMirrored] = useState(true);
   const pacienteNomeRef = useRef('');
   // Trava síncrona de transcrição em andamento (single-flight). Ref, não estado,
   // para não depender do ciclo de render — impede reenvios sobrepostos.
   const transcribingRef = useRef(false);
   // Rede de segurança final: se algo travar além do esperado, destrava a UI.
   const watchdogRef = useRef<number | null>(null);
+  // Token de posse da execução atual: quando o watchdog encerra uma execução,
+  // ela deixa de ser "dona" da UI — seu término tardio não desfaz o estado novo.
+  const runSeqRef = useRef(0);
 
   const segRecorderRef = useRef<SegmentedRecorder | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
@@ -87,12 +92,23 @@ export default function GravadorMobile() {
     }
   };
 
-  // Inicializa o cofre local: pede armazenamento persistente, apaga gravações
+  // Atualiza a gravação NA TELA na hora (estado em memória) e persiste no
+  // IndexedDB em segundo plano, com limite de tempo. A UI nunca mais depende de
+  // uma escrita local lenta/travada para refletir o que de fato aconteceu —
+  // era isso que deixava o selo "Enviando..." eterno mesmo após o envio.
+  const patchVault = (id: string, patch: Partial<Omit<StoredRecording, 'id'>>) => {
+    setSavedRecordings((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+    void settleWithin(updateRecording(id, patch), 10_000);
+  };
+
+  // Inicializa o cofre local: pede armazenamento persistente, reconcilia
+  // gravações presas em "Enviando..." de sessões interrompidas, apaga as
   // antigas/já enviadas (mantém leve) e carrega o que ainda está guardado.
   useEffect(() => {
     (async () => {
       await requestPersistentStorage();
-      await purgeOldRecordings();
+      await settleWithin(resetStaleTranscribing());
+      await settleWithin(purgeOldRecordings());
       await refreshVault();
     })();
   }, []);
@@ -336,19 +352,22 @@ export default function GravadorMobile() {
         // REDE DE SEGURANÇA: grava o áudio no cofre local ANTES de transcrever.
         // Se a transcrição falhar (rede/timeout/cota/tela bloqueada), o áudio
         // continua salvo no celular para reenviar ou baixar — nunca se perde.
+        // A escrita é LIMITADA POR TEMPO: um IndexedDB travado (comum no iOS
+        // depois de bloquear a tela) não pode mais segurar a transcrição.
         let saved: StoredRecording | null = null;
         const hasAudio = segments.some((s) => s && s.size > 0);
         if (hasAudio) {
-          try {
-            saved = await saveRecording({
-              patientName: pacienteNomeRef.current,
-              mimeType,
-              segments,
-              durationSec: capturedSeconds,
-            });
-            await refreshVault();
-          } catch (e) {
-            console.warn('[MobileMic] Falha ao salvar no cofre local:', e);
+          saved = (await settleWithin(saveRecording({
+            patientName: pacienteNomeRef.current,
+            mimeType,
+            segments,
+            durationSec: capturedSeconds,
+          }), 8000)) ?? null;
+          if (saved) {
+            const rec = saved;
+            setSavedRecordings((prev) => [rec, ...prev.filter((r) => r.id !== rec.id)]);
+          } else {
+            console.warn('[MobileMic] Cofre local indisponível — transcrevendo sem backup.');
           }
         }
 
@@ -367,30 +386,45 @@ export default function GravadorMobile() {
       return;
     }
     transcribingRef.current = true;
+    const runId = ++runSeqRef.current;
+    const stillOwner = () => runSeqRef.current === runId;
     setIsTranscribing(true);
 
     // Watchdog: mesmo num travamento imprevisto, a UI se destrava sozinha depois
     // do teto — o usuário nunca mais precisa recarregar a página para reenviar.
+    // Teto proporcional ao áudio: gravações longas (vários segmentos) ganham
+    // mais tempo antes do corte, em vez de serem interrompidas no meio.
+    const watchdogMs = 240_000 + Math.max(0, segments.length - 1) * 120_000;
     if (watchdogRef.current) clearTimeout(watchdogRef.current);
     watchdogRef.current = window.setTimeout(() => {
+      if (!stillOwner()) return;
+      // Invalida a execução atual: se ela terminar depois, não mexe mais na UI.
+      runSeqRef.current++;
+      watchdogRef.current = null;
       transcribingRef.current = false;
       setIsTranscribing(false);
       setResendingId(null);
+      if (recordingId) {
+        patchVault(recordingId, { status: 'failed', error: 'Tempo esgotado no envio. Toque em Reenviar.' });
+      }
       setError('A transcrição demorou demais e foi interrompida. O áudio segue salvo — toque em Reenviar.');
       toast.error('Transcrição interrompida por tempo. Reenvie.');
-    }, 240_000);
+    }, watchdogMs);
 
     const engine = getTranscriptionEngine() === 'gemini' ? 'gemini' : 'whisper';
     toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo áudio com Whisper...');
     try {
-      // Escritas locais SEMPRE limitadas por tempo (settleWithin) — nunca penduram.
-      if (recordingId) await settleWithin(updateRecording(recordingId, { status: 'transcribing' }));
+      // Selo "Enviando..." é otimista (memória primeiro, banco em segundo plano).
+      if (recordingId) patchVault(recordingId, { status: 'transcribing', error: undefined });
 
       const text = await transcribeSegments(segments, mimeType, engine);
       if (text && text.trim()) {
         const clean = text.trim();
-        setTranscriptionText(clean);
-        toast.success('Áudio transcrito com sucesso!');
+        if (stillOwner()) {
+          setTranscriptionText(clean);
+          setError(null);
+          toast.success('Áudio transcrito com sucesso!');
+        }
 
         // Envia ao desktop. dedupeKey torna o envio idempotente: se este mesmo
         // texto for reenviado (ex.: pelo botão Gerar SOAP), o desktop não duplica.
@@ -400,27 +434,27 @@ export default function GravadorMobile() {
             type: 'TRANSCRIPTION_RESULT',
             payload: { text: clean, dedupeKey: transcriptDedupeKey(clean) },
           });
-          if (mirrored) {
-            toast.success('Enviado para o prontuário!');
-          } else {
-            toast.error('Erro ao espelhar com o computador.');
+          if (stillOwner()) {
+            setLastMirrored(mirrored);
+            if (mirrored) {
+              toast.success('Enviado para o prontuário!');
+            } else {
+              toast.error('Não chegou ao computador — use "Enviar p/ Queixa" ou Reenviar.');
+            }
           }
         }
         // Só marca 'sent' (descartável pela limpeza) quando o texto chegou ao
         // computador. Se não espelhou, mantém 'failed' para permitir reenviar.
         if (recordingId) {
-          await settleWithin(updateRecording(recordingId, mirrored
+          patchVault(recordingId, mirrored
             ? { status: 'sent', transcript: clean, error: undefined }
-            : { status: 'failed', transcript: clean, error: 'Transcrito, mas não espelhado no computador.' },
-          ));
-          await settleWithin(refreshVault());
+            : { status: 'failed', transcript: clean, error: 'Transcrito, mas não chegou ao computador. Use "Enviar p/ Queixa" ou Reenviar.' });
         }
       } else {
-        setError('Não foi possível identificar fala no áudio.');
-        toast.error('Nenhuma fala detectada.');
-        if (recordingId) {
-          await settleWithin(updateRecording(recordingId, { status: 'failed', error: 'Nenhuma fala detectada.' }));
-          await settleWithin(refreshVault());
+        if (recordingId) patchVault(recordingId, { status: 'failed', error: 'Nenhuma fala detectada.' });
+        if (stillOwner()) {
+          setError('Não foi possível identificar fala no áudio.');
+          toast.error('Nenhuma fala detectada.');
         }
       }
     } catch (err: unknown) {
@@ -428,14 +462,14 @@ export default function GravadorMobile() {
       const errMsg = isTimeoutAbort(err)
         ? 'Tempo limite na transcrição. Tente novamente ou grave um trecho menor.'
         : (err instanceof Error ? err.message : 'Erro de rede ou limite de cota atingido.');
-      setError(`Erro na transcrição: ${errMsg}`);
-      toast.error(recordingId
-        ? 'Falha ao transcrever — áudio salvo no celular para reenviar.'
-        : 'Falha ao transcrever.');
 
-      if (recordingId) {
-        await settleWithin(updateRecording(recordingId, { status: 'failed', error: errMsg }));
-        await settleWithin(refreshVault());
+      if (recordingId) patchVault(recordingId, { status: 'failed', error: errMsg });
+
+      if (stillOwner()) {
+        setError(`Erro na transcrição: ${errMsg}`);
+        toast.error(recordingId
+          ? 'Falha ao transcrever — áudio salvo no celular para reenviar.'
+          : 'Falha ao transcrever.');
       }
 
       // Notify desktop of failure
@@ -446,9 +480,13 @@ export default function GravadorMobile() {
         });
       }
     } finally {
-      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
-      transcribingRef.current = false;
-      setIsTranscribing(false);
+      // Só a execução "dona" destrava a UI — se o watchdog já encerrou esta
+      // execução (e outro reenvio pode estar rodando), o término tardio é inócuo.
+      if (stillOwner()) {
+        if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+        transcribingRef.current = false;
+        setIsTranscribing(false);
+      }
     }
   };
 
@@ -471,8 +509,10 @@ export default function GravadorMobile() {
   const handleDelete = async (rec: StoredRecording) => {
     if (!window.confirm('Excluir esta gravação salva no celular? Esta ação não pode ser desfeita.')) return;
     try {
-      await deleteRecording(rec.id);
-      await refreshVault();
+      await settleWithin(deleteRecording(rec.id), 8000);
+      // Remove direto da lista em memória — reler o banco aqui poderia trazer de
+      // volta um status antigo por cima do estado otimista da tela.
+      setSavedRecordings((prev) => prev.filter((r) => r.id !== rec.id));
       toast.success('Gravação excluída.');
     } catch {
       toast.error('Não foi possível excluir.');
@@ -497,6 +537,34 @@ export default function GravadorMobile() {
       toast.success('Baixando áudio...');
     } catch {
       toast.error('Não foi possível baixar o áudio.');
+    }
+  };
+
+  // Copia o texto transcrito no celular direto para o campo "Queixa / Contexto
+  // Clínico" do computador. Idempotente: se este mesmo texto já chegou lá, o
+  // desktop ignora (dedupeKey) — não duplica. É o resgate manual de um clique
+  // para quando o espelhamento automático falhou.
+  const enviarParaQueixa = async () => {
+    if (!syncServiceRef.current) return;
+    const text = (
+      transcriptionText.trim() ||
+      savedRecordings.find((r) => r.transcript && r.transcript.trim())?.transcript ||
+      ''
+    ).trim();
+    if (!text) {
+      toast.error('Nenhum texto transcrito para enviar ainda. Grave ou reenvie primeiro.');
+      return;
+    }
+    toast.info('Enviando texto para a Queixa...');
+    const ok = await syncServiceRef.current.publish({
+      type: 'TRANSCRIPTION_RESULT',
+      payload: { text, dedupeKey: transcriptDedupeKey(text) },
+    });
+    if (ok) {
+      setLastMirrored(true);
+      toast.success('Texto enviado para a Queixa no computador!');
+    } else {
+      toast.error('Falha ao comunicar com o computador. Verifique a conexão e tente de novo.');
     }
   };
 
@@ -664,9 +732,15 @@ export default function GravadorMobile() {
           <div className="w-full max-w-sm bg-slate-900/50 border border-slate-900 rounded-xl p-4 space-y-2 text-left">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Última Transcrição</span>
             <p className="text-xs text-slate-300 line-clamp-3 leading-relaxed">{transcriptionText}</p>
-            <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold">
-              <Check size={12} /> Enviado ao Prontuário
-            </div>
+            {lastMirrored ? (
+              <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold">
+                <Check size={12} /> Enviado ao Prontuário
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-[10px] text-amber-400 font-semibold">
+                <AlertCircle size={12} /> Não chegou ao computador — toque em "Enviar p/ Queixa"
+              </div>
+            )}
           </div>
         )}
 
@@ -771,18 +845,26 @@ export default function GravadorMobile() {
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => triggerAI('SOAP')}
             disabled={!connected || isRecording || isTranscribing}
-            className="flex items-center justify-center gap-1.5 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs font-bold border border-slate-800 transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1.5 py-3 px-2 bg-slate-900 hover:bg-slate-800 text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-[11px] font-bold border border-slate-800 transition-all cursor-pointer"
           >
             Gerar SOAP
           </button>
           <button
+            onClick={enviarParaQueixa}
+            disabled={!connected || isRecording || isTranscribing}
+            className="flex flex-col items-center justify-center gap-0.5 py-2 px-2 bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-[11px] font-bold border border-indigo-500/40 transition-all cursor-pointer"
+          >
+            <ClipboardPaste size={14} />
+            Enviar p/ Queixa
+          </button>
+          <button
             onClick={() => triggerAI('JUSTIFICATIVA')}
             disabled={!connected || isRecording || isTranscribing}
-            className="flex items-center justify-center gap-1.5 py-3 px-4 bg-slate-900 hover:bg-slate-800 text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-xs font-bold border border-slate-800 transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1.5 py-3 px-2 bg-slate-900 hover:bg-slate-800 text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-[11px] font-bold border border-slate-800 transition-all cursor-pointer"
           >
             Gerar Justificativa
           </button>
