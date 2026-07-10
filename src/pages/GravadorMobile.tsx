@@ -182,24 +182,39 @@ export default function GravadorMobile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecording, isTranscribing]);
 
-  // Periodic announcement to desktop, stopping once connected
+  // Anúncio de pareamento ao desktop, com BACKOFF — para de assim que conecta.
+  //
+  // Antes: publicava MOBILE_CONNECTED a cada 3s SEM PARAR até conectar. O relay
+  // de mensagens (ntfy.sh) tem limite de requisições; a cada MOBILE_CONNECTED o
+  // desktop respondia DESKTOP_READY, então os DOIS lados estouravam o limite (429)
+  // e o DESKTOP_READY deixava de chegar — o celular ficava eterno em laranja
+  // ("Sincronizando") e, já rate-limited, reenviar/Enviar p/ Queixa também não
+  // chegavam. Agora o intervalo cresce (2s→15s), mantendo o relay dentro do limite.
   useEffect(() => {
     if (!roomId || connected) {
       return;
     }
+    let cancelled = false;
+    let timer: number | null = null;
+    let attempt = 0;
 
-    const announceConnection = async () => {
+    const announce = async () => {
+      if (cancelled) return;
       if (syncServiceRef.current) {
         await syncServiceRef.current.publish({ type: 'MOBILE_CONNECTED' });
       }
+      if (cancelled) return;
+      attempt++;
+      // 2s, 3.5s, 5s, 6.5s ... teto de 15s. Gentil o bastante para não
+      // estourar o limite do relay e ainda parear rápido em rede boa.
+      const delay = Math.min(15000, 2000 + attempt * 1500);
+      timer = window.setTimeout(announce, delay);
     };
 
-    // Retry connection announcement a few times to ensure desktop receives it
-    announceConnection();
-    const announceInterval = setInterval(announceConnection, 3000);
-
+    announce();
     return () => {
-      clearInterval(announceInterval);
+      cancelled = true;
+      if (timer) clearTimeout(timer);
     };
   }, [roomId, connected]);
 

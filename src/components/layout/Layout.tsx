@@ -30,6 +30,11 @@ export default function Layout({ children }: { children: ReactNode }) {
   // Chaves de transcrições já incorporadas ao prontuário — evita duplicar quando
   // o celular reenvia o MESMO texto (ex.: pelo botão Gerar SOAP/Justificativa).
   const processedTranscriptKeysRef = useRef<Set<string>>(new Set());
+  // Último instante em que respondemos DESKTOP_READY. O celular pode reanunciar
+  // várias vezes; sem esta trava, cada anúncio gerava uma resposta e os dois
+  // lados estouravam o limite do relay (ntfy.sh). Só respondemos na PRIMEIRA
+  // vez (para parear na hora) e, depois, no máximo a cada 10s.
+  const lastReadyAckRef = useRef(0);
 
   // Process mobile transcription in the background
   const handleProcessMobileTranscription = useCallback(async (text: string) => {
@@ -121,13 +126,20 @@ export default function Layout({ children }: { children: ReactNode }) {
           const wasWaiting = useAppStore.getState().syncStatus !== 'connected';
           setSyncStatus('connected');
           if (wasWaiting) toast.success('Celular conectado em segundo plano!');
-          const latestState = useAppStore.getState();
-          await sync.publish({
-            type: 'DESKTOP_READY',
-            payload: {
-              pacienteNome: latestState.pacienteNome
-            }
-          });
+          // Responde DESKTOP_READY para o celular sair do "Sincronizando", mas
+          // com trava de tempo: na 1ª vez responde na hora; depois, no máximo a
+          // cada 10s — evita que os dois lados estourem o limite do relay.
+          const now = Date.now();
+          if (wasWaiting || now - lastReadyAckRef.current > 10_000) {
+            lastReadyAckRef.current = now;
+            const latestState = useAppStore.getState();
+            await sync.publish({
+              type: 'DESKTOP_READY',
+              payload: {
+                pacienteNome: latestState.pacienteNome
+              }
+            });
+          }
         } else if (msg.type === 'RECORDING_STATUS') {
           if (msg.payload?.isRecording) {
             setSyncStatus('recording');

@@ -92,6 +92,12 @@ export class SyncService {
   private seenIds: string[] = [];
   private closed = false;
   private sseReconnectTimer: number | null = null;
+  // Falhas de SSE consecutivas SEM reconectar. O ntfy.sh fecha o stream de tempos
+  // em tempos (idle/keepalive) e espera reconexão silenciosa — um fechamento
+  // isolado é rotina, não queda. Só avisamos o app de "conexão perdida" depois
+  // de várias falhas seguidas, para o selo não piscar laranja a cada blip.
+  private sseFailures = 0;
+  private static readonly SSE_FAILURE_GRACE = 3;
   private onMessageCb: ((msg: SyncMessage) => void) | null = null;
   private onErrorCb: ((err: unknown) => void) | null = null;
 
@@ -119,6 +125,8 @@ export class SyncService {
 
   private handleIncoming(msg: SyncMessage, source: 'supabase' | 'ntfy') {
     if (this.closed || !msg || typeof msg.type !== 'string') return;
+    // Chegou mensagem → o canal está vivo. Zera falhas de SSE acumuladas.
+    this.sseFailures = 0;
     // Ignora mensagens publicadas por esta própria instância (eco do ntfy)
     if (msg._sender && msg._sender === this.instanceId) return;
     // Deduplica mensagens que chegam pelos dois transportes
@@ -176,6 +184,8 @@ export class SyncService {
 
     this.sseSource.onopen = () => {
       console.log('[SyncService] ntfy.sh SSE conectado');
+      // Reconexão bem-sucedida — zera o contador de falhas.
+      this.sseFailures = 0;
     };
 
     this.sseSource.onmessage = (event) => {
@@ -194,9 +204,13 @@ export class SyncService {
       // O EventSource reconecta sozinho em erros transitórios.
       // Só tratamos como problema quando a conexão foi encerrada de vez.
       if (this.sseSource?.readyState === EventSource.CLOSED) {
-        console.warn('[SyncService] ntfy.sh SSE fechado — agendando reconexão');
+        this.sseFailures++;
+        console.warn(`[SyncService] ntfy.sh SSE fechado (falha ${this.sseFailures}) — agendando reconexão`);
         this.scheduleNtfyReconnect();
-        if (!this.supabaseJoined && this.onErrorCb) {
+        // Só declara "conexão perdida" após várias falhas seguidas sem reconectar
+        // — um fechamento isolado é rotina do ntfy.sh e a reconexão é silenciosa.
+        // Assim o selo do celular não pisca laranja ("desconectado") a cada blip.
+        if (this.sseFailures >= SyncService.SSE_FAILURE_GRACE && !this.supabaseJoined && this.onErrorCb) {
           this.onErrorCb(new Error('Conexão de sincronização perdida. Reconectando...'));
         }
       }
