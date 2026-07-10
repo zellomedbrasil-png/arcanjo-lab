@@ -98,6 +98,12 @@ export class SyncService {
   // de várias falhas seguidas, para o selo não piscar laranja a cada blip.
   private sseFailures = 0;
   private static readonly SSE_FAILURE_GRACE = 3;
+  // Cooldown do ntfy.sh: o relay público responde 429 quando a rede/IP publica
+  // demais. Sem trava, cada anúncio/reenvio continuava batendo e o 429 nunca
+  // saía — sincronização travada de vez. Ao ver 429, paramos de POSTar por um
+  // tempo para o limite resetar. É a saída do "ciclo vicioso de rate-limit".
+  private ntfyCooldownUntil = 0;
+  private static readonly NTFY_COOLDOWN_MS = 60_000;
   private onMessageCb: ((msg: SyncMessage) => void) | null = null;
   private onErrorCb: ((err: unknown) => void) | null = null;
 
@@ -269,23 +275,36 @@ export class SyncService {
       );
     }
 
-    // 2) ntfy.sh — sempre, para garantir a ponte entre lados em transportes diferentes.
-    //    AbortController encerra o fetch pendurado; withTimeout garante o retorno.
-    const ac = new AbortController();
-    const abortTimer = setTimeout(() => ac.abort(), PUBLISH_TIMEOUT_MS);
-    attempts.push(
-      withTimeout(
-        fetch(this.ntfyTopicUrl, { method: 'POST', body, signal: ac.signal })
-          .then((response) => response.ok)
-          .catch((err: unknown) => {
-            console.error('[SyncService] ntfy.sh publish falhou:', err);
-            return false;
-          })
-          .finally(() => clearTimeout(abortTimer)),
-        PUBLISH_TIMEOUT_MS,
-      ),
-    );
+    // 2) ntfy.sh — ponte entre lados em transportes diferentes. PULA durante o
+    //    cooldown de 429: continuar batendo só prolonga o bloqueio do relay.
+    if (Date.now() >= this.ntfyCooldownUntil) {
+      const ac = new AbortController();
+      const abortTimer = setTimeout(() => ac.abort(), PUBLISH_TIMEOUT_MS);
+      attempts.push(
+        withTimeout(
+          fetch(this.ntfyTopicUrl, { method: 'POST', body, signal: ac.signal })
+            .then((response) => {
+              if (response.status === 429) {
+                // Rate-limited: entra em cooldown para o limite resetar.
+                this.ntfyCooldownUntil = Date.now() + SyncService.NTFY_COOLDOWN_MS;
+                console.warn('[SyncService] ntfy.sh 429 — pausando envios por 60s para o limite resetar.');
+                return false;
+              }
+              return response.ok;
+            })
+            .catch((err: unknown) => {
+              console.error('[SyncService] ntfy.sh publish falhou:', err);
+              return false;
+            })
+            .finally(() => clearTimeout(abortTimer)),
+          PUBLISH_TIMEOUT_MS,
+        ),
+      );
+    } else {
+      console.warn('[SyncService] ntfy.sh em cooldown de rate-limit — envio pulado.');
+    }
 
+    if (attempts.length === 0) return false;
     const results = await Promise.all(attempts);
     return results.some(Boolean);
   }

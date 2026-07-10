@@ -205,9 +205,9 @@ export default function GravadorMobile() {
       }
       if (cancelled) return;
       attempt++;
-      // 2s, 3.5s, 5s, 6.5s ... teto de 15s. Gentil o bastante para não
-      // estourar o limite do relay e ainda parear rápido em rede boa.
-      const delay = Math.min(15000, 2000 + attempt * 1500);
+      // 2s, 4s, 6s ... teto de 30s. Pareia rápido em rede boa e, se demorar,
+      // vira um heartbeat lento — mantém o relay público bem abaixo do limite.
+      const delay = Math.min(30000, 2000 + attempt * 2000);
       timer = window.setTimeout(announce, delay);
     };
 
