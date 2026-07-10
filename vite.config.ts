@@ -18,6 +18,12 @@ export default defineConfig(({ mode }) => {
               if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'vendor';
               if (id.includes('zustand')) return 'store';
               if (id.includes('lucide')) return 'ui';
+              // Libs de parsing de PDF: pesadas e usadas SÓ nas telas de exames.
+              // Em chunk próprio, nunca são baixadas pelo gravador do celular.
+              if (id.includes('pdf-parse') || id.includes('pdf2json') || id.includes('pdf.js-extract')) return 'pdf';
+              // SDKs de rede em chunks separados — carregam sob demanda por rota.
+              if (id.includes('@supabase')) return 'supabase';
+              if (id.includes('groq-sdk')) return 'groq';
             }
           }
         }

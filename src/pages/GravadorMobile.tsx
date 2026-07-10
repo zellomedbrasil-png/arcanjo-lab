@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Mic, Square, Loader2, Check, RefreshCw, AlertCircle, Smartphone, Wifi, Radio } from 'lucide-react';
+import { Mic, Square, Loader2, Check, RefreshCw, AlertCircle, Smartphone, Wifi, Radio, Send, Trash2, Download, ShieldCheck } from 'lucide-react';
 import { SyncService, type SyncMessage } from '../services/syncService';
 import {
   getTranscriptionEngine, setTranscriptionEngine, TRANSCRIPTION_ENGINES,
@@ -9,6 +9,11 @@ import {
 import { SegmentedRecorder } from '../services/segmentedRecorder';
 import { startLiveSpeech, isLiveSpeechSupported, type LiveSpeechController } from '../services/liveSpeech';
 import { toast } from '../lib/toast';
+import {
+  saveRecording, updateRecording, deleteRecording, listRecordings,
+  purgeOldRecordings, requestPersistentStorage, recordingToBlob,
+  type StoredRecording,
+} from '../services/recordingVault';
 
 export default function GravadorMobile() {
   const [searchParams] = useSearchParams();
@@ -23,6 +28,12 @@ export default function GravadorMobile() {
   const [error, setError] = useState<string | null>(() => roomId ? null : 'Código de sala (room) inválido ou ausente na URL.');
   const [selectedEngine, setSelectedEngine] = useState<TranscriptionEngine>(() => getTranscriptionEngine());
   const [interimText, setInterimText] = useState('');
+
+  // Cofre local (IndexedDB): gravações salvas no próprio celular como rede de
+  // segurança — sobrevivem a falha de transcrição, queda de rede ou recarga.
+  const [savedRecordings, setSavedRecordings] = useState<StoredRecording[]>([]);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  const pacienteNomeRef = useRef('');
 
   const segRecorderRef = useRef<SegmentedRecorder | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
@@ -52,6 +63,29 @@ export default function GravadorMobile() {
       wakeLockRef.current = null;
     }
   };
+
+  const refreshVault = async () => {
+    try {
+      setSavedRecordings(await listRecordings());
+    } catch {
+      // cofre indisponível (ex.: modo privativo) — segue sem a lista
+    }
+  };
+
+  // Inicializa o cofre local: pede armazenamento persistente, apaga gravações
+  // antigas/já enviadas (mantém leve) e carrega o que ainda está guardado.
+  useEffect(() => {
+    (async () => {
+      await requestPersistentStorage();
+      await purgeOldRecordings();
+      await refreshVault();
+    })();
+  }, []);
+
+  // Mantém o nome do paciente atualizado para os handlers assíncronos do cofre.
+  useEffect(() => {
+    pacienteNomeRef.current = pacienteNome;
+  }, [pacienteNome]);
 
   // Auto-connect to Room
   useEffect(() => {
@@ -279,17 +313,39 @@ export default function GravadorMobile() {
 
       // Mantém a tela acesa DURANTE a transcrição — se o celular bloquear/for
       // para segundo plano, o navegador aborta o upload (causa do "Request was aborted").
+      const capturedSeconds = recordingTime;
       try {
         const { segments, mimeType } = await recorder.stop();
-        await transcreverAudio(segments, mimeType);
+
+        // REDE DE SEGURANÇA: grava o áudio no cofre local ANTES de transcrever.
+        // Se a transcrição falhar (rede/timeout/cota/tela bloqueada), o áudio
+        // continua salvo no celular para reenviar ou baixar — nunca se perde.
+        let saved: StoredRecording | null = null;
+        const hasAudio = segments.some((s) => s && s.size > 0);
+        if (hasAudio) {
+          try {
+            saved = await saveRecording({
+              patientName: pacienteNomeRef.current,
+              mimeType,
+              segments,
+              durationSec: capturedSeconds,
+            });
+            await refreshVault();
+          } catch (e) {
+            console.warn('[MobileMic] Falha ao salvar no cofre local:', e);
+          }
+        }
+
+        await transcreverAudio(segments, mimeType, saved?.id ?? null);
       } finally {
         await releaseWakeLock();
       }
     }
   };
 
-  const transcreverAudio = async (segments: Blob[], mimeType: string) => {
+  const transcreverAudio = async (segments: Blob[], mimeType: string, recordingId: string | null) => {
     setIsTranscribing(true);
+    if (recordingId) await updateRecording(recordingId, { status: 'transcribing' }).catch(() => {});
     const engine = getTranscriptionEngine() === 'gemini' ? 'gemini' : 'whisper';
     toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo áudio com Whisper...');
     try {
@@ -299,20 +355,35 @@ export default function GravadorMobile() {
         toast.success('Áudio transcrito com sucesso!');
 
         // Send transcription to Desktop
+        let mirrored = false;
         if (syncServiceRef.current) {
-          const success = await syncServiceRef.current.publish({
+          mirrored = await syncServiceRef.current.publish({
             type: 'TRANSCRIPTION_RESULT',
             payload: { text: text.trim() }
           });
-          if (success) {
+          if (mirrored) {
             toast.success('Enviado para o prontuário!');
           } else {
             toast.error('Erro ao espelhar com o computador.');
           }
         }
+        // Só marca como 'sent' (descartável pela limpeza) quando o texto chegou
+        // ao computador. Se o espelhamento falhou, mantém como 'failed' para
+        // permitir reenviar o áudio guardado.
+        if (recordingId) {
+          await updateRecording(recordingId, mirrored
+            ? { status: 'sent', transcript: text.trim(), error: undefined }
+            : { status: 'failed', transcript: text.trim(), error: 'Transcrito, mas não espelhado no computador.' },
+          ).catch(() => {});
+          await refreshVault();
+        }
       } else {
         setError('Não foi possível identificar fala no áudio.');
         toast.error('Nenhuma fala detectada.');
+        if (recordingId) {
+          await updateRecording(recordingId, { status: 'failed', error: 'Nenhuma fala detectada.' }).catch(() => {});
+          await refreshVault();
+        }
       }
     } catch (err: unknown) {
       console.error('[MobileMic] Transcription error:', err);
@@ -320,8 +391,15 @@ export default function GravadorMobile() {
         ? 'Tempo limite na transcrição. Tente novamente ou grave um trecho menor.'
         : (err instanceof Error ? err.message : 'Erro de rede ou limite de cota atingido.');
       setError(`Erro na transcrição: ${errMsg}`);
-      toast.error('Falha ao transcrever.');
-      
+      toast.error(recordingId
+        ? 'Falha ao transcrever — áudio salvo no celular para reenviar.'
+        : 'Falha ao transcrever.');
+
+      if (recordingId) {
+        await updateRecording(recordingId, { status: 'failed', error: errMsg }).catch(() => {});
+        await refreshVault();
+      }
+
       // Notify desktop of failure
       if (syncServiceRef.current) {
         await syncServiceRef.current.publish({
@@ -331,6 +409,53 @@ export default function GravadorMobile() {
       }
     } finally {
       setIsTranscribing(false);
+    }
+  };
+
+  // Reenvia uma gravação guardada: retranscreve o áudio salvo e espelha de novo.
+  const handleResend = async (rec: StoredRecording) => {
+    if (isRecording || isTranscribing || resendingId) return;
+    setResendingId(rec.id);
+    setError(null);
+    await acquireWakeLock();
+    try {
+      await transcreverAudio(rec.segments, rec.mimeType, rec.id);
+    } finally {
+      await releaseWakeLock();
+      setResendingId(null);
+    }
+  };
+
+  // Exclui uma gravação do cofre (após confirmação).
+  const handleDelete = async (rec: StoredRecording) => {
+    if (!window.confirm('Excluir esta gravação salva no celular? Esta ação não pode ser desfeita.')) return;
+    try {
+      await deleteRecording(rec.id);
+      await refreshVault();
+      toast.success('Gravação excluída.');
+    } catch {
+      toast.error('Não foi possível excluir.');
+    }
+  };
+
+  // Baixa o áudio salvo para o aparelho — backup manual definitivo.
+  const handleDownload = (rec: StoredRecording) => {
+    try {
+      const blob = recordingToBlob(rec);
+      const url = URL.createObjectURL(blob);
+      const ext = (rec.mimeType.split(';')[0].split('/')[1] || 'webm').replace('x-m4a', 'm4a');
+      const stamp = new Date(rec.createdAt).toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      const nome = (rec.patientName || 'consulta').replace(/[^\p{L}\p{N}]+/gu, '_').slice(0, 40);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `arcanjo_${nome}_${stamp}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      toast.success('Baixando áudio...');
+    } catch {
+      toast.error('Não foi possível baixar o áudio.');
     }
   };
 
@@ -489,6 +614,77 @@ export default function GravadorMobile() {
             <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-semibold">
               <Check size={12} /> Enviado ao Prontuário
             </div>
+          </div>
+        )}
+
+        {/* Cofre local de gravações — rede de segurança contra perda de áudio */}
+        {savedRecordings.length > 0 && (
+          <div className="w-full max-w-sm bg-slate-900/40 border border-slate-800 rounded-xl p-3 space-y-2 text-left">
+            <div className="flex items-center gap-1.5 pb-1">
+              <ShieldCheck size={13} className="text-emerald-400 shrink-0" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Gravações salvas no celular
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 leading-relaxed pb-1">
+              Guardadas neste aparelho como backup. Apagam sozinhas depois de enviadas. Se algo falhar, reenvie ou baixe.
+            </p>
+            {savedRecordings.map((rec) => {
+              const busy = resendingId === rec.id;
+              const sizeMb = (rec.sizeBytes / (1024 * 1024)).toFixed(1);
+              const when = new Date(rec.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+              const statusMeta: Record<string, { label: string; cls: string }> = {
+                pending: { label: 'Guardada', cls: 'bg-slate-700/40 text-slate-300' },
+                transcribing: { label: 'Enviando...', cls: 'bg-indigo-500/15 text-indigo-300' },
+                sent: { label: 'Enviada', cls: 'bg-emerald-500/15 text-emerald-300' },
+                failed: { label: 'Falhou — reenvie', cls: 'bg-red-500/15 text-red-300' },
+              };
+              const meta = statusMeta[rec.status] ?? statusMeta.pending;
+              return (
+                <div key={rec.id} className="bg-slate-950/60 border border-slate-800 rounded-lg p-2.5 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-slate-200 truncate">
+                        {rec.patientName || 'Consulta sem paciente'}
+                      </p>
+                      <p className="text-[10px] text-slate-500">
+                        {when} · {formatTime(rec.durationSec)} · {sizeMb} MB
+                      </p>
+                    </div>
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${meta.cls}`}>
+                      {busy ? 'Enviando...' : meta.label}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      onClick={() => handleResend(rec)}
+                      disabled={busy || isRecording || isTranscribing || !!resendingId}
+                      className="flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold bg-indigo-600/90 hover:bg-indigo-600 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    >
+                      {busy ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                      Reenviar
+                    </button>
+                    <button
+                      onClick={() => handleDownload(rec)}
+                      disabled={busy}
+                      className="flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 transition-colors cursor-pointer"
+                    >
+                      <Download size={12} /> Baixar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(rec)}
+                      disabled={busy}
+                      className="flex items-center justify-center gap-1 py-2 rounded-lg text-[10px] font-bold bg-slate-800 hover:bg-red-900/60 text-red-300 disabled:opacity-40 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={12} /> Excluir
+                    </button>
+                  </div>
+                  {rec.status === 'failed' && rec.error && (
+                    <p className="text-[9px] text-red-400/80 leading-snug">{rec.error}</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </main>

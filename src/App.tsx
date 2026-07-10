@@ -1,39 +1,55 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Prontuario from './pages/Prontuario';
-import ExamesLaboratoriais from './pages/ExamesLaboratoriais';
-import ProcedimentosEletivos from './pages/ProcedimentosEletivos';
-import Servicos from './pages/Servicos';
-import ImprimirServico from './pages/ImprimirServico';
-import Imprimir from './pages/Imprimir';
-import NovaReceita from './pages/NovaReceita';
-import ImprimirReceita from './pages/ImprimirReceita';
-import Documentos from './pages/Documentos';
-import ImprimirDocumento from './pages/ImprimirDocumento';
-import GravadorMobile from './pages/GravadorMobile';
+
+// Rotas carregadas sob demanda (code-splitting): cada página vira um chunk
+// próprio. Assim o celular que abre só /gravador não baixa o Prontuário, os
+// templates de impressão nem as libs de PDF — o carregamento fica muito mais leve.
+const Login = lazy(() => import('./pages/Login'));
+const Prontuario = lazy(() => import('./pages/Prontuario'));
+const ExamesLaboratoriais = lazy(() => import('./pages/ExamesLaboratoriais'));
+const ProcedimentosEletivos = lazy(() => import('./pages/ProcedimentosEletivos'));
+const Servicos = lazy(() => import('./pages/Servicos'));
+const ImprimirServico = lazy(() => import('./pages/ImprimirServico'));
+const Imprimir = lazy(() => import('./pages/Imprimir'));
+const NovaReceita = lazy(() => import('./pages/NovaReceita'));
+const ImprimirReceita = lazy(() => import('./pages/ImprimirReceita'));
+const Documentos = lazy(() => import('./pages/Documentos'));
+const ImprimirDocumento = lazy(() => import('./pages/ImprimirDocumento'));
+const GravadorMobile = lazy(() => import('./pages/GravadorMobile'));
 
 // Um PrivateRoute simples seria adicionado aqui
 // Para o MVP, permitiremos acesso livre ou mockaremos o login
 
+// Tela de transição enquanto o chunk da rota carrega. Discreta e no tema escuro.
+function RouteFallback() {
+  return (
+    <div className="min-h-dvh bg-slate-950 flex items-center justify-center">
+      <div className="h-8 w-8 rounded-full border-2 border-slate-700 border-t-indigo-500 animate-spin" />
+    </div>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/prontuario" element={<Prontuario />} />
-        <Route path="/gravador" element={<GravadorMobile />} />
-        <Route path="/exames" element={<ExamesLaboratoriais />} />
-        <Route path="/procedimentos" element={<ProcedimentosEletivos />} />
-        <Route path="/servicos" element={<Servicos />} />
-        <Route path="/servicos/imprimir" element={<ImprimirServico />} />
-        <Route path="/novo" element={<Navigate to="/prontuario" replace />} />
-        <Route path="/imprimir" element={<Imprimir />} />
-        <Route path="/receita" element={<NovaReceita />} />
-        <Route path="/receita/imprimir" element={<ImprimirReceita />} />
-        <Route path="/documentos" element={<Documentos />} />
-        <Route path="/documentos/imprimir" element={<ImprimirDocumento />} />
-        <Route path="/" element={<Navigate to="/prontuario" replace />} />
-      </Routes>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/prontuario" element={<Prontuario />} />
+          <Route path="/gravador" element={<GravadorMobile />} />
+          <Route path="/exames" element={<ExamesLaboratoriais />} />
+          <Route path="/procedimentos" element={<ProcedimentosEletivos />} />
+          <Route path="/servicos" element={<Servicos />} />
+          <Route path="/servicos/imprimir" element={<ImprimirServico />} />
+          <Route path="/novo" element={<Navigate to="/prontuario" replace />} />
+          <Route path="/imprimir" element={<Imprimir />} />
+          <Route path="/receita" element={<NovaReceita />} />
+          <Route path="/receita/imprimir" element={<ImprimirReceita />} />
+          <Route path="/documentos" element={<Documentos />} />
+          <Route path="/documentos/imprimir" element={<ImprimirDocumento />} />
+          <Route path="/" element={<Navigate to="/prontuario" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
