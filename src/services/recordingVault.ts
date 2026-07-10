@@ -127,10 +127,11 @@ export async function updateRecording(
   patch: Partial<Omit<StoredRecording, 'id'>>,
 ): Promise<void> {
   const db = await openDB();
-  const store = tx(db, 'readwrite');
-  const existing = await reqToPromise(store.get(id) as IDBRequest<StoredRecording | undefined>);
+  // Transações SEPARADAS para ler e gravar: um `await` entre operações da mesma
+  // transação pode fazê-la auto-encerrar (TransactionInactiveError). Assim é seguro.
+  const existing = await reqToPromise(tx(db, 'readonly').get(id) as IDBRequest<StoredRecording | undefined>);
   if (!existing) return;
-  await reqToPromise(store.put({ ...existing, ...patch }));
+  await reqToPromise(tx(db, 'readwrite').put({ ...existing, ...patch }));
 }
 
 /** Remove uma gravação do cofre. */

@@ -8,6 +8,8 @@ export interface SyncMessage {
     isTranscribing?: boolean;
     text?: string;
     action?: 'SOAP' | 'JUSTIFICATIVA';
+    /** Chave estável do texto — o desktop ignora reenvios idênticos (evita duplicar). */
+    dedupeKey?: string;
   };
   /** Identificador único da mensagem — usado para deduplicar entre os dois transportes */
   _id?: string;
@@ -42,6 +44,18 @@ const withTimeout = (p: Promise<boolean>, ms: number): Promise<boolean> => {
     );
   });
 };
+
+/**
+ * Chave curta e estável derivada do texto — igual texto → igual chave. Permite
+ * ao desktop reconhecer um reenvio do MESMO texto (ex.: pelo botão Gerar SOAP) e
+ * não acrescentá-lo duas vezes no prontuário. Não é criptográfica; só dedupe.
+ */
+export function transcriptDedupeKey(text: string): string {
+  const s = (text || '').trim();
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  return `${s.length}:${(h >>> 0).toString(36)}`;
+}
 
 const randomId = (): string => {
   try {

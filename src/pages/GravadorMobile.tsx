@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Mic, Square, Loader2, Check, RefreshCw, AlertCircle, Smartphone, Wifi, Radio, Send, Trash2, Download, ShieldCheck } from 'lucide-react';
-import { SyncService, type SyncMessage } from '../services/syncService';
+import { SyncService, transcriptDedupeKey, type SyncMessage } from '../services/syncService';
 import {
   getTranscriptionEngine, setTranscriptionEngine, TRANSCRIPTION_ENGINES,
   transcribeSegments, isTimeoutAbort, type TranscriptionEngine,
@@ -14,6 +14,16 @@ import {
   purgeOldRecordings, requestPersistentStorage, recordingToBlob,
   type StoredRecording,
 } from '../services/recordingVault';
+
+// Limita qualquer promessa (ex.: escrita no IndexedDB) a `ms`: se não resolver a
+// tempo, segue em frente. Evita que uma operação local pendurada trave o fluxo
+// de transcrição — causa da UI presa girando que exigia recarregar a página.
+function settleWithin<T>(p: Promise<T>, ms = 6000): Promise<T | undefined> {
+  return Promise.race([
+    Promise.resolve(p).catch(() => undefined),
+    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms)),
+  ]);
+}
 
 export default function GravadorMobile() {
   const [searchParams] = useSearchParams();
@@ -34,6 +44,11 @@ export default function GravadorMobile() {
   const [savedRecordings, setSavedRecordings] = useState<StoredRecording[]>([]);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const pacienteNomeRef = useRef('');
+  // Trava síncrona de transcrição em andamento (single-flight). Ref, não estado,
+  // para não depender do ciclo de render — impede reenvios sobrepostos.
+  const transcribingRef = useRef(false);
+  // Rede de segurança final: se algo travar além do esperado, destrava a UI.
+  const watchdogRef = useRef<number | null>(null);
 
   const segRecorderRef = useRef<SegmentedRecorder | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
@@ -132,6 +147,7 @@ export default function GravadorMobile() {
         segRecorderRef.current.abort();
         segRecorderRef.current = null;
       }
+      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
       releaseWakeLock();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -344,22 +360,45 @@ export default function GravadorMobile() {
   };
 
   const transcreverAudio = async (segments: Blob[], mimeType: string, recordingId: string | null) => {
+    // Single-flight: uma transcrição por vez. Trava síncrona (ref) — imune ao
+    // atraso do render que antes deixava o 2º/3º reenvio escapar do guard.
+    if (transcribingRef.current) {
+      toast.info('Aguarde a transcrição atual terminar.');
+      return;
+    }
+    transcribingRef.current = true;
     setIsTranscribing(true);
-    if (recordingId) await updateRecording(recordingId, { status: 'transcribing' }).catch(() => {});
+
+    // Watchdog: mesmo num travamento imprevisto, a UI se destrava sozinha depois
+    // do teto — o usuário nunca mais precisa recarregar a página para reenviar.
+    if (watchdogRef.current) clearTimeout(watchdogRef.current);
+    watchdogRef.current = window.setTimeout(() => {
+      transcribingRef.current = false;
+      setIsTranscribing(false);
+      setResendingId(null);
+      setError('A transcrição demorou demais e foi interrompida. O áudio segue salvo — toque em Reenviar.');
+      toast.error('Transcrição interrompida por tempo. Reenvie.');
+    }, 240_000);
+
     const engine = getTranscriptionEngine() === 'gemini' ? 'gemini' : 'whisper';
     toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo áudio com Whisper...');
     try {
+      // Escritas locais SEMPRE limitadas por tempo (settleWithin) — nunca penduram.
+      if (recordingId) await settleWithin(updateRecording(recordingId, { status: 'transcribing' }));
+
       const text = await transcribeSegments(segments, mimeType, engine);
       if (text && text.trim()) {
-        setTranscriptionText(text);
+        const clean = text.trim();
+        setTranscriptionText(clean);
         toast.success('Áudio transcrito com sucesso!');
 
-        // Send transcription to Desktop
+        // Envia ao desktop. dedupeKey torna o envio idempotente: se este mesmo
+        // texto for reenviado (ex.: pelo botão Gerar SOAP), o desktop não duplica.
         let mirrored = false;
         if (syncServiceRef.current) {
           mirrored = await syncServiceRef.current.publish({
             type: 'TRANSCRIPTION_RESULT',
-            payload: { text: text.trim() }
+            payload: { text: clean, dedupeKey: transcriptDedupeKey(clean) },
           });
           if (mirrored) {
             toast.success('Enviado para o prontuário!');
@@ -367,22 +406,21 @@ export default function GravadorMobile() {
             toast.error('Erro ao espelhar com o computador.');
           }
         }
-        // Só marca como 'sent' (descartável pela limpeza) quando o texto chegou
-        // ao computador. Se o espelhamento falhou, mantém como 'failed' para
-        // permitir reenviar o áudio guardado.
+        // Só marca 'sent' (descartável pela limpeza) quando o texto chegou ao
+        // computador. Se não espelhou, mantém 'failed' para permitir reenviar.
         if (recordingId) {
-          await updateRecording(recordingId, mirrored
-            ? { status: 'sent', transcript: text.trim(), error: undefined }
-            : { status: 'failed', transcript: text.trim(), error: 'Transcrito, mas não espelhado no computador.' },
-          ).catch(() => {});
-          await refreshVault();
+          await settleWithin(updateRecording(recordingId, mirrored
+            ? { status: 'sent', transcript: clean, error: undefined }
+            : { status: 'failed', transcript: clean, error: 'Transcrito, mas não espelhado no computador.' },
+          ));
+          await settleWithin(refreshVault());
         }
       } else {
         setError('Não foi possível identificar fala no áudio.');
         toast.error('Nenhuma fala detectada.');
         if (recordingId) {
-          await updateRecording(recordingId, { status: 'failed', error: 'Nenhuma fala detectada.' }).catch(() => {});
-          await refreshVault();
+          await settleWithin(updateRecording(recordingId, { status: 'failed', error: 'Nenhuma fala detectada.' }));
+          await settleWithin(refreshVault());
         }
       }
     } catch (err: unknown) {
@@ -396,8 +434,8 @@ export default function GravadorMobile() {
         : 'Falha ao transcrever.');
 
       if (recordingId) {
-        await updateRecording(recordingId, { status: 'failed', error: errMsg }).catch(() => {});
-        await refreshVault();
+        await settleWithin(updateRecording(recordingId, { status: 'failed', error: errMsg }));
+        await settleWithin(refreshVault());
       }
 
       // Notify desktop of failure
@@ -408,13 +446,16 @@ export default function GravadorMobile() {
         });
       }
     } finally {
+      if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
+      transcribingRef.current = false;
       setIsTranscribing(false);
     }
   };
 
   // Reenvia uma gravação guardada: retranscreve o áudio salvo e espelha de novo.
   const handleResend = async (rec: StoredRecording) => {
-    if (isRecording || isTranscribing || resendingId) return;
+    // Guard síncrono via ref — não depende do estado (que podia estar defasado).
+    if (isRecording || transcribingRef.current || resendingId) return;
     setResendingId(rec.id);
     setError(null);
     await acquireWakeLock();
@@ -462,12 +503,24 @@ export default function GravadorMobile() {
   const triggerAI = async (action: 'SOAP' | 'JUSTIFICATIVA') => {
     if (!syncServiceRef.current) return;
     toast.info(`Solicitando geração de ${action} no computador...`);
+
+    // Garantia extra de entrega: reenvia o texto da ÚLTIMA TRANSCRIÇÃO junto do
+    // pedido de IA. Se o espelhamento anterior falhou, o texto chega agora; se já
+    // chegou, o dedupeKey faz o desktop ignorar — sem duplicar no prontuário.
+    const text = transcriptionText.trim();
+    if (text) {
+      await syncServiceRef.current.publish({
+        type: 'TRANSCRIPTION_RESULT',
+        payload: { text, dedupeKey: transcriptDedupeKey(text) },
+      });
+    }
+
     const success = await syncServiceRef.current.publish({
       type: 'TRIGGER_AI',
       payload: { action }
     });
     if (success) {
-      toast.success('Solicitado!');
+      toast.success(text ? 'Texto reenviado e geração solicitada!' : 'Solicitado!');
     } else {
       toast.error('Falha ao comunicar com o computador.');
     }

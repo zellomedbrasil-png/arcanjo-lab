@@ -27,6 +27,9 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const syncRef = useRef<SyncService | null>(null);
+  // Chaves de transcrições já incorporadas ao prontuário — evita duplicar quando
+  // o celular reenvia o MESMO texto (ex.: pelo botão Gerar SOAP/Justificativa).
+  const processedTranscriptKeysRef = useRef<Set<string>>(new Set());
 
   // Process mobile transcription in the background
   const handleProcessMobileTranscription = useCallback(async (text: string) => {
@@ -136,8 +139,20 @@ export default function Layout({ children }: { children: ReactNode }) {
         } else if (msg.type === 'TRANSCRIPTION_RESULT') {
           setSyncStatus('connected');
           const text = msg.payload?.text || '';
+          const dedupeKey = msg.payload?.dedupeKey;
           if (text) {
-            await handleProcessMobileTranscription(text);
+            // Reenvio do MESMO texto (dedupeKey já visto) → não acrescenta de novo,
+            // mas confirma a conexão. Sem dedupeKey (ditado ao vivo) → sempre soma.
+            if (dedupeKey && processedTranscriptKeysRef.current.has(dedupeKey)) {
+              // já incorporado — ignora silenciosamente para não duplicar
+            } else {
+              if (dedupeKey) {
+                const seen = processedTranscriptKeysRef.current;
+                seen.add(dedupeKey);
+                if (seen.size > 100) seen.delete(seen.values().next().value as string);
+              }
+              await handleProcessMobileTranscription(text);
+            }
           }
         } else if (msg.type === 'TRIGGER_AI') {
           // Qualquer mensagem do celular comprova que ele está pareado
