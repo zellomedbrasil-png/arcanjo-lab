@@ -10,6 +10,12 @@ export interface SyncMessage {
     action?: 'SOAP' | 'JUSTIFICATIVA';
     /** Chave estável do texto — o desktop ignora reenvios idênticos (evita duplicar). */
     dedupeKey?: string;
+    /**
+     * Envio manual e explícito (botão "Enviar p/ Queixa"): ignora a deduplicação
+     * e garante que o texto entre na Queixa. Idempotente no desktop — só acrescenta
+     * se o texto ainda não estiver lá, então clicar duas vezes não duplica.
+     */
+    force?: boolean;
   };
   /** Identificador único da mensagem — usado para deduplicar entre os dois transportes */
   _id?: string;

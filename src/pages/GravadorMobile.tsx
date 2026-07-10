@@ -556,9 +556,11 @@ export default function GravadorMobile() {
       return;
     }
     toast.info('Enviando texto para a Queixa...');
+    // force: envio manual e explícito — o desktop ignora a dedupe e garante o
+    // texto na Queixa (idempotente: não duplica se já estiver lá).
     const ok = await syncServiceRef.current.publish({
       type: 'TRANSCRIPTION_RESULT',
-      payload: { text, dedupeKey: transcriptDedupeKey(text) },
+      payload: { text, dedupeKey: transcriptDedupeKey(text), force: true },
     });
     if (ok) {
       setLastMirrored(true);
@@ -845,17 +847,20 @@ export default function GravadorMobile() {
           </select>
         </div>
 
+        {/* Ações NÃO ficam presas ao selo "Conectado": o celular publica pelos dois
+            transportes de qualquer forma, e o pareamento pode estar ativo mesmo com o
+            selo ainda "Sincronizando". Só bloqueia durante gravação/transcrição. */}
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() => triggerAI('SOAP')}
-            disabled={!connected || isRecording || isTranscribing}
+            disabled={isRecording || isTranscribing}
             className="flex items-center justify-center gap-1.5 py-3 px-2 bg-slate-900 hover:bg-slate-800 text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-[11px] font-bold border border-slate-800 transition-all cursor-pointer"
           >
             Gerar SOAP
           </button>
           <button
             onClick={enviarParaQueixa}
-            disabled={!connected || isRecording || isTranscribing}
+            disabled={isRecording || isTranscribing}
             className="flex flex-col items-center justify-center gap-0.5 py-2 px-2 bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-[11px] font-bold border border-indigo-500/40 transition-all cursor-pointer"
           >
             <ClipboardPaste size={14} />
@@ -863,7 +868,7 @@ export default function GravadorMobile() {
           </button>
           <button
             onClick={() => triggerAI('JUSTIFICATIVA')}
-            disabled={!connected || isRecording || isTranscribing}
+            disabled={isRecording || isTranscribing}
             className="flex items-center justify-center gap-1.5 py-3 px-2 bg-slate-900 hover:bg-slate-800 text-slate-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl text-[11px] font-bold border border-slate-800 transition-all cursor-pointer"
           >
             Gerar Justificativa

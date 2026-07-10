@@ -140,10 +140,27 @@ export default function Layout({ children }: { children: ReactNode }) {
           setSyncStatus('connected');
           const text = msg.payload?.text || '';
           const dedupeKey = msg.payload?.dedupeKey;
+          const force = msg.payload?.force === true;
           if (text) {
-            // Reenvio do MESMO texto (dedupeKey já visto) → não acrescenta de novo,
-            // mas confirma a conexão. Sem dedupeKey (ditado ao vivo) → sempre soma.
-            if (dedupeKey && processedTranscriptKeysRef.current.has(dedupeKey)) {
+            const alreadyInQueixa = useAppStore.getState().queixa.includes(text.trim());
+            // Envio manual ("Enviar p/ Queixa"): ignora a dedupe e garante o texto
+            // na Queixa, mas de forma idempotente — só acrescenta se ainda não está
+            // lá. Assim o botão SEMPRE faz algo visível e nunca duplica.
+            if (force) {
+              if (dedupeKey) {
+                const seen = processedTranscriptKeysRef.current;
+                seen.add(dedupeKey);
+                if (seen.size > 100) seen.delete(seen.values().next().value as string);
+              }
+              if (!alreadyInQueixa) {
+                await handleProcessMobileTranscription(text);
+              } else {
+                toast.info('Este texto já está na Queixa.');
+              }
+            }
+            // Reenvio automático do MESMO texto (dedupeKey já visto) → não acrescenta
+            // de novo, mas confirma a conexão. Sem dedupeKey (ditado ao vivo) → soma.
+            else if (dedupeKey && processedTranscriptKeysRef.current.has(dedupeKey)) {
               // já incorporado — ignora silenciosamente para não duplicar
             } else {
               if (dedupeKey) {
@@ -151,7 +168,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                 seen.add(dedupeKey);
                 if (seen.size > 100) seen.delete(seen.values().next().value as string);
               }
-              await handleProcessMobileTranscription(text);
+              if (!alreadyInQueixa) await handleProcessMobileTranscription(text);
             }
           }
         } else if (msg.type === 'TRIGGER_AI') {
