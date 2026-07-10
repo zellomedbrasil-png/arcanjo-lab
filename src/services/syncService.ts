@@ -28,6 +28,21 @@ const isSupabaseConfigured = () => {
   );
 };
 
+// Tempo máximo que cada transporte tem para confirmar um publish. Passou disso,
+// consideramos falha (false) e seguimos — nunca deixamos o publish pendurado.
+const PUBLISH_TIMEOUT_MS = 8000;
+
+/** Garante que a promessa resolva em no máximo `ms` (valor `false` no estouro). */
+const withTimeout = (p: Promise<boolean>, ms: number): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(false), ms);
+    p.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      () => { clearTimeout(timer); resolve(false); },
+    );
+  });
+};
+
 const randomId = (): string => {
   try {
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -183,6 +198,12 @@ export class SyncService {
   /**
    * Publica a mensagem na sala pelos DOIS transportes.
    * Retorna true se pelo menos um deles confirmou o envio.
+   *
+   * IMPORTANTE: cada tentativa é LIMITADA POR TEMPO. Sem isso, um POST ao
+   * ntfy.sh (ou um send do Supabase) que fica pendurado numa rede móvel
+   * instável travava o publish para sempre — e, como a transcrição/reenvio
+   * aguardava aqui, a UI ficava presa girando ("Whisper..."/"Enviando...") e
+   * só um refresh liberava novo reenvio. Agora o publish sempre resolve.
    */
   public async publish(message: SyncMessage): Promise<boolean> {
     const msg: SyncMessage = { ...message, _id: randomId(), _sender: this.instanceId };
@@ -198,27 +219,37 @@ export class SyncService {
     if (this.supabaseChannel && this.supabaseJoined) {
       const channel = this.supabaseChannel;
       attempts.push(
-        channel
-          .send({ type: 'broadcast', event: 'sync-event', payload: msg })
-          .then((status: string) => {
-            if (status !== 'ok') console.warn(`[SyncService] Supabase send retornou "${status}"`);
-            return status === 'ok';
-          })
-          .catch((err: unknown) => {
-            console.warn('[SyncService] Supabase publish falhou', err);
-            return false;
-          }),
+        withTimeout(
+          channel
+            .send({ type: 'broadcast', event: 'sync-event', payload: msg })
+            .then((status: string) => {
+              if (status !== 'ok') console.warn(`[SyncService] Supabase send retornou "${status}"`);
+              return status === 'ok';
+            })
+            .catch((err: unknown) => {
+              console.warn('[SyncService] Supabase publish falhou', err);
+              return false;
+            }),
+          PUBLISH_TIMEOUT_MS,
+        ),
       );
     }
 
-    // 2) ntfy.sh — sempre, para garantir a ponte entre lados em transportes diferentes
+    // 2) ntfy.sh — sempre, para garantir a ponte entre lados em transportes diferentes.
+    //    AbortController encerra o fetch pendurado; withTimeout garante o retorno.
+    const ac = new AbortController();
+    const abortTimer = setTimeout(() => ac.abort(), PUBLISH_TIMEOUT_MS);
     attempts.push(
-      fetch(this.ntfyTopicUrl, { method: 'POST', body })
-        .then((response) => response.ok)
-        .catch((err: unknown) => {
-          console.error('[SyncService] ntfy.sh publish falhou:', err);
-          return false;
-        }),
+      withTimeout(
+        fetch(this.ntfyTopicUrl, { method: 'POST', body, signal: ac.signal })
+          .then((response) => response.ok)
+          .catch((err: unknown) => {
+            console.error('[SyncService] ntfy.sh publish falhou:', err);
+            return false;
+          })
+          .finally(() => clearTimeout(abortTimer)),
+        PUBLISH_TIMEOUT_MS,
+      ),
     );
 
     const results = await Promise.all(attempts);
