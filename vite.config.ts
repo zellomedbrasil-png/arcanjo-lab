@@ -49,6 +49,19 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
+        // Proxy de desenvolvimento: /api/openai → OpenAI chat completions.
+        // Injeta a chave do servidor (OPENAI_API_KEY, sem prefixo VITE_) no header.
+        '/api/openai': {
+          target: 'https://api.openai.com',
+          changeOrigin: true,
+          rewrite: () => '/v1/chat/completions',
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              const apiKey = env.OPENAI_API_KEY;
+              if (apiKey) proxyReq.setHeader('authorization', `Bearer ${apiKey}`);
+            });
+          },
+        },
         // Proxy de desenvolvimento: /api/gemini?model=X → Google generateContent.
         // Injeta a chave do servidor (GEMINI_API_KEY, sem prefixo VITE_) na URL.
         '/api/gemini': {

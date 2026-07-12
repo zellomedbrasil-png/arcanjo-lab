@@ -75,7 +75,7 @@ export interface AIModel {
   id: string;
   label: string;
   badge: string;
-  provider: 'gemini' | 'openrouter' | 'groq' | 'anthropic';
+  provider: 'gemini' | 'openrouter' | 'groq' | 'anthropic' | 'openai';
   note?: string;
   /** Timeout override in ms — slower models get a bit more time */
   timeoutMs?: number;
@@ -121,6 +121,22 @@ export const AI_MODELS: AIModel[] = [
     provider: 'groq',
     note: 'Ultra rápido e preciso',
     timeoutMs: 30_000,
+  },
+  {
+    id: 'gpt-5.5',
+    label: 'GPT-5.5 (OpenAI direto) 🧠',
+    badge: 'GPT-5.5 (OpenAI)',
+    provider: 'openai',
+    note: 'API oficial da OpenAI via proxy seguro — requer OPENAI_API_KEY no servidor',
+    timeoutMs: 90_000,
+  },
+  {
+    id: 'gpt-4o',
+    label: 'GPT-4o (OpenAI direto) ⚡',
+    badge: 'GPT-4o (OpenAI)',
+    provider: 'openai',
+    note: 'Rápido e estável da OpenAI via proxy seguro — requer OPENAI_API_KEY no servidor',
+    timeoutMs: 60_000,
   },
   {
     id: 'openai/gpt-5.5',
@@ -303,6 +319,103 @@ async function callOpenRouter(
   const text = data.choices?.[0]?.message?.content || '';
   if (!text.trim()) throw new Error('OpenRouter retornou resposta vazia.');
   return text.trim();
+}
+
+// ─── OpenAI (direto, via proxy /api/openai) ────────────────────────────────────
+// A chave OPENAI_API_KEY fica SOMENTE no servidor (/api/openai injeta o header).
+// O navegador nunca vê a chave. Formato de streaming SSE idêntico ao OpenRouter.
+
+async function callOpenAI(
+  params: AICallParams,
+  modelId: string,
+  signal: AbortSignal
+): Promise<string> {
+  const messages: Array<{ role: string; content: string }> = [];
+  if (params.systemInstruction) messages.push({ role: 'system', content: params.systemInstruction });
+  messages.push({ role: 'user', content: params.prompt });
+
+  // Modelos GPT-3/4 clássicos aceitam `temperature`; famílias de raciocínio
+  // (gpt-5+, série o) só rodam com o padrão — então só enviamos onde é seguro.
+  const acceptsTemperature = /^gpt-(3|4)/.test(modelId);
+
+  const body: Record<string, unknown> = {
+    model: modelId,
+    messages,
+    // Param novo da OpenAI (substitui max_tokens; aceito por todos os modelos atuais).
+    max_completion_tokens: MAX_OUTPUT_TOKENS,
+    stream: true,
+  };
+  if (acceptsTemperature) {
+    body.temperature = typeof params.temperature === 'number' ? params.temperature : 0.2;
+  }
+
+  const response = await fetch('/api/openai', {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok || !response.body) {
+    const responseText = await response.text();
+    let errMsg = responseText;
+    try {
+      const errObj = JSON.parse(responseText);
+      errMsg = errObj.error?.message || errObj.error || responseText;
+    } catch {
+      // usa texto cru
+    }
+    if (response.status === 401) {
+      throw new Error('OpenAI 401: chave inválida ou OPENAI_API_KEY não configurada no servidor.');
+    }
+    if (response.status === 429) {
+      throw new Error('OpenAI 429: limite de cota ou sem créditos na conta da OpenAI. Verifique o faturamento em platform.openai.com.');
+    }
+    throw new Error(`OpenAI ${response.status}: ${String(errMsg).slice(0, 200)}`);
+  }
+
+  // Lê o SSE da OpenAI: linhas "data: {json}" com choices[0].delta.content.
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() ?? '';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const payload = trimmed.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
+        let evt: {
+          choices?: Array<{ delta?: { content?: string } }>;
+          error?: { message?: string };
+        };
+        try {
+          evt = JSON.parse(payload);
+        } catch {
+          continue;
+        }
+        if (evt.error) throw new Error(`OpenAI: ${evt.error.message ?? 'erro no stream'}`);
+        const chunk = evt.choices?.[0]?.delta?.content ?? '';
+        if (chunk) {
+          fullText += chunk;
+          params.onDelta?.(fullText);
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  if (!fullText.trim()) throw new Error('OpenAI retornou resposta vazia.');
+  const m = AI_MODELS.find((m) => m.id === modelId);
+  lastUsedModel = m?.badge ?? `OpenAI (${modelId})`;
+  return fullText.trim();
 }
 
 // ─── Groq ──────────────────────────────────────────────────────────────────────
@@ -607,9 +720,10 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
     const hasEnvGemini = !!import.meta.env.VITE_GEMINI_API_KEY;
     const hasGemini = hasCustomGemini || hasEnvGemini;
     
-    if (modelMeta.provider === 'gemini' || modelMeta.provider === 'anthropic') {
-      // Gemini e Anthropic usam proxy servidor-lado (/api/gemini e /api/claude).
-      // A chave nunca passa pelo browser e o proxy está sempre disponível.
+    if (modelMeta.provider === 'gemini' || modelMeta.provider === 'anthropic' || modelMeta.provider === 'openai') {
+      // Gemini, Anthropic e OpenAI usam proxy servidor-lado (/api/gemini,
+      // /api/claude, /api/openai). A chave nunca passa pelo browser e o proxy
+      // está sempre disponível (erra com mensagem clara se a env var faltar).
       hasKey = true;
     } else if (modelMeta.id.includes('gemini') && hasGemini) {
       hasKey = true;
@@ -627,7 +741,7 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
   }
 
   // Fila de modelos a tentar
-  const fallbackChain: Array<{ id: string; badge: string; provider: 'gemini' | 'openrouter' | 'groq' | 'anthropic'; timeoutMs: number }> = [];
+  const fallbackChain: Array<{ id: string; badge: string; provider: 'gemini' | 'openrouter' | 'groq' | 'anthropic' | 'openai'; timeoutMs: number }> = [];
 
   // 1. O modelo selecionado pelo usuário
   fallbackChain.push({
@@ -728,6 +842,8 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
         }
       } else if (targetProvider === 'anthropic') {
         text = await callAnthropic(params, targetModelId, signal);
+      } else if (targetProvider === 'openai') {
+        text = await callOpenAI(params, targetModelId, signal);
       } else if (targetProvider === 'groq') {
         text = await callGroq(params, targetModelId, signal);
       } else {
