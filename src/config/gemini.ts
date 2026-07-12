@@ -336,16 +336,20 @@ async function callOpenAI(
 
   // Modelos GPT-3/4 clássicos aceitam `temperature`; famílias de raciocínio
   // (gpt-5+, série o) só rodam com o padrão — então só enviamos onde é seguro.
-  const acceptsTemperature = /^gpt-(3|4)/.test(modelId);
+  const isReasoning = !/^gpt-(3|4)/.test(modelId);
 
+  // Modelos de raciocínio (gpt-5+, série o) gastam TOKENS pensando ANTES de
+  // escrever, e esse consumo conta no max_completion_tokens. Com o teto normal
+  // (8192), um SOAP longo pode sair vazio/cortado porque o raciocínio comeu quase
+  // tudo. Damos folga generosa a esses modelos; para gpt-4o o teto normal basta.
   const body: Record<string, unknown> = {
     model: modelId,
     messages,
     // Param novo da OpenAI (substitui max_tokens; aceito por todos os modelos atuais).
-    max_completion_tokens: MAX_OUTPUT_TOKENS,
+    max_completion_tokens: isReasoning ? 32_000 : MAX_OUTPUT_TOKENS,
     stream: true,
   };
-  if (acceptsTemperature) {
+  if (!isReasoning) {
     body.temperature = typeof params.temperature === 'number' ? params.temperature : 0.2;
   }
 
@@ -379,6 +383,7 @@ async function callOpenAI(
   const decoder = new TextDecoder();
   let buffer = '';
   let fullText = '';
+  let finishReason = '';
   try {
     while (true) {
       const { done, value } = await reader.read();
@@ -392,7 +397,7 @@ async function callOpenAI(
         const payload = trimmed.slice(5).trim();
         if (!payload || payload === '[DONE]') continue;
         let evt: {
-          choices?: Array<{ delta?: { content?: string } }>;
+          choices?: Array<{ delta?: { content?: string }; finish_reason?: string }>;
           error?: { message?: string };
         };
         try {
@@ -406,13 +411,25 @@ async function callOpenAI(
           fullText += chunk;
           params.onDelta?.(fullText);
         }
+        if (evt.choices?.[0]?.finish_reason) finishReason = evt.choices[0].finish_reason!;
       }
     }
   } finally {
     reader.releaseLock();
   }
 
-  if (!fullText.trim()) throw new Error('OpenAI retornou resposta vazia.');
+  if (!fullText.trim()) {
+    // Vazio com finish_reason 'length' = modelo de raciocínio gastou todo o
+    // orçamento pensando e não sobrou texto. Mensagem clara em vez de "vazio".
+    if (finishReason === 'length') {
+      throw new Error('O modelo usou todo o orçamento de tokens no raciocínio e não sobrou texto. Tente um caso mais curto ou use "GPT-4o (OpenAI direto)".');
+    }
+    throw new Error('OpenAI retornou resposta vazia.');
+  }
+  // Nota cortada no meio — o médico precisa saber que pode estar incompleta.
+  if (finishReason === 'length') {
+    toast.error('Atenção: a nota atingiu o limite de tamanho e pode estar incompleta. Gere novamente ou reduza o caso.');
+  }
   const m = AI_MODELS.find((m) => m.id === modelId);
   lastUsedModel = m?.badge ?? `OpenAI (${modelId})`;
   return fullText.trim();
