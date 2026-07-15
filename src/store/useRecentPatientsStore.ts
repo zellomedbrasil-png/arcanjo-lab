@@ -5,6 +5,9 @@ import type { Convenio, Genero } from '../types';
 export interface PacienteRecente {
   nome: string;
   cpf?: string;
+  /** Idade em anos, como texto. Guardada junto do paciente para não vazar a
+   *  idade de um paciente anterior ao selecionar um recente. */
+  idade?: string;
   genero?: Genero;
   convenio?: Convenio;
   numeroBeneficiario?: string;

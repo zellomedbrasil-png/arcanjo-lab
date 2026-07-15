@@ -3,6 +3,7 @@ import { useRecentPatientsStore, type PacienteRecente } from './useRecentPatient
 export interface PatientSyncData {
   pacienteNome?: string;
   pacienteCpf?: string;
+  pacienteIdade?: string;
   numeroBeneficiario?: string;
   genero?: 'M' | 'F';
   convenio?: 'IPM' | 'ISSEC' | 'SADT' | 'PARTICULAR';

@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { callAI, getLastUsedModel, cancelAIRequest } from '../../config/gemini';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
+import { buildPacienteContexto } from '../../lib/aiContext';
 import { Wand2, FileText, X, Square } from 'lucide-react';
 
 const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
@@ -60,6 +61,7 @@ export default function JustificativaPanel({ mode }: JustificativaPanelProps) {
 
   const {
     pacienteNome,
+    pacienteIdade,
     genero,
     examesSelecionados,
     procedimentosSelecionados,
@@ -91,7 +93,7 @@ export default function JustificativaPanel({ mode }: JustificativaPanelProps) {
     const itemsStr = isLab
       ? `Exames laboratoriais: ${examesSelecionados.join(', ') || 'nenhum'}`
       : `Procedimentos eletivos: ${procedimentosSelecionados.join(', ') || 'nenhum'}`;
-    return `Paciente: ${pacienteNome || 'não informado'} | Gênero: ${genero === 'M' ? 'Masculino' : 'Feminino'}
+    return `${buildPacienteContexto({ pacienteNome, pacienteIdade, genero })}
 ${itemsStr}
 Queixa clínica: "${queixa}"`;
   };

@@ -8,6 +8,8 @@ interface AppState {
   medico: Medico | null;
   pacienteNome: string;
   pacienteCpf: string;
+  /** Idade em anos, como texto. Vazio = não informada (a IA não deve presumir). */
+  pacienteIdade: string;
   numeroBeneficiario: string;
   sadtOperadora: string;
   sadtRegistroAns: string;
@@ -64,6 +66,7 @@ interface AppState {
 const initialState = {
   pacienteNome: '',
   pacienteCpf: '',
+  pacienteIdade: '',
   numeroBeneficiario: '',
   sadtOperadora: '',
   sadtRegistroAns: '',
@@ -103,6 +106,7 @@ export const useAppStore = create<AppState>()(
         publishPatientSync('app', {
           pacienteNome: next.pacienteNome,
           pacienteCpf: next.pacienteCpf,
+          pacienteIdade: next.pacienteIdade,
           numeroBeneficiario: next.numeroBeneficiario,
           genero: next.genero,
           convenio: next.convenio,
@@ -195,6 +199,7 @@ export const useAppStore = create<AppState>()(
         publishPatientSync('app', {
           pacienteNome: '',
           pacienteCpf: '',
+          pacienteIdade: '',
           numeroBeneficiario: '',
           genero: 'M',
           convenio: 'IPM',
@@ -258,6 +263,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         pacienteNome: state.pacienteNome,
         pacienteCpf: state.pacienteCpf,
+        pacienteIdade: state.pacienteIdade,
         numeroBeneficiario: state.numeroBeneficiario,
         sadtOperadora: state.sadtOperadora,
         sadtRegistroAns: state.sadtRegistroAns,
@@ -292,6 +298,9 @@ subscribePatientSync((senderId, data) => {
   }
   if (data.pacienteCpf !== undefined && data.pacienteCpf !== state.pacienteCpf) {
     updates.pacienteCpf = data.pacienteCpf;
+  }
+  if (data.pacienteIdade !== undefined && data.pacienteIdade !== state.pacienteIdade) {
+    updates.pacienteIdade = data.pacienteIdade;
   }
   if (data.numeroBeneficiario !== undefined && data.numeroBeneficiario !== state.numeroBeneficiario) {
     updates.numeroBeneficiario = data.numeroBeneficiario;

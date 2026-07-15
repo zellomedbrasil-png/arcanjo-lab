@@ -13,21 +13,41 @@ import { toast } from '../../lib/toast';
 import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio, ShieldAlert, Activity, HelpCircle, Send } from 'lucide-react';
 import type { ConsultaGravada } from '../../types';
 import { cleanSoapMarkdown } from '../../lib/formatters';
+import { buildPacienteContexto } from '../../lib/aiContext';
 
 
 
-export const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
+export const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico sênior com expertise em auditoria médica de convênios.
+Atende pacientes de TODAS as faixas etárias (recém-nascidos a idosos) — nunca assuma que o paciente é idoso.
 Gere UMA ÚNICA FRASE curta e objetiva (máximo 2-3 linhas) de "Indicação Clínica / Justificativa" para o campo obrigatório da guia de exame do convênio.
 
-FORMATO OBRIGATÓRIO:
-"INVESTIGAÇÃO DE [queixa principal] EM PACIENTE [idade/perfil clínico] COM [comorbidades relevantes]. SOLICITO [exames/procedimento] PARA [objetivo diagnóstico]. CID-10: [código mais adequado]."
+FORMATO OBRIGATÓRIO (responda com a frase pura, SEM aspas ao redor):
+INVESTIGAÇÃO DE [queixa principal] EM PACIENTE [descritor — ver REGRA DA IDADE][, COM [comorbidades] — só se informadas]. SOLICITO [exames/procedimento] PARA [objetivo diagnóstico]. CID-10: [código mais adequado].
+
+## REGRA DA IDADE [CRÍTICA — ANTI-ALUCINAÇÃO]
+O contexto sempre traz um campo "Idade:".
+- Se vier um número (ex.: "Idade: 72 anos"): ESCREVA a idade na frase — ela vale para a auditoria.
+  . < 60 anos → "PACIENTE MASCULINO DE 30 ANOS" / "PACIENTE FEMININA DE 30 ANOS"
+  . >= 60 anos → "PACIENTE IDOSO DE 72 ANOS" / "PACIENTE IDOSA DE 72 ANOS"
+  Use SOMENTE a idade recebida; nunca arredonde nem altere.
+- Se vier "NÃO INFORMADA": escreva APENAS "PACIENTE MASCULINO" ou "PACIENTE FEMININO". É PROIBIDO, nesse caso:
+  . escrever ou estimar qualquer idade;
+  . usar descritor de faixa etária ("IDOSO", "GERIÁTRICO", "ADULTO JOVEM", "CRIANÇA", "JOVEM", "ANOS");
+  . deduzir a idade a partir da queixa, dos exames pedidos ou da especialidade do médico.
+
+## REGRA DO "NÃO INFORMADO" [CRÍTICA]
+NUNCA escreva na guia que algo não foi informado. É PROIBIDO produzir textos como
+"IDADE NÃO INFORMADA", "COMORBIDADES NÃO INFORMADAS" ou "SEM COMORBIDADES RELATADAS".
+Se um dado não veio, simplesmente OMITA a expressão inteira e siga a frase naturalmente.
+Exemplo correto (sem idade e sem comorbidades):
+INVESTIGAÇÃO DE DOR ABDOMINAL EM PACIENTE MASCULINO. SOLICITO HEMOGRAMA COMPLETO E SUMÁRIO DE URINA PARA AVALIAÇÃO ETIOLÓGICA. CID-10: R10.4.
 
 REGRAS:
+- Responda SOMENTE com a frase, sem aspas ao redor, sem prefixos e sem comentários.
 - Tudo em MAIÚSCULAS
 - Inclua SEMPRE o CID-10 mais adequado ao final
-- Se houver comorbidades (HAS, DM2, dislipidemia), mencione-as APENAS se estiverem citadas explicitamente no caso do paciente.
-- REGRA ABSOLUTA DE SEGURANÇA: NÃO invente comorbidades, sintomas secundários ou histórico médico fictício na indicação clínica. Baseie-se unicamente nas informações de entrada fornecidas.
-- Para idosos, mencione "PACIENTE IDOSO" ou "PACIENTE GERIÁTRICO"
+- Mencione comorbidades (HAS, DM2, dislipidemia) APENAS se citadas explicitamente no caso.
+- REGRA ABSOLUTA DE SEGURANÇA: NÃO invente idade, comorbidades, sintomas secundários ou histórico médico. Baseie-se unicamente nas informações de entrada fornecidas.
 - Seja profissional e objetivo — esta justificativa será auditada pelo convênio
 - NÃO use formato SOAP, NÃO use bullet points
 - Apenas uma frase clínica direta em português`;
@@ -54,6 +74,13 @@ FUNCAO: Transformar anotacoes rapidas e desestruturadas (voz, abreviacoes, erros
 - Caso clinico (idade, sexo, queixa, sintomas — mesmo resumido, ex.: "homem 34a, lombalgia ha 2 dias") → gere o SOAP Express completo (6 secoes abaixo).
 - Pergunta clinica pontual (ex.: "dose de ceftriaxona em PNM grave", "diferencial de cefaleia em trovoada") → responda direto, nivel especialista, sem montar SOAP.
 
+## Regra da IDADE — anti-alucinacao [CRITICA]
+
+- O contexto sempre traz um campo "Idade:". Use SOMENTE o que vier nele.
+- Se vier "NAO INFORMADA": nao escreva idade, nao estime e nao use descritor de faixa etaria ("idoso", "geriatrico", "adulto jovem"). No campo S, escreva so o sexo (ex.: "ID: Masculino."). Nao escreva "idade nao informada" no prontuario — apenas omita.
+- Nunca deduza a idade a partir da queixa, dos exames pedidos ou da especialidade do medico.
+- As regras de GERIATRIA abaixo (Beers/STOPP, preferencias) so se aplicam quando a idade informada for >= 60 anos. Sem idade informada, NAO as aplique e NAO trate o paciente como idoso.
+
 ## Regra do campo OBJETIVO (O) — anti-alucinacao [CRITICA]
 
 - Nunca gere dados nao informados. Nao invente sinais vitais numericos (PA, FC, FR, Temperatura, SatO2), peso, glicemia ou qualquer medida que o caso de entrada nao tenha fornecido.
@@ -78,7 +105,7 @@ Independente do quadro (clinico, ortopedico, dermatologico, ginecologico, psiqui
 
 ## INTELIGENCIA CLINICA (aplicar automaticamente quando pertinente)
 
-GERIATRIA (>=60 anos):
+GERIATRIA (SOMENTE se a idade informada for >=60 anos — nunca por suposicao):
 - Beers 2023 / STOPP-START: sinalizar UMA VEZ farmaco inapropriado, sugerir alternativa, nao repetir
 - Preferencias farmacologicas:
   . mirtazapina > quetiapina (sono/apetite em idoso com risco cognitivo)
@@ -116,7 +143,7 @@ FARMACOLOGIA:
 ## FORMATO DE SAIDA OBRIGATORIO (caso clinico)
 
 **SOAP EXPRESS**
-S: ID: [idade] anos, [sexo]. QP: [queixa em uma linha].
+S: ID: [idade] anos, [sexo] — a idade SO entra se informada; se nao, escreva apenas o sexo. QP: [queixa em uma linha].
 HMA: [Texto corrido narrativo completo — cronologia, inicio e evolucao, fatores desencadeantes/melhora/piora, sintomas associados, tratamentos ja realizados, comorbidades e medicacao continua relevantes. Nunca truncar artificialmente. APENAS dados fornecidos. Se o input for curto, expandir com raciocinio clinico proporcional mas sem inventar dados.]
 [Se informado:] Antecedentes: [comorbidades, cirurgias, internacoes — APENAS os informados]
 [Se informado:] Medicacoes em uso: [lista com doses]
@@ -211,7 +238,7 @@ export default function SOAPPanel() {
   };
 
   const {
-    pacienteNome, genero, examesSelecionados, procedimentosSelecionados,
+    pacienteNome, pacienteIdade, genero, examesSelecionados, procedimentosSelecionados,
     soap, setSoap,
     queixa, setQueixa,
     justificativa, setJustificativa,
@@ -455,7 +482,7 @@ export default function SOAPPanel() {
     const examesStr = isLab
       ? `Exames laboratoriais: ${examesSelecionados.join(', ') || 'nenhum'}`
       : `Procedimento: ${procedimentosSelecionados.join(', ') || tipoGuia}`;
-    return `Paciente: ${pacienteNome || 'não informado'} | Gênero: ${genero === 'M' ? 'Masculino' : 'Feminino'}
+    return `${buildPacienteContexto({ pacienteNome, pacienteIdade, genero })}
 ${examesStr}
 Queixa clínica: "${queixa}"`;
   };

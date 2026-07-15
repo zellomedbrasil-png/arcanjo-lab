@@ -8,7 +8,7 @@ import { savePatientToHistory } from '../../store/patientSync';
 
 export default function PatientForm() {
   const {
-    pacienteNome, pacienteCpf, numeroBeneficiario,
+    pacienteNome, pacienteCpf, pacienteIdade, numeroBeneficiario,
     sadtOperadora, sadtRegistroAns,
     genero, convenio, setPaciente,
   } = useAppStore();
@@ -46,6 +46,7 @@ export default function PatientForm() {
       savePatientToHistory({
         nome: pacienteNome.trim(),
         cpf: pacienteCpf,
+        idade: pacienteIdade,
         genero,
         convenio,
         numeroBeneficiario,
@@ -57,6 +58,9 @@ export default function PatientForm() {
     setPaciente({
       pacienteNome: p.nome,
       pacienteCpf: p.cpf || '',
+      // Sempre sobrescreve: sem isso, a idade do paciente ANTERIOR ficaria
+      // grudada no novo paciente e iria para a IA — erro clínico grave.
+      pacienteIdade: p.idade || '',
       genero: p.genero || 'M',
       convenio: p.convenio || 'PARTICULAR',
       numeroBeneficiario: p.numeroBeneficiario || '',
@@ -79,6 +83,45 @@ export default function PatientForm() {
             placeholder="Nome do paciente *"
             className="w-full text-sm font-semibold text-neutral-text placeholder:font-normal placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
           />
+        </div>
+
+        {/* Idade — logo ao lado do nome. Alimenta a IA; vazio = "não informada"
+            (a IA é instruída a não presumir faixa etária nesse caso). */}
+        <div className="w-full lg:w-auto">
+          <input
+            type="text"
+            value={pacienteIdade}
+            onChange={(e) => {
+              // Só dígitos, no máximo 3 (0–120 anos na prática).
+              const v = e.target.value.replace(/\D/g, '').slice(0, 3);
+              setPaciente({ pacienteIdade: v });
+            }}
+            onBlur={handleBlur}
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="Idade"
+            title="Idade em anos — usada pela IA. Se vazio, a IA não presume a faixa etária."
+            className="w-full lg:w-20 text-sm text-neutral-text placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
+          />
+        </div>
+
+        {/* Gênero — logo após a idade */}
+        <div className="flex gap-1.5 sm:col-span-2 lg:col-span-auto">
+          {generos.map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setPaciente({ genero: value })}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
+                genero === value
+                  ? 'bg-accent-sky text-neutral-surface border-accent-sky'
+                  : 'border-neutral-border text-neutral-text-muted hover:border-accent-sky/30 hover:text-accent-sky'
+              }`}
+            >
+              <Icon size={11} />
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* CPF */}
@@ -159,25 +202,6 @@ export default function PatientForm() {
             )}
           </div>
         )}
-
-        {/* Gênero */}
-        <div className="flex gap-1.5 sm:col-span-2 lg:col-span-auto">
-          {generos.map(({ value, label, icon: Icon }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setPaciente({ genero: value })}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${
-                genero === value
-                  ? 'bg-accent-sky text-neutral-surface border-accent-sky'
-                  : 'border-neutral-border text-neutral-text-muted hover:border-accent-sky/30 hover:text-accent-sky'
-              }`}
-            >
-              <Icon size={11} />
-              {label}
-            </button>
-          ))}
-        </div>
 
       </div>
 

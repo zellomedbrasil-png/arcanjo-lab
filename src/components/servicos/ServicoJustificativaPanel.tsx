@@ -5,9 +5,11 @@ import { callAI, getLastUsedModel, cancelAIRequest } from '../../config/gemini';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import { getServicoNome } from '../../data/servicos';
+import { buildPacienteContexto } from '../../lib/aiContext';
 import { Wand2, FileText, X, Square } from 'lucide-react';
 
-const SYSTEM_PROMPT_SERVICO = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria de convênios (ISSEC e IPM Saúde).
+const SYSTEM_PROMPT_SERVICO = `Você é um médico sênior com expertise em auditoria de convênios (ISSEC e IPM Saúde).
+Atende pacientes de TODAS as faixas etárias — nunca assuma que o paciente é idoso.
 Gere a "Indicação Clínica / Justificativa" para uma GUIA DE TERAPIA (fisioterapia, fonoaudiologia, psicologia, nutrição, terapia ocupacional ou acupuntura).
 
 OBJETIVO ANTI-GLOSA: a justificativa deve reduzir a glosa por periodicidade. Para isso, combine SEMPRE:
@@ -23,6 +25,8 @@ FORMATO:
 
 REGRAS DE SEGURANÇA:
 - NÃO invente comorbidades, sintomas ou histórico não citados no contexto. Baseie-se apenas nas informações fornecidas.
+- IDADE [CRÍTICO]: o contexto traz o campo "Idade:". Use somente o que vier nele. Se vier "NÃO INFORMADA", não escreva nem estime idade e não use descritor de faixa etária ("IDOSO", "GERIÁTRICO"). Nunca deduza a idade pela queixa ou pela terapia pedida.
+- Nunca escreva na guia que um dado "não foi informado" — apenas omita a expressão.
 - Se faltar nº de sessões ou frequência, use colchetes [nº] / [frequência] para o médico preencher.
 - NÃO use formato SOAP, NÃO use markdown, NÃO use bullet points. Apenas o parágrafo da justificativa.`;
 
@@ -32,14 +36,14 @@ export default function ServicoJustificativaPanel() {
   const elapsed = useElapsedTimer(isLoading);
 
   const {
-    pacienteNome, genero, queixa, setQueixa,
+    pacienteNome, pacienteIdade, genero, queixa, setQueixa,
     servicosSelecionados, justificativaServicos, setJustificativaServicos,
     setIaModel, iaModel,
   } = useAppStore();
 
   const buildContext = () => {
     const terapias = servicosSelecionados.map(getServicoNome).join(', ') || 'nenhuma selecionada';
-    return `Paciente: ${pacienteNome || 'não informado'} | Gênero: ${genero === 'M' ? 'Masculino' : 'Feminino'}
+    return `${buildPacienteContexto({ pacienteNome, pacienteIdade, genero })}
 Terapias solicitadas: ${terapias}
 Queixa / contexto clínico: "${queixa}"`;
   };

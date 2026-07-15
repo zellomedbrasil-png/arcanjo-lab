@@ -12,6 +12,7 @@ import { callAI, getLastUsedModel } from '../../config/gemini';
 import { SYSTEM_PROMPT_SOAP, SYSTEM_PROMPT_JUSTIFICATIVA } from '../soap/SOAPPanel';
 import { toast } from '../../lib/toast';
 import { cleanSoapMarkdown } from '../../lib/formatters';
+import { buildPacienteContexto } from '../../lib/aiContext';
 
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -66,7 +67,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         ? `Exames laboratoriais: ${state.examesSelecionados.join(', ') || 'nenhum'}`
         : `Procedimento: ${state.procedimentosSelecionados.join(', ') || state.tipoGuia}`;
       
-      const context = `Paciente: ${state.pacienteNome || 'não informado'} | Gênero: ${state.genero === 'M' ? 'Masculino' : 'Feminino'}\n${examesStr}\nQueixa clínica: "${state.queixa}"`;
+      const context = `${buildPacienteContexto(state)}\n${examesStr}\nQueixa clínica: "${state.queixa}"`;
 
       const content = await callAI({
         prompt: context,
@@ -94,7 +95,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         ? `Exames laboratoriais: ${state.examesSelecionados.join(', ') || 'nenhum'}`
         : `Procedimento: ${state.procedimentosSelecionados.join(', ') || state.tipoGuia}`;
       
-      const context = `Paciente: ${state.pacienteNome || 'não informado'} | Gênero: ${state.genero === 'M' ? 'Masculino' : 'Feminino'}\n${examesStr}\nQueixa clínica: "${state.queixa}"`;
+      const context = `${buildPacienteContexto(state)}\n${examesStr}\nQueixa clínica: "${state.queixa}"`;
 
       const content = await callAI({
         prompt: context,
