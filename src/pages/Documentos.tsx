@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useDocumentStore } from '../store/useDocumentStore';
@@ -8,24 +8,12 @@ import DocumentoTemplate from '../components/print/templates/DocumentoTemplate';
 import {
   FileText, ShieldAlert, Sparkles, Printer, User,
   Clock, Dumbbell, ShieldCheck, HeartHandshake, FileSpreadsheet, RotateCcw,
-  CheckCircle2, Loader2, Eye, History
+  CheckCircle2, Loader2, Eye
 } from 'lucide-react';
-import { useRecentPatientsStore, type PacienteRecente } from '../store/useRecentPatientsStore';
+import { useRecentPatientsStore } from '../store/useRecentPatientsStore';
 import { savePatientToHistory } from '../store/patientSync';
 import { useAppStore } from '../store/useAppStore';
 import { getDefaultModelId, AI_MODELS } from '../config/gemini';
-
-const formatCpf = (v: string) => {
-  const digits = v.replace(/\D/g, '').slice(0, 11);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) {
-    return `${digits.slice(0, 3)}.${digits.slice(3)}`;
-  }
-  if (digits.length <= 9) {
-    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
-  }
-  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
-};
 
 const formatCnpj = (v: string) => {
   const digits = v.replace(/\D/g, '').slice(0, 14);
@@ -200,7 +188,18 @@ export default function Documentos() {
     return model ? model.badge : 'Gemini 3 Flash';
   };
 
-  const { pacientes: pacientesRecentes } = useRecentPatientsStore();
+  // O paciente é definido UMA vez no Prontuário — esta página apenas espelha
+  // nome e CPF (fonte única). Sem isso, o médico digitava os mesmos dados de novo
+  // e corria o risco de emitir um documento com paciente divergente do prontuário.
+  const appPacienteNome = useAppStore((s) => s.pacienteNome);
+  const appPacienteCpf = useAppStore((s) => s.pacienteCpf);
+
+  useEffect(() => {
+    const atual = useDocumentStore.getState();
+    if (atual.pacienteNome !== appPacienteNome || atual.pacienteCpf !== appPacienteCpf) {
+      atual.setDocumento({ pacienteNome: appPacienteNome, pacienteCpf: appPacienteCpf });
+    }
+  }, [appPacienteNome, appPacienteCpf]);
 
   const handleBlur = () => {
     if (doc.pacienteNome && doc.pacienteNome.trim().length >= 3) {
@@ -217,14 +216,6 @@ export default function Documentos() {
     }
   };
 
-  const handleSelectRecent = (p: PacienteRecente) => {
-    doc.setDocumento({
-      pacienteNome: p.nome,
-      pacienteCpf: p.cpf || '',
-      pacienteDataNascimento: p.dataNascimento || '',
-    });
-  };
-  
   const [aiPrompt, setAiPrompt] = useState('');
   const [loadingAi, setLoadingAi] = useState(false);
   const [erroAi, setErroAi] = useState('');
@@ -519,46 +510,39 @@ export default function Documentos() {
                 <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Dados do Paciente / Registro</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Paciente: vem do Prontuário (fonte única) — não se digita aqui. */}
                 <div className="md:col-span-2">
-                  <label className={labelCls}>Nome Completo <span className="text-red-400">*</span></label>
-                  <input
-                    type="text"
-                    value={doc.pacienteNome}
-                    onChange={(e) => doc.setDocumento({ pacienteNome: e.target.value })}
-                    onBlur={handleBlur}
-                    placeholder="Nome completo do paciente"
-                    className={inputCls}
-                  />
-                  {pacientesRecentes.length > 0 && (
-                    <div className="mt-2.5 flex flex-wrap items-center gap-2 animate-in fade-in duration-300">
-                      <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider flex items-center gap-1 mr-1">
-                        <History size={12} className="text-gray-400" />
-                        Recentes:
-                      </span>
-                      {pacientesRecentes.map((p) => (
-                        <button
-                          key={p.nome}
-                          type="button"
-                          onClick={() => handleSelectRecent(p)}
-                          title={`CPF: ${p.cpf || 'Não informado'} | Nascimento: ${p.dataNascimento || 'Não informado'}`}
-                          className="px-2.5 py-1 bg-gray-50/70 hover:bg-indigo-50 border border-gray-200/80 hover:border-indigo-200 rounded-full text-xs font-semibold text-gray-600 hover:text-indigo-655 hover:shadow-sm transition-all"
-                        >
-                          {p.nome}
-                        </button>
-                      ))}
+                  <label className={labelCls}>Paciente (definido no Prontuário)</label>
+                  {doc.pacienteNome ? (
+                    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-gray-800 truncate">{doc.pacienteNome}</p>
+                        <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                          {doc.pacienteCpf ? `CPF ${doc.pacienteCpf}` : 'CPF não informado no prontuário'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/prontuario')}
+                        className="shrink-0 px-3 py-1.5 bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg text-[11px] font-bold transition-all"
+                      >
+                        Alterar no Prontuário
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between gap-3 px-4 py-3 bg-amber-50/60 border border-amber-200/70 rounded-xl">
+                      <p className="text-xs text-amber-900 font-medium leading-snug">
+                        Nenhum paciente identificado. O nome e o CPF vêm do Prontuário — preencha lá uma vez e o documento usa os mesmos dados.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => navigate('/prontuario')}
+                        className="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[11px] font-bold transition-all"
+                      >
+                        Ir ao Prontuário
+                      </button>
                     </div>
                   )}
-                </div>
-                <div>
-                  <label className={labelCls}>CPF do Paciente</label>
-                  <input
-                    type="text"
-                    value={doc.pacienteCpf}
-                    onChange={(e) => doc.setDocumento({ pacienteCpf: formatCpf(e.target.value) })}
-                    onBlur={handleBlur}
-                    placeholder="000.000.000-00"
-                    className={inputCls}
-                  />
                 </div>
                 <div>
                   <label className={labelCls}>Data de Nascimento</label>
@@ -669,32 +653,9 @@ export default function Documentos() {
                     placeholder="Ex: Fins de perícia previdenciária / INSS"
                     className={inputCls}
                   />
-                  {/* Chips de finalidade rápida */}
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {[
-                      'Fins previdenciários / INSS',
-                      'Solicitação de fraldas geriátricas',
-                      'Encaminhamento para Fisioterapia',
-                      'Encaminhamento para Fonoaudiologia',
-                      'Encaminhamento para Terapia Ocupacional',
-                      'Solicitação de suporte nutricional',
-                      'Curatela / representação legal',
-                      'Uso em concurso público / BPC',
-                    ].map((fin) => (
-                      <button
-                        key={fin}
-                        type="button"
-                        onClick={() => doc.setDocumento({ laudoFinalidade: fin })}
-                        className={`px-2.5 py-1 text-[10px] font-semibold rounded-full border transition-all ${
-                          doc.laudoFinalidade === fin
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-indigo-200 hover:text-indigo-700 hover:bg-indigo-50'
-                        }`}
-                      >
-                        {fin}
-                      </button>
-                    ))}
-                  </div>
+                  <p className="mt-1.5 text-[10px] text-gray-400 font-medium">
+                    Preenchida pelos Modelos Rápidos / Presets acima — edite se precisar de outra finalidade.
+                  </p>
                 </div>
 
                 {/* Informações de Reabilitação (aparecem se a finalidade for de reabilitação) */}
