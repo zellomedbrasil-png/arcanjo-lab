@@ -2,9 +2,13 @@
 // Registry dos motores de transcrição e transcrição por blob (gravação → texto).
 //
 // Motores:
-//   whisper      — Groq Whisper Large v3 Turbo. Vai pelo proxy /api/groq-transcribe
-//                  (chave no servidor). No desktop cai no client-side se o proxy
-//                  não estiver configurado ou o arquivo passar do limite do Edge.
+//   whisper      — Groq Whisper Large v3 (completo → turbo). Vai pelo proxy
+//                  /api/groq-transcribe (chave no servidor). No desktop cai no
+//                  client-side se o proxy não estiver configurado ou o arquivo
+//                  passar do limite do Edge.
+//   gpt4o        — OpenAI gpt-4o-transcribe pelo proxy /api/openai-transcribe.
+//                  Máxima precisão do mercado (~22% menos erros que Whisper v3);
+//                  em qualquer falha cai automaticamente na cadeia Whisper.
 //   gemini       — Gemini áudio nativo (multimodal) pelo proxy /api/gemini existente.
 //   google-live  — Ditado ao vivo (Web Speech API). NÃO usa blob; ver liveSpeech.ts.
 //
@@ -12,7 +16,7 @@
 
 import { groq } from '../config/groq';
 
-export type TranscriptionEngine = 'whisper' | 'gemini' | 'google-live';
+export type TranscriptionEngine = 'whisper' | 'gpt4o' | 'gemini' | 'google-live';
 
 export interface TranscriptionEngineMeta {
   id: TranscriptionEngine;
@@ -27,6 +31,12 @@ export const TRANSCRIPTION_ENGINES: TranscriptionEngineMeta[] = [
     id: 'whisper',
     label: 'Whisper (Groq) ⚡',
     note: 'Recomendado — transcrição fiel e estável para consultas médicas',
+    live: false,
+  },
+  {
+    id: 'gpt4o',
+    label: 'GPT-4o Transcribe (OpenAI) 🎯',
+    note: 'Máxima precisão — melhor com voz baixa/ruído (~R$0,16 por consulta)',
     live: false,
   },
   {
@@ -133,6 +143,39 @@ async function transcribeWhisperProxy(blob: Blob, mimeType: string, signal: Abor
       // usa text cru
     }
     throw new Error(`Whisper ${response.status}: ${String(msg).slice(0, 200)}`);
+  }
+
+  const data = JSON.parse(text) as { text?: string };
+  return (data.text || '').trim();
+}
+
+// ─── GPT-4o Transcribe (OpenAI) via proxy ───────────────────────────────────────
+// Máxima precisão do mercado. A chave OPENAI_API_KEY fica só no servidor.
+
+const GPT4O_TIMEOUT_MS = 120_000;
+
+async function transcribeOpenAIProxy(blob: Blob, mimeType: string, signal: AbortSignal): Promise<string> {
+  const ext = extensionForMime(mimeType);
+  const url = `/api/openai-transcribe?ext=${encodeURIComponent(ext)}&lang=pt`;
+  const response = await fetch(url, {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': mimeType || 'audio/webm' },
+    body: blob,
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    if (response.status === 413) {
+      throw new Error('Este trecho de áudio ficou grande demais para o servidor. Grave em partes mais curtas.');
+    }
+    let msg = text;
+    try {
+      msg = JSON.parse(text).error?.message || JSON.parse(text).error || text;
+    } catch {
+      // usa text cru
+    }
+    throw new Error(`OpenAI Transcribe ${response.status}: ${String(msg).slice(0, 200)}`);
   }
 
   const data = JSON.parse(text) as { text?: string };
@@ -267,6 +310,20 @@ export async function transcribeAudioBlob(
       return await transcribeGemini(blob, mimeType, signal);
     } finally {
       clear();
+    }
+  }
+
+  // gpt4o: tenta o proxy da OpenAI; QUALQUER falha (proxy ausente em dev, 501
+  // sem chave, cota, rede) cai na cadeia Whisper abaixo — nunca trava a consulta.
+  if (engine === 'gpt4o') {
+    const { signal, clear } = timeoutSignal(GPT4O_TIMEOUT_MS);
+    try {
+      const viaOpenAI = await transcribeOpenAIProxy(blob, mimeType, signal);
+      clear();
+      if (viaOpenAI) return viaOpenAI;
+    } catch (err) {
+      clear();
+      console.warn('[transcription] GPT-4o Transcribe falhou — caindo no Whisper:', err);
     }
   }
 

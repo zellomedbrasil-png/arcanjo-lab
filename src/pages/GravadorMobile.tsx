@@ -426,8 +426,14 @@ export default function GravadorMobile() {
       toast.error('Transcrição interrompida por tempo. Reenvie.');
     }, watchdogMs);
 
-    const engine = getTranscriptionEngine() === 'gemini' ? 'gemini' : 'whisper';
-    toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo áudio com Whisper...');
+    // Usa o motor salvo no seletor; 'google-live' não chega aqui (é tempo real).
+    const saved = getTranscriptionEngine();
+    const engine = saved === 'google-live' ? 'whisper' : saved;
+    toast.info(
+      engine === 'gemini' ? 'Transcrevendo com Gemini...'
+      : engine === 'gpt4o' ? 'Transcrevendo com GPT-4o...'
+      : 'Transcrevendo áudio com Whisper...'
+    );
     try {
       // Selo "Enviando..." é otimista (memória primeiro, banco em segundo plano).
       if (recordingId) patchVault(recordingId, { status: 'transcribing', error: undefined });
@@ -692,7 +698,7 @@ export default function GravadorMobile() {
             <div className="relative h-32 w-32 rounded-full bg-slate-900 text-indigo-400 flex flex-col items-center justify-center border-4 border-indigo-500/20">
               <Loader2 size={36} className="animate-spin mb-1" />
               <span className="text-[10px] font-bold tracking-wider uppercase text-indigo-300">
-                {getTranscriptionEngine() === 'gemini' ? 'Gemini...' : 'Whisper...'}
+                {getTranscriptionEngine() === 'gemini' ? 'Gemini...' : getTranscriptionEngine() === 'gpt4o' ? 'GPT-4o...' : 'Whisper...'}
               </span>
             </div>
           ) : (

@@ -433,15 +433,21 @@ export default function SOAPPanel() {
       segRecorderRef.current = null;
       setIsRecording(false);
       clearTimer();
-      const engine = getTranscriptionEngine() === 'gemini' ? 'gemini' : 'whisper';
+      // Usa o motor salvo no seletor; 'google-live' não chega aqui (é tempo real).
+      const saved = getTranscriptionEngine();
+      const engine = saved === 'google-live' ? 'whisper' : saved;
       const { segments, mimeType } = await recorder.stop();
       await transcreverAudio(segments, mimeType, engine);
     }
   };
 
-  const transcreverAudio = async (segments: Blob[], mimeType: string, engine: 'whisper' | 'gemini') => {
+  const transcreverAudio = async (segments: Blob[], mimeType: string, engine: Exclude<TranscriptionEngine, 'google-live'>) => {
     setIsTranscribing(true);
-    toast.info(engine === 'gemini' ? 'Transcrevendo com Gemini...' : 'Transcrevendo com Whisper...');
+    toast.info(
+      engine === 'gemini' ? 'Transcrevendo com Gemini...'
+      : engine === 'gpt4o' ? 'Transcrevendo com GPT-4o...'
+      : 'Transcrevendo com Whisper...'
+    );
     try {
       const text = await transcribeSegments(segments, mimeType, engine);
       if (text && text.trim()) {
