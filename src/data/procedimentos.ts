@@ -6,6 +6,7 @@ export type ProcedimentoGrupo =
   | 'CARDIOLOGIA'
   | 'ULTRASSONOGRAFIA'
   | 'ENDOSCOPIA'
+  | 'GASTRO_FUNCIONAL'
   | 'IMAGEM'
   | 'GERIATRIA'
   | 'MASTOLOGIA'
@@ -54,6 +55,14 @@ export const PROCEDIMENTOS: ProcedimentoDef[] = [
   { id: 'PHMETRIA_ESOFAGICA',          nome: 'pHmetria Esofágica Computadorizada (24h)',                            nomeCurto: 'pHmetria Esofágica',       grupo: 'ENDOSCOPIA' },
   { id: 'MANOMETRIA_ESOFAGICA',        nome: 'Manometria Esofágica Computadorizada',                                nomeCurto: 'Manometria Esofágica',     grupo: 'ENDOSCOPIA' },
   { id: 'ECOENDOSCOPIA',               nome: 'Ecoendoscopia (Ultrassom Endoscópico)',                                nomeCurto: 'Ecoendoscopia',            grupo: 'ENDOSCOPIA' },
+
+  // ── GASTROENTEROLOGIA FUNCIONAL ──────────────────────────────────
+  // Testes respiratórios: não são coleta de sangue nem de fezes — exigem
+  // agendamento e execução assistida em serviço, por isso entram aqui e não
+  // na guia laboratorial. Diagnóstico de SIBO e de intolerância à lactose.
+  { id: 'TESTE_H2_LACTULOSE', nome: 'Teste Respiratório de Hidrogênio e Metano Expirados com Lactulose (SIBO)', nomeCurto: 'Teste H2/CH4 Lactulose (SIBO)', grupo: 'GASTRO_FUNCIONAL' },
+  { id: 'TESTE_H2_GLICOSE',   nome: 'Teste Respiratório de Hidrogênio Expirado com Glicose (SIBO)',              nomeCurto: 'Teste H2 Glicose (SIBO)',        grupo: 'GASTRO_FUNCIONAL' },
+  { id: 'TESTE_H2_LACTOSE',   nome: 'Teste Respiratório de Hidrogênio Expirado com Lactose (Intolerância)',      nomeCurto: 'Teste H2 Lactose',               grupo: 'GASTRO_FUNCIONAL' },
 
   // ── IMAGEM ───────────────────────────────────────────────────────
   { id: 'RX_TORAX',         nome: 'Radiografia de Tórax (PA e Perfil)',                          nomeCurto: 'RX Tórax PA+Perfil',       grupo: 'IMAGEM' },
@@ -126,6 +135,7 @@ export const GRUPOS_PROCEDIMENTOS: ProcedimentoGrupo[] = [
   'CARDIOLOGIA',
   'ULTRASSONOGRAFIA',
   'ENDOSCOPIA',
+  'GASTRO_FUNCIONAL',
   'IMAGEM',
   'MASTOLOGIA',
   'GERIATRIA',

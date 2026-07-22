@@ -60,6 +60,7 @@ const GRUPO_LABELS: Record<ProcedimentoGrupo, string> = {
   CARDIOLOGIA: '🫀 Cardiologia',
   ULTRASSONOGRAFIA: '🔊 Ultrassonografia',
   ENDOSCOPIA: '🔬 Endoscopia Digestiva',
+  GASTRO_FUNCIONAL: '🧪 Gastro Funcional (SIBO / Lactose)',
   IMAGEM: '🩻 Imagem (Rx / TC / RM)',
   MASTOLOGIA: '🎗️ Mastologia',
   GERIATRIA: '🧠 Geriatria / Funcionais',
@@ -71,6 +72,7 @@ const GRUPO_COLORS: Record<ProcedimentoGrupo, { bg: string; badge: string; borde
   CARDIOLOGIA: { bg: 'bg-red-50', badge: 'bg-red-100 text-red-700', border: 'border-red-100' },
   ULTRASSONOGRAFIA: { bg: 'bg-blue-50', badge: 'bg-blue-100 text-blue-700', border: 'border-blue-100' },
   ENDOSCOPIA: { bg: 'bg-amber-50', badge: 'bg-amber-100 text-amber-700', border: 'border-amber-100' },
+  GASTRO_FUNCIONAL: { bg: 'bg-lime-50', badge: 'bg-lime-100 text-lime-700', border: 'border-lime-100' },
   IMAGEM: { bg: 'bg-slate-50', badge: 'bg-slate-100 text-slate-700', border: 'border-slate-200' },
   MASTOLOGIA: { bg: 'bg-pink-50', badge: 'bg-pink-100 text-pink-700', border: 'border-pink-100' },
   GERIATRIA: { bg: 'bg-indigo-50', badge: 'bg-indigo-100 text-indigo-700', border: 'border-indigo-100' },
@@ -118,6 +120,9 @@ const PROC_UI_MAP: Record<string, Omit<ProcDef, 'id' | 'nome' | 'hasAsterisk'>> 
   PHMETRIA_ESOFAGICA:  { icon: Activity,   color: 'text-emerald-500',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
   MANOMETRIA_ESOFAGICA:{ icon: Activity,   color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
   ECOENDOSCOPIA:       { icon: Search,     color: 'text-yellow-500',   activeColor: 'text-white', activeBg: 'bg-yellow-600' },
+  TESTE_H2_LACTULOSE:  { icon: Wind,       color: 'text-lime-500',     activeColor: 'text-white', activeBg: 'bg-lime-600' },
+  TESTE_H2_GLICOSE:    { icon: Wind,       color: 'text-lime-500',     activeColor: 'text-white', activeBg: 'bg-lime-700' },
+  TESTE_H2_LACTOSE:    { icon: Wind,       color: 'text-emerald-500',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
   RX_TORAX:            { icon: Bone,       color: 'text-slate-400',    activeColor: 'text-white', activeBg: 'bg-slate-500' },
   RX_COLUNA:           { icon: Bone,       color: 'text-slate-400',    activeColor: 'text-white', activeBg: 'bg-slate-600' },
   RX_BACIA:            { icon: Bone,       color: 'text-slate-500',    activeColor: 'text-white', activeBg: 'bg-slate-700' },
@@ -163,6 +168,53 @@ const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {
   };
 });
 
+// ─── Cobertura por convênio ────────────────────────────────────────────────
+// Derivada dos códigos do próprio catálogo: sem código = a operadora não tem
+// aquele exame na tabela. O app ANTES escondia o exame não coberto; agora
+// mostra sempre e sinaliza — o médico precisa saber que existe e que não é
+// coberto (evita descobrir só na glosa).
+type Cobertura = 'AMBOS' | 'SO_ISSEC' | 'SO_IPM' | 'SEM_CODIGO';
+
+function getCobertura(exame: { codIssec: string; codIpm: string }): Cobertura {
+  const temIssec = !!exame.codIssec?.trim();
+  const temIpm = !!exame.codIpm?.trim();
+  if (temIssec && temIpm) return 'AMBOS';
+  if (temIssec) return 'SO_ISSEC';
+  if (temIpm) return 'SO_IPM';
+  return 'SEM_CODIGO';
+}
+
+// Classes completas por estado — Tailwind não compila classe montada dinamicamente.
+const COBERTURA_META: Record<Cobertura, { label: string; cls: string; title: string }> = {
+  AMBOS: {
+    label: 'ISSEC+IPM',
+    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    title: 'Coberto por ISSEC e IPM',
+  },
+  SO_ISSEC: {
+    label: 'Só ISSEC',
+    cls: 'bg-blue-50 text-blue-700 border-blue-200',
+    title: 'Consta apenas na tabela do ISSEC',
+  },
+  SO_IPM: {
+    label: 'Só IPM',
+    cls: 'bg-amber-50 text-amber-700 border-amber-200',
+    title: 'Consta apenas na tabela do IPM',
+  },
+  SEM_CODIGO: {
+    label: 'Sem cobertura',
+    cls: 'bg-slate-100 text-slate-600 border-slate-200',
+    title: 'Sem código de convênio cadastrado — provável particular. Confirme com a operadora.',
+  },
+};
+
+/** true quando o exame NÃO é coberto pelo convênio selecionado agora. */
+function isForaDoConvenio(cobertura: Cobertura, convenio: string): boolean {
+  if (convenio === 'ISSEC') return cobertura === 'SO_IPM' || cobertura === 'SEM_CODIGO';
+  if (convenio === 'IPM') return cobertura === 'SO_ISSEC' || cobertura === 'SEM_CODIGO';
+  return false; // SADT / Particular: não há tabela para confrontar
+}
+
 interface ExamSelectorProps {
   mode?: 'exames' | 'procedimentos';
 }
@@ -187,15 +239,15 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
 
   const categoriasFiltradas = useMemo(() => {
     return CATEGORIAS_EXAMES.map((categoria) => {
+      // Não escondemos mais por convênio — todo exame aparece, com selo de
+      // cobertura. Aqui só filtramos pela busca.
       const exames = categoria.exames.filter((exame) => {
-        if (convenio === 'ISSEC' && exame.marca === '**') return false;
-        if (convenio === 'IPM' && exame.marca === '*') return false;
         if (!buscaNormalizada) return true;
         return `${categoria.nome} ${exame.nome}`.toLowerCase().includes(buscaNormalizada);
       });
       return { ...categoria, exames };
     }).filter((categoria) => categoria.exames.length > 0);
-  }, [buscaNormalizada, convenio]);
+  }, [buscaNormalizada]);
 
   const totalMatches = useMemo(() => {
     return categoriasFiltradas.reduce((acc, cat) => acc + cat.exames.length, 0);
@@ -486,39 +538,70 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                 )}
               </button>
               {paineisExpanded && (
-                <div className="p-4.5 bg-white flex flex-wrap gap-2.5 border-t border-blue-100/50 animate-fadeIn">
-                  {Object.entries(PAINEIS_MARKDOWN).map(([key, painel]) => (
-                    <button
-                      key={key}
-                      onClick={() => aplicarPainel(key)}
-                      className="px-3.5 py-2 bg-white text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors border border-blue-200 cursor-pointer"
-                    >
-                      {painel.nome}
-                    </button>
-                  ))}
-                  <button
-                    onClick={() => {
-                      const confirmMsg = isLab
-                        ? 'Limpar todos os exames selecionados e justificativa?'
-                        : 'Limpar todos os procedimentos selecionados (incluindo personalizados) e justificativa?';
-                      if (confirm(confirmMsg)) {
-                        if (isLab) {
-                          setExamesSelecionados([]);
-                          setPaciente({ justificativaExames: '' });
-                        } else {
-                          setPaciente({
-                            procedimentosSelecionados: [],
-                            justificativaProcedimentos: ''
-                          });
-                          procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
-                        }
-                        setJustificativa('');
-                      }
-                    }}
-                    className="px-3.5 py-2 bg-white text-neutral-text-muted text-xs font-semibold rounded-lg hover:bg-slate-100 transition-colors border border-neutral-border ml-auto cursor-pointer"
-                  >
-                    Limpar Tudo
-                  </button>
+                <div className="p-4.5 bg-white border-t border-blue-100/50 animate-fadeIn space-y-4">
+                  {/* Gastro — Investigação (painéis com prefixo "GASTRO — ") */}
+                  <div>
+                    <span className="block text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider mb-2">
+                      Gastro — Investigação
+                    </span>
+                    <div className="flex flex-wrap gap-2.5">
+                      {Object.entries(PAINEIS_MARKDOWN)
+                        .filter(([, painel]) => painel.nome.startsWith('GASTRO — '))
+                        .map(([key, painel]) => (
+                          <button
+                            key={key}
+                            onClick={() => aplicarPainel(key)}
+                            title={painel.justificativa}
+                            className="px-3.5 py-2 bg-white text-emerald-700 text-xs font-semibold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-200 cursor-pointer"
+                          >
+                            {painel.nome.replace('GASTRO — ', '')}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Painéis gerais e de convênio */}
+                  <div>
+                    <span className="block text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-2">
+                      Gerais / Convênio
+                    </span>
+                    <div className="flex flex-wrap gap-2.5 items-center">
+                      {Object.entries(PAINEIS_MARKDOWN)
+                        .filter(([, painel]) => !painel.nome.startsWith('GASTRO — '))
+                        .map(([key, painel]) => (
+                          <button
+                            key={key}
+                            onClick={() => aplicarPainel(key)}
+                            className="px-3.5 py-2 bg-white text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors border border-blue-200 cursor-pointer"
+                          >
+                            {painel.nome}
+                          </button>
+                        ))}
+                      <button
+                        onClick={() => {
+                          const confirmMsg = isLab
+                            ? 'Limpar todos os exames selecionados e justificativa?'
+                            : 'Limpar todos os procedimentos selecionados (incluindo personalizados) e justificativa?';
+                          if (confirm(confirmMsg)) {
+                            if (isLab) {
+                              setExamesSelecionados([]);
+                              setPaciente({ justificativaExames: '' });
+                            } else {
+                              setPaciente({
+                                procedimentosSelecionados: [],
+                                justificativaProcedimentos: ''
+                              });
+                              procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
+                            }
+                            setJustificativa('');
+                          }
+                        }}
+                        className="px-3.5 py-2 bg-white text-neutral-text-muted text-xs font-semibold rounded-lg hover:bg-slate-100 transition-colors border border-neutral-border ml-auto cursor-pointer"
+                      >
+                        Limpar Tudo
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -581,6 +664,9 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                     {categoriasFiltradas.flatMap((cat) =>
                       cat.exames.map((exame) => {
                         const isChecked = examesSelecionados.includes(exame.nome);
+                        const cobertura = getCobertura(exame);
+                        const meta = COBERTURA_META[cobertura];
+                        const fora = isForaDoConvenio(cobertura, convenio);
                         return (
                           <label
                             key={exame.nome}
@@ -600,7 +686,17 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                               <span className="leading-tight text-left font-medium text-neutral-text" title={exame.nome}>
                                 {formatExamNameForDisplay(exame.nome)}
                               </span>
-                              <span className="text-[9px] text-blue-650 mt-1 uppercase tracking-wider font-extrabold">{formatCategoryName(cat.nome)}</span>
+                              <span className="flex items-center gap-1 flex-wrap mt-1">
+                                <span className="text-[9px] text-blue-650 uppercase tracking-wider font-extrabold">{formatCategoryName(cat.nome)}</span>
+                                <span
+                                  title={fora ? `Não coberto pelo convênio ${convenio}. ${meta.title}` : meta.title}
+                                  className={`text-[8px] px-1 py-0.5 rounded border font-extrabold uppercase ${
+                                    fora ? 'bg-red-50 text-red-700 border-red-200' : meta.cls
+                                  }`}
+                                >
+                                  {fora ? `Fora do ${convenio}` : meta.label}
+                                </span>
+                              </span>
                             </div>
                           </label>
                         );
@@ -735,6 +831,9 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 bg-white">
                           {catObj.exames.map((exame) => {
                             const isChecked = examesSelecionados.includes(exame.nome);
+                            const cobertura = getCobertura(exame);
+                            const meta = COBERTURA_META[cobertura];
+                            const fora = isForaDoConvenio(cobertura, convenio);
                             return (
                               <label
                                 key={exame.nome}
@@ -750,9 +849,19 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                                   checked={isChecked}
                                   onChange={() => toggleExame(exame.nome)}
                                 />
-                                <span className="leading-tight text-left font-medium text-neutral-text" title={exame.nome}>
-                                  {formatExamNameForDisplay(exame.nome)}
-                                </span>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="leading-tight text-left font-medium text-neutral-text" title={exame.nome}>
+                                    {formatExamNameForDisplay(exame.nome)}
+                                  </span>
+                                  <span
+                                    title={fora ? `Não coberto pelo convênio ${convenio}. ${meta.title}` : meta.title}
+                                    className={`self-start text-[8px] px-1 py-0.5 mt-1 rounded border font-extrabold uppercase ${
+                                      fora ? 'bg-red-50 text-red-700 border-red-200' : meta.cls
+                                    }`}
+                                  >
+                                    {fora ? `Fora do ${convenio}` : meta.label}
+                                  </span>
+                                </div>
                               </label>
                             );
                           })}

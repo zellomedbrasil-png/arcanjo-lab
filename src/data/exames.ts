@@ -1335,10 +1335,22 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
     "nome": "PARASITOLOGIA E COPROLÓGICO",
     "exames": [
       {
+        "nome": "CALPROTECTINA FECAL",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
+      },
+      {
         "nome": "COPROCULTURA (FEZES)",
         "marca": "",
         "codIssec": "28030010",
         "codIpm": "40310175"
+      },
+      {
+        "nome": "ELASTASE PANCREATICA FECAL",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
       },
       {
         "nome": "GORDURA FECAL - PESQUISA",
@@ -1357,6 +1369,53 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "marca": "",
         "codIssec": "28030176",
         "codIpm": "40303136"
+      }
+    ]
+  },
+  {
+    "nome": "GASTROENTEROLOGIA — INVESTIGAÇÃO ESPECÍFICA",
+    "exames": [
+      {
+        "nome": "ANTI TRANSGLUTAMINASE TECIDUAL IGA (ANTI-TTG IGA)",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
+      },
+      {
+        "nome": "ANTI TRANSGLUTAMINASE TECIDUAL IGG (ANTI-TTG IGG)",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
+      },
+      {
+        "nome": "ANTI PEPTIDEO DEAMIDADO DE GLIADINA IGG (ANTI-DGP IGG)",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
+      },
+      {
+        "nome": "ASCA - ANTI SACCHAROMYCES CEREVISIAE IGA",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
+      },
+      {
+        "nome": "ASCA - ANTI SACCHAROMYCES CEREVISIAE IGG",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
+      },
+      {
+        "nome": "TESTE DE ABSORCAO DE LACTOSE",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
+      },
+      {
+        "nome": "TESTE GENETICO DE INTOLERANCIA A LACTOSE (LCT/MCM6 -13910C>T)",
+        "marca": "",
+        "codIssec": "",
+        "codIpm": ""
       }
     ]
   },
@@ -1695,6 +1754,61 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
 ];
 
 export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], justificativa: string }> = {
+  // ─── Painéis de investigação gastroenterológica ───────────────────────────
+  // Prefixo "GASTRO — " agrupa estes painéis numa seção própria na UI.
+  // Nomes conforme diretrizes vigentes (ACG/ESPGHAN para celíaca; ACG para SIBO).
+  "GASTRO — Doença Celíaca / Glúten": {
+    "nome": "GASTRO — Doença Celíaca / Glúten",
+    "exames": [
+      "ANTI TRANSGLUTAMINASE TECIDUAL IGA (ANTI-TTG IGA)",
+      "IGA",
+      "ANTI ENDOMISIO IGA/IGG/IGM",
+      "ANTI PEPTIDEO DEAMIDADO DE GLIADINA IGG (ANTI-DGP IGG)",
+      "HEMOGRAMA COMPLETO",
+      "FERRITINA",
+      "ACIDO FOLICO",
+      "VITAMINA B12",
+      "25-HIDROXIVITAMINA D (VIT D25)"
+    ],
+    "justificativa": "INVESTIGAÇÃO DE DOENÇA CELÍACA EM PACIENTE COM SINTOMAS DISPÉPTICOS / DIARREIA CRÔNICA / ANEMIA FERROPRIVA REFRATÁRIA. SOLICITO SOROLOGIA ANTI-TRANSGLUTAMINASE TECIDUAL IGA COM DOSAGEM DE IGA TOTAL (EXCLUSÃO DE DEFICIÊNCIA SELETIVA DE IGA, QUE GERA FALSO-NEGATIVO) E PERFIL DE ABSORÇÃO INTESTINAL. ATENÇÃO: A SOROLOGIA EXIGE DIETA CONTENDO GLÚTEN NO MOMENTO DA COLETA. CONFIRMAÇÃO POR BIÓPSIA DUODENAL EM ENDOSCOPIA DIGESTIVA ALTA. CID-10: K90.0."
+  },
+  "GASTRO — Intolerância à Lactose": {
+    "nome": "GASTRO — Intolerância à Lactose",
+    "exames": [
+      "TESTE DE ABSORCAO DE LACTOSE",
+      "TESTE GENETICO DE INTOLERANCIA A LACTOSE (LCT/MCM6 -13910C>T)"
+    ],
+    "justificativa": "INVESTIGAÇÃO DE INTOLERÂNCIA À LACTOSE EM PACIENTE COM DISTENSÃO ABDOMINAL, FLATULÊNCIA E DIARREIA APÓS INGESTÃO DE LATICÍNIOS. SOLICITO TESTE DE ABSORÇÃO DE LACTOSE (CURVA GLICÊMICA APÓS SOBRECARGA) E TESTE GENÉTICO DE HIPOLACTASIA DO ADULTO PARA DIFERENCIAÇÃO ENTRE DEFICIÊNCIA PRIMÁRIA E SECUNDÁRIA. CID-10: E73.9."
+  },
+  "GASTRO — DII (Crohn / RCU)": {
+    "nome": "GASTRO — DII (Crohn / RCU)",
+    "exames": [
+      "CALPROTECTINA FECAL",
+      "PCR (ULTRA-SENSIVEL)",
+      "VHS - HEMOSSEDIMENTACAO",
+      "HEMOGRAMA COMPLETO",
+      "ALBUMINA",
+      "FERRITINA",
+      "ASCA - ANTI SACCHAROMYCES CEREVISIAE IGA",
+      "ASCA - ANTI SACCHAROMYCES CEREVISIAE IGG",
+      "P-ANCA",
+      "SANGUE OCULTO NAS FEZES"
+    ],
+    "justificativa": "INVESTIGAÇÃO DE DOENÇA INFLAMATÓRIA INTESTINAL (DOENÇA DE CROHN / RETOCOLITE ULCERATIVA) EM PACIENTE COM DIARREIA CRÔNICA, DOR ABDOMINAL E/OU SANGRAMENTO NAS FEZES. SOLICITO CALPROTECTINA FECAL (DIFERENCIAÇÃO ENTRE DOENÇA ORGÂNICA E SÍNDROME DO INTESTINO IRRITÁVEL), MARCADORES INFLAMATÓRIOS, PERFIL NUTRICIONAL E SOROLOGIAS ASCA/P-ANCA PARA CARACTERIZAÇÃO DO FENÓTIPO. PADRÃO-OURO DIAGNÓSTICO POR COLONOSCOPIA COM BIÓPSIA. CID-10: K52.9."
+  },
+  "GASTRO — SIBO / Má Absorção": {
+    "nome": "GASTRO — SIBO / Má Absorção",
+    "exames": [
+      "HEMOGRAMA COMPLETO",
+      "VITAMINA B12",
+      "ACIDO FOLICO",
+      "FERRITINA",
+      "ALBUMINA",
+      "GORDURA FECAL - PESQUISA",
+      "ELASTASE PANCREATICA FECAL"
+    ],
+    "justificativa": "INVESTIGAÇÃO DE SUPERCRESCIMENTO BACTERIANO DO INTESTINO DELGADO (SIBO) E SÍNDROME DE MÁ ABSORÇÃO EM PACIENTE COM DISTENSÃO ABDOMINAL, FLATULÊNCIA E DIARREIA CRÔNICA. SOLICITO PERFIL NUTRICIONAL E DE ABSORÇÃO (B12, FOLATO, FERRO, ALBUMINA), PESQUISA DE GORDURA FECAL E ELASTASE PANCREÁTICA FECAL (EXCLUSÃO DE INSUFICIÊNCIA PANCREÁTICA EXÓCRINA). O DIAGNÓSTICO DE SIBO É CONFIRMADO POR TESTE RESPIRATÓRIO DE HIDROGÊNIO E METANO EXPIRADOS, SOLICITADO EM GUIA DE PROCEDIMENTO. CID-10: K90.4."
+  },
   "Rastreio Geriátrico Completo": {
     "nome": "Rastreio Geriátrico Completo",
     "exames": [

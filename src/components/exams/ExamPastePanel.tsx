@@ -58,6 +58,41 @@ export default function ExamPastePanel() {
     }
   };
 
+  /**
+   * Aplica o texto colado DIRETO na guia, sem passar pela IA.
+   *
+   * Existe porque o caminho único era "Organizar com IA": quando o médico já
+   * digita o nome certo, esperar (e pagar) a IA é desperdício. Aqui só casamos
+   * com o catálogo quando o nome bate — senão vai exatamente como foi digitado.
+   */
+  const adicionarDireto = () => {
+    const itens = textoExames
+      .split(/[\n,;]+/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    if (itens.length === 0) {
+      setError('Cole ou digite pelo menos um exame.');
+      return;
+    }
+
+    const nomes = itens.map((item) => {
+      const match = findMatchingExam(item);
+      // Casou com o catálogo → usa o nome oficial (garante o código na guia).
+      // Não casou → respeita o que o médico escreveu.
+      return match ? match.nome : item.toUpperCase();
+    });
+
+    const unicos = [...new Set(nomes)];
+    const examesAtuais = useAppStore.getState().examesSelecionados;
+    setExamesSelecionados([...new Set([...examesAtuais, ...unicos])]);
+
+    toast.success(`${unicos.length} exame${unicos.length !== 1 ? 's' : ''} adicionado${unicos.length !== 1 ? 's' : ''} na guia`);
+    setTextoExames('');
+    setError(null);
+    setExpandido(false);
+  };
+
   const toggleExame = (index: number) => {
     setExamesSelecionadosLocal((prev) => {
       const next = new Set(prev);
@@ -181,7 +216,7 @@ export default function ExamPastePanel() {
           </div>
           <div className="text-left">
             <h2 className="text-xs font-bold text-neutral-text">Colar Lista de Exames</h2>
-            <p className="text-[11px] text-neutral-text-muted">Cole exames em texto livre → IA organiza + gera justificativa</p>
+            <p className="text-[11px] text-neutral-text-muted">Adicione direto como digitou, ou use a IA para organizar + gerar justificativa</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -236,6 +271,21 @@ export default function ExamPastePanel() {
                   </>
                 )}
               </button>
+              {!isLoading && (
+                <button
+                  onClick={adicionarDireto}
+                  disabled={!textoExames.trim()}
+                  title="Adiciona os nomes como você digitou, sem usar IA"
+                  className={`flex items-center justify-center gap-2 px-4.5 py-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    !textoExames.trim()
+                      ? 'bg-gray-100 text-neutral-text-muted cursor-not-allowed'
+                      : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
+                  }`}
+                >
+                  <CheckCircle2 size={13} />
+                  Adicionar direto
+                </button>
+              )}
               {(textoExames || resultado) && (
                 <button
                   onClick={limparTudo}
