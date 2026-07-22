@@ -1843,50 +1843,107 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
     ],
     "justificativa": "INVESTIGAÇÃO DE SUPERCRESCIMENTO BACTERIANO DO INTESTINO DELGADO (SIBO) E SÍNDROME DE MÁ ABSORÇÃO EM PACIENTE COM DISTENSÃO ABDOMINAL, FLATULÊNCIA E DIARREIA CRÔNICA. SOLICITO PERFIL NUTRICIONAL E DE ABSORÇÃO (B12, FOLATO, FERRO, ALBUMINA), PESQUISA DE GORDURA FECAL E ELASTASE PANCREÁTICA FECAL (EXCLUSÃO DE INSUFICIÊNCIA PANCREÁTICA EXÓCRINA). O DIAGNÓSTICO DE SIBO É CONFIRMADO POR TESTE RESPIRATÓRIO DE HIDROGÊNIO E METANO EXPIRADOS, SOLICITADO EM GUIA DE PROCEDIMENTO. CID-10: K90.4."
   },
+  // Rastreios amplos ("alto nivel") — todos os exames com cobertura ISSEC+IPM,
+  // organizados por eixo clinico. O medico aplica e desmarca o que nao couber
+  // no paciente (ex.: PSA em mulher, CA 125 em homem).
   "Rastreio Geriátrico Completo": {
     "nome": "Rastreio Geriátrico Completo",
     "exames": [
+      // Hemato / inflamação
       "HEMOGRAMA COMPLETO",
-      "Hemoglobina glicada (HbA1c)",
+      "VHS - HEMOSSEDIMENTACAO",
+      "FERRITINA",
+      "FERRO SERICO",
+      "PCR (ULTRA-SENSIVEL)",
+      // Metabolismo glicídico
       "GLICOSE",
+      "Hemoglobina glicada (HbA1c)",
+      "INSULINA",
+      // Lipídico
+      "LIPIDOGRAMA",
+      // Função renal
       "UREIA",
       "CREATININA",
+      "ACIDO URICO",
+      "SUMARIO DE URINA",
+      "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)",
+      // Função hepática
       "TGO - TRANSAMINASE ASPARTICA",
       "TGP - TRANSAMINASE ALANINA",
-      "LIPIDOGRAMA",
-      "TSH",
-      "T4 LIVRE - TIROXINA LIVRE",
-      "VITAMINA B12",
-      "25-HIDROXIVITAMINA D",
-      "CALCIO IONICO",
+      "GAMA GLUTAMIL TRANSFERASE - GGT",
+      "FOSFATASE ALCALINA",
+      "BILIRRUBINAS",
+      "ALBUMINA",
+      // Eletrólitos
       "SODIO",
       "POTASSIO",
-      "PTH - PARATORMONIO",
-      "SUMARIO DE URINA"
+      "CALCIO IONICO",
+      "MAGNESIO",
+      // Tireoide
+      "TSH",
+      "T4 LIVRE - TIROXINA LIVRE",
+      // Vitaminas / óssea
+      "Vitamina D, 25-hidroxi (25-OH-D)",
+      "VITAMINA B12",
+      "ACIDO FOLICO",
+      "PARATORMONIO - PTH",
+      // Marcadores tumorais (rastreio; desmarcar o que nao couber por sexo)
+      "PSA TOTAL",
+      "ALFA FETO PROTEINA",
+      "CEA",
+      "CA 19-9",
+      "CA 125",
+      "CA 15-3"
     ],
-    "justificativa": "Avaliação geriátrica ampla. Rastreio de anemias, função renal, tireoidiana e hepática. Investigação de deficiências vitamínicas (B12, D, Ácido fólico), osteoporose e risco cardiovascular. Avaliação prostática e de marcadores tumorais gerais para idade. Rastreio cognitivo metabólico."
+    "justificativa": "AVALIAÇÃO PERIÓDICA DE SAÚDE DO ADULTO/IDOSO. RASTREIO AMPLO INCLUINDO HEMOGRAMA E MARCADORES INFLAMATÓRIOS (VHS, PCR-US), PERFIL METABÓLICO (GLICEMIA, HBA1C, INSULINA, LIPIDOGRAMA), FUNÇÃO RENAL COM MICROALBUMINÚRIA E ÁCIDO ÚRICO, HEPATOGRAMA COMPLETO, ELETRÓLITOS COM MAGNÉSIO, FUNÇÃO TIREOIDIANA, PERFIL DE VITAMINAS (D, B12, FOLATO) E ÓSSEO (PTH) E MARCADORES TUMORAIS DE RASTREIO (PSA, AFP, CEA, CA 19-9, CA 125, CA 15-3). CID-10: Z00.6."
   },
   "Rastreio Gastroenterológico": {
     "nome": "Rastreio Gastroenterológico",
     "exames": [
+      // Hemato / inflamação / perfil ferro (hemocromatose, anemia de doença crônica)
       "HEMOGRAMA COMPLETO",
+      "VHS - HEMOSSEDIMENTACAO",
+      "PCR (ULTRA-SENSIVEL)",
+      "FERRITINA",
+      "FERRO SERICO",
+      // Metabolismo (esteatose)
+      "GLICOSE",
+      "Hemoglobina glicada (HbA1c)",
+      "LIPIDOGRAMA",
+      // Hepatograma completo
       "TGO - TRANSAMINASE ASPARTICA",
       "TGP - TRANSAMINASE ALANINA",
+      "GAMA GLUTAMIL TRANSFERASE - GGT",
       "FOSFATASE ALCALINA",
-      "GGT - GAMA GLUTAMIL TRANSFERASE",
       "BILIRRUBINAS",
       "ALBUMINA",
-      "UREIA",
-      "CREATININA",
-      "GLICOSE",
+      "PROTEINAS TOTAIS E FRACOES",
+      "TEMPO DE PROTROMBINA - TAP",
+      // Função pancreática
+      "AMILASE",
+      "LIPASE",
+      // Nutrição
       "VITAMINA B12",
       "ACIDO FOLICO",
-      "ADENOSINA DEAMINASE - ADA",
-      "Sangue oculto, pesquisa nas fezes",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
+      // Sorologia hepatites (rastreio)
+      "HBSAG - ANTIGENO AUSTRALIA",
+      "ANTI HBS",
+      "HEPATITE A IGG",
+      "HEPATITE C - ANTI HCV",
+      // Celíaca / H. pylori
+      "Anticorpos antigliadina - IgA",
+      "Helicobacter pylori, anticorpos - IgG",
+      // Fezes
       "Parasitológico de fezes",
-      "Helicobacter pylori, anticorpos - IgG"
+      "Sangue oculto, pesquisa nas fezes",
+      // Marcadores tumorais TGI
+      "ALFA FETO PROTEINA",
+      "CEA",
+      "CA 19-9",
+      "CA 72-4"
     ],
-    "justificativa": "Investigação de queixa dispéptica / dor abdominal / alteração de hábito intestinal com perda ponderal. Hepatograma com perfil ferro (rastreio hemocromatose/esteatose), função pancreática, doença celíaca (anti-gliadina/anti-endomísio), sorologias hepatites A/B/C, H. pylori, perfil nutricional, parasitológico/sangue oculto. Marcadores TGI (CEA, CA 19-9, CA 72-4, AFP)"
+    "justificativa": "INVESTIGAÇÃO DE QUEIXA DISPÉPTICA / DOR ABDOMINAL / ALTERAÇÃO DE HÁBITO INTESTINAL COM RASTREIO GASTROENTEROLÓGICO AMPLO. INCLUI HEMOGRAMA E MARCADORES INFLAMATÓRIOS, PERFIL DE FERRO PARA RASTREIO DE HEMOCROMATOSE E ANEMIA DE DOENÇA CRÔNICA, HEPATOGRAMA COMPLETO COM FUNÇÃO SINTÉTICA (ALBUMINA, PROTEÍNAS FRACIONADAS, TAP), FUNÇÃO PANCREÁTICA (AMILASE E LIPASE), PERFIL METABÓLICO PARA RASTREIO DE ESTEATOSE HEPÁTICA, PERFIL NUTRICIONAL (B12, FOLATO, VITAMINA D), SOROLOGIAS DE HEPATITES A/B/C, PESQUISA DE H. PYLORI E DE DOENÇA CELÍACA, EXAMES DE FEZES E MARCADORES TUMORAIS DO TGI (AFP, CEA, CA 19-9, CA 72-4). CID-10: K30."
   },
   "Síndrome Metabólica": {
     "nome": "Síndrome Metabólica",
