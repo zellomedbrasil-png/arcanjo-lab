@@ -70,7 +70,7 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "codIpm": "40304345"
       },
       {
-        "nome": "HEMOGLOBINA GLICADA - HBA1C",
+        "nome": "Hemoglobina glicada (HbA1c)",
         "marca": "",
         "codIssec": "28011023",
         "codIpm": "40302075"
@@ -549,7 +549,7 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
     "nome": "MINERAIS, VITAMINAS E OLIGOELEMENTOS",
     "exames": [
       {
-        "nome": "25-HIDROXIVITAMINA D (VIT D25)",
+        "nome": "Vitamina D, 25-hidroxi (25-OH-D)",
         "marca": "",
         "codIssec": "28011430",
         "codIpm": "40302830"
@@ -871,13 +871,13 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "codIpm": "40307018"
       },
       {
-        "nome": "HELICOBACTER PYLORI IGG",
+        "nome": "Helicobacter pylori, anticorpos - IgG",
         "marca": "",
         "codIssec": "28062183",
         "codIpm": "40306917"
       },
       {
-        "nome": "HELICOBACTER PYLORI IGM",
+        "nome": "Helicobacter pylori, anticorpos - IgM",
         "marca": "",
         "codIssec": "28062183",
         "codIpm": "40306925"
@@ -1086,7 +1086,7 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "codIpm": ""
       },
       {
-        "nome": "ANTI ENDOMISIO IGA/IGG/IGM",
+        "nome": "Anticorpos antiendomísio - IgG, IgM, IgA",
         "marca": "**",
         "codIssec": "",
         "codIpm": "40306259"
@@ -1104,7 +1104,7 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "codIpm": ""
       },
       {
-        "nome": "ANTI GLIADINA IGA",
+        "nome": "Anticorpos antigliadina - IgA",
         "marca": "",
         "codIssec": "28061721",
         "codIpm": "40306305"
@@ -1335,37 +1335,37 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
     "nome": "PARASITOLOGIA E COPROLÓGICO",
     "exames": [
       {
-        "nome": "CALPROTECTINA FECAL",
+        "nome": "Calprotectina fecal, dosagem",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
       },
       {
-        "nome": "COPROCULTURA (FEZES)",
+        "nome": "Coprocultura",
         "marca": "",
         "codIssec": "28030010",
         "codIpm": "40310175"
       },
       {
-        "nome": "ELASTASE PANCREATICA FECAL",
+        "nome": "Elastase pancreática fecal",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
       },
       {
-        "nome": "GORDURA FECAL - PESQUISA",
+        "nome": "Gordura fecal, pesquisa",
         "marca": "",
         "codIssec": "28030079",
         "codIpm": "40303055"
       },
       {
-        "nome": "PARASITOLOGICO DE FEZES",
+        "nome": "Parasitológico de fezes",
         "marca": "",
         "codIssec": "28030141",
         "codIpm": "40303110"
       },
       {
-        "nome": "SANGUE OCULTO NAS FEZES",
+        "nome": "Sangue oculto, pesquisa nas fezes",
         "marca": "",
         "codIssec": "28030176",
         "codIpm": "40303136"
@@ -1376,43 +1376,43 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
     "nome": "GASTROENTEROLOGIA — INVESTIGAÇÃO ESPECÍFICA",
     "exames": [
       {
-        "nome": "ANTI TRANSGLUTAMINASE TECIDUAL IGA (ANTI-TTG IGA)",
+        "nome": "Anti-transglutaminase tecidual - IgA",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
       },
       {
-        "nome": "ANTI TRANSGLUTAMINASE TECIDUAL IGG (ANTI-TTG IGG)",
+        "nome": "Anti-transglutaminase tecidual - IgG",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
       },
       {
-        "nome": "ANTI PEPTIDEO DEAMIDADO DE GLIADINA IGG (ANTI-DGP IGG)",
+        "nome": "Anticorpos antipeptídeo desamidado de gliadina - IgG",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
       },
       {
-        "nome": "ASCA - ANTI SACCHAROMYCES CEREVISIAE IGA",
+        "nome": "Saccharomyces cerevisiae (ASCA), anticorpos - IgA",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
       },
       {
-        "nome": "ASCA - ANTI SACCHAROMYCES CEREVISIAE IGG",
+        "nome": "Saccharomyces cerevisiae (ASCA), anticorpos - IgG",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
       },
       {
-        "nome": "TESTE DE ABSORCAO DE LACTOSE",
+        "nome": "Lactose, teste de tolerância",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
       },
       {
-        "nome": "TESTE GENETICO DE INTOLERANCIA A LACTOSE (LCT/MCM6 -13910C>T)",
+        "nome": "Intolerância à lactose, teste genético (LCT/MCM6, -13910C>T)",
         "marca": "",
         "codIssec": "",
         "codIpm": ""
@@ -1753,6 +1753,40 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
   }
 ];
 
+/**
+ * Aliases de nomes antigos → nome canônico atual do catálogo.
+ *
+ * Usado por findExamPreciso() para reconhecer nomes que já mudaram (renomeação
+ * de padronização TUSS). Sem isso, um rascunho salvo no localStorage do médico
+ * ou um painel que ainda cita o nome antigo apareceria como "não catalogado".
+ *
+ * As CHAVES devem ser passadas por `normalize()` no matcher — as entradas aqui
+ * ficam em maiúsculas sem acento (o que a normalização produz), para casar
+ * literalmente. Só adicione pares REALMENTE renomeados; não vira dumping ground.
+ */
+export const NOME_ALIASES: Record<string, string> = {
+  // Padronização TUSS (jul/2026)
+  'TESTE DE ABSORCAO DE LACTOSE': 'Lactose, teste de tolerância',
+  'ANTI TRANSGLUTAMINASE TECIDUAL IGA ANTI TTG IGA': 'Anti-transglutaminase tecidual - IgA',
+  'ANTI TRANSGLUTAMINASE TECIDUAL IGG ANTI TTG IGG': 'Anti-transglutaminase tecidual - IgG',
+  'ANTI PEPTIDEO DEAMIDADO DE GLIADINA IGG ANTI DGP IGG': 'Anticorpos antipeptídeo desamidado de gliadina - IgG',
+  'ASCA ANTI SACCHAROMYCES CEREVISIAE IGA': 'Saccharomyces cerevisiae (ASCA), anticorpos - IgA',
+  'ASCA ANTI SACCHAROMYCES CEREVISIAE IGG': 'Saccharomyces cerevisiae (ASCA), anticorpos - IgG',
+  'TESTE GENETICO DE INTOLERANCIA A LACTOSE LCT MCM6 13910C T': 'Intolerância à lactose, teste genético (LCT/MCM6, -13910C>T)',
+  'CALPROTECTINA FECAL': 'Calprotectina fecal, dosagem',
+  'ELASTASE PANCREATICA FECAL': 'Elastase pancreática fecal',
+  'SANGUE OCULTO NAS FEZES': 'Sangue oculto, pesquisa nas fezes',
+  'PARASITOLOGICO DE FEZES': 'Parasitológico de fezes',
+  'GORDURA FECAL PESQUISA': 'Gordura fecal, pesquisa',
+  'COPROCULTURA FEZES': 'Coprocultura',
+  'ANTI ENDOMISIO IGA IGG IGM': 'Anticorpos antiendomísio - IgG, IgM, IgA',
+  'ANTI GLIADINA IGA': 'Anticorpos antigliadina - IgA',
+  'HELICOBACTER PYLORI IGG': 'Helicobacter pylori, anticorpos - IgG',
+  'HELICOBACTER PYLORI IGM': 'Helicobacter pylori, anticorpos - IgM',
+  'HEMOGLOBINA GLICADA HBA1C': 'Hemoglobina glicada (HbA1c)',
+  '25 HIDROXIVITAMINA D VIT D25': 'Vitamina D, 25-hidroxi (25-OH-D)',
+};
+
 export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], justificativa: string }> = {
   // ─── Painéis de investigação gastroenterológica ───────────────────────────
   // Prefixo "GASTRO — " agrupa estes painéis numa seção própria na UI.
@@ -1760,41 +1794,41 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
   "GASTRO — Doença Celíaca / Glúten": {
     "nome": "GASTRO — Doença Celíaca / Glúten",
     "exames": [
-      "ANTI TRANSGLUTAMINASE TECIDUAL IGA (ANTI-TTG IGA)",
+      "Anti-transglutaminase tecidual - IgA",
       "IGA",
-      "ANTI ENDOMISIO IGA/IGG/IGM",
-      "ANTI PEPTIDEO DEAMIDADO DE GLIADINA IGG (ANTI-DGP IGG)",
+      "Anticorpos antiendomísio - IgG, IgM, IgA",
+      "Anticorpos antipeptídeo desamidado de gliadina - IgG",
       "HEMOGRAMA COMPLETO",
       "FERRITINA",
       "ACIDO FOLICO",
       "VITAMINA B12",
-      "25-HIDROXIVITAMINA D (VIT D25)"
+      "Vitamina D, 25-hidroxi (25-OH-D)"
     ],
     "justificativa": "INVESTIGAÇÃO DE DOENÇA CELÍACA EM PACIENTE COM SINTOMAS DISPÉPTICOS / DIARREIA CRÔNICA / ANEMIA FERROPRIVA REFRATÁRIA. SOLICITO SOROLOGIA ANTI-TRANSGLUTAMINASE TECIDUAL IGA COM DOSAGEM DE IGA TOTAL (EXCLUSÃO DE DEFICIÊNCIA SELETIVA DE IGA, QUE GERA FALSO-NEGATIVO) E PERFIL DE ABSORÇÃO INTESTINAL. ATENÇÃO: A SOROLOGIA EXIGE DIETA CONTENDO GLÚTEN NO MOMENTO DA COLETA. CONFIRMAÇÃO POR BIÓPSIA DUODENAL EM ENDOSCOPIA DIGESTIVA ALTA. CID-10: K90.0."
   },
   "GASTRO — Intolerância à Lactose": {
     "nome": "GASTRO — Intolerância à Lactose",
     "exames": [
-      "TESTE DE ABSORCAO DE LACTOSE",
-      "TESTE GENETICO DE INTOLERANCIA A LACTOSE (LCT/MCM6 -13910C>T)"
+      "Lactose, teste de tolerância",
+      "Intolerância à lactose, teste genético (LCT/MCM6, -13910C>T)"
     ],
     "justificativa": "INVESTIGAÇÃO DE INTOLERÂNCIA À LACTOSE EM PACIENTE COM DISTENSÃO ABDOMINAL, FLATULÊNCIA E DIARREIA APÓS INGESTÃO DE LATICÍNIOS. SOLICITO TESTE DE ABSORÇÃO DE LACTOSE (CURVA GLICÊMICA APÓS SOBRECARGA) E TESTE GENÉTICO DE HIPOLACTASIA DO ADULTO PARA DIFERENCIAÇÃO ENTRE DEFICIÊNCIA PRIMÁRIA E SECUNDÁRIA. CID-10: E73.9."
   },
   "GASTRO — DII (Crohn / RCU)": {
     "nome": "GASTRO — DII (Crohn / RCU)",
     "exames": [
-      "CALPROTECTINA FECAL",
+      "Calprotectina fecal, dosagem",
       "PCR (ULTRA-SENSIVEL)",
       "VHS - HEMOSSEDIMENTACAO",
       "HEMOGRAMA COMPLETO",
       "ALBUMINA",
       "FERRITINA",
-      "ASCA - ANTI SACCHAROMYCES CEREVISIAE IGA",
-      "ASCA - ANTI SACCHAROMYCES CEREVISIAE IGG",
+      "Saccharomyces cerevisiae (ASCA), anticorpos - IgA",
+      "Saccharomyces cerevisiae (ASCA), anticorpos - IgG",
       "P-ANCA",
-      "SANGUE OCULTO NAS FEZES"
+      "Sangue oculto, pesquisa nas fezes"
     ],
-    "justificativa": "INVESTIGAÇÃO DE DOENÇA INFLAMATÓRIA INTESTINAL (DOENÇA DE CROHN / RETOCOLITE ULCERATIVA) EM PACIENTE COM DIARREIA CRÔNICA, DOR ABDOMINAL E/OU SANGRAMENTO NAS FEZES. SOLICITO CALPROTECTINA FECAL (DIFERENCIAÇÃO ENTRE DOENÇA ORGÂNICA E SÍNDROME DO INTESTINO IRRITÁVEL), MARCADORES INFLAMATÓRIOS, PERFIL NUTRICIONAL E SOROLOGIAS ASCA/P-ANCA PARA CARACTERIZAÇÃO DO FENÓTIPO. PADRÃO-OURO DIAGNÓSTICO POR COLONOSCOPIA COM BIÓPSIA. CID-10: K52.9."
+    "justificativa": "INVESTIGAÇÃO DE DOENÇA INFLAMATÓRIA INTESTINAL (DOENÇA DE CROHN / RETOCOLITE ULCERATIVA) EM PACIENTE COM DIARREIA CRÔNICA, DOR ABDOMINAL E/OU SANGRAMENTO NAS FEZES. SOLICITO Calprotectina fecal, dosagem (DIFERENCIAÇÃO ENTRE DOENÇA ORGÂNICA E SÍNDROME DO INTESTINO IRRITÁVEL), MARCADORES INFLAMATÓRIOS, PERFIL NUTRICIONAL E SOROLOGIAS ASCA/P-ANCA PARA CARACTERIZAÇÃO DO FENÓTIPO. PADRÃO-OURO DIAGNÓSTICO POR COLONOSCOPIA COM BIÓPSIA. CID-10: K52.9."
   },
   "GASTRO — SIBO / Má Absorção": {
     "nome": "GASTRO — SIBO / Má Absorção",
@@ -1804,8 +1838,8 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "ACIDO FOLICO",
       "FERRITINA",
       "ALBUMINA",
-      "GORDURA FECAL - PESQUISA",
-      "ELASTASE PANCREATICA FECAL"
+      "Gordura fecal, pesquisa",
+      "Elastase pancreática fecal"
     ],
     "justificativa": "INVESTIGAÇÃO DE SUPERCRESCIMENTO BACTERIANO DO INTESTINO DELGADO (SIBO) E SÍNDROME DE MÁ ABSORÇÃO EM PACIENTE COM DISTENSÃO ABDOMINAL, FLATULÊNCIA E DIARREIA CRÔNICA. SOLICITO PERFIL NUTRICIONAL E DE ABSORÇÃO (B12, FOLATO, FERRO, ALBUMINA), PESQUISA DE GORDURA FECAL E ELASTASE PANCREÁTICA FECAL (EXCLUSÃO DE INSUFICIÊNCIA PANCREÁTICA EXÓCRINA). O DIAGNÓSTICO DE SIBO É CONFIRMADO POR TESTE RESPIRATÓRIO DE HIDROGÊNIO E METANO EXPIRADOS, SOLICITADO EM GUIA DE PROCEDIMENTO. CID-10: K90.4."
   },
@@ -1813,7 +1847,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
     "nome": "Rastreio Geriátrico Completo",
     "exames": [
       "HEMOGRAMA COMPLETO",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "GLICOSE",
       "UREIA",
       "CREATININA",
@@ -1848,16 +1882,16 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "VITAMINA B12",
       "ACIDO FOLICO",
       "ADENOSINA DEAMINASE - ADA",
-      "SANGUE OCULTO NAS FEZES",
-      "PARASITOLOGICO DE FEZES",
-      "HELICOBACTER PYLORI IGG"
+      "Sangue oculto, pesquisa nas fezes",
+      "Parasitológico de fezes",
+      "Helicobacter pylori, anticorpos - IgG"
     ],
     "justificativa": "Investigação de queixa dispéptica / dor abdominal / alteração de hábito intestinal com perda ponderal. Hepatograma com perfil ferro (rastreio hemocromatose/esteatose), função pancreática, doença celíaca (anti-gliadina/anti-endomísio), sorologias hepatites A/B/C, H. pylori, perfil nutricional, parasitológico/sangue oculto. Marcadores TGI (CEA, CA 19-9, CA 72-4, AFP)"
   },
   "Síndrome Metabólica": {
     "nome": "Síndrome Metabólica",
     "exames": [
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "GLICOSE",
       "INSULINA",
       "CURVA DE GLICOSE E INSULINA",
@@ -1933,7 +1967,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "UREIA",
       "ACIDO URICO",
       "GLICOSE",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "INSULINA",
       "BNP / PROBNP - PEPTIDEO NATRIURETICO",
       "HOMOCISTEINA",
@@ -1945,7 +1979,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "FERRITINA",
       "MAGNESIO",
       "VITAMINA B12",
-      "25-HIDROXIVITAMINA D (VIT D25)",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "ZINCO SERICO",
       "ACIDO FOLICO",
       "CORTISOL",
@@ -1961,12 +1995,12 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "TGP - TRANSAMINASE ALANINA",
       "AMILASE",
       "LIPASE",
-      "ANTI GLIADINA IGA",
+      "Anticorpos antigliadina - IgA",
       "GASTRINA",
-      "HELICOBACTER PYLORI IGG",
-      "HELICOBACTER PYLORI IGM",
-      "SANGUE OCULTO NAS FEZES",
-      "TESTE DE ABSORCAO DE LACTOSE",
+      "Helicobacter pylori, anticorpos - IgG",
+      "Helicobacter pylori, anticorpos - IgM",
+      "Sangue oculto, pesquisa nas fezes",
+      "Lactose, teste de tolerância",
       "ALFA FETO PROTEINA",
       "CA 19-9",
       "CA 72-4",
@@ -1989,7 +2023,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "UREIA",
       "ACIDO URICO",
       "GLICOSE",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "INSULINA",
       "BNP / PROBNP - PEPTIDEO NATRIURETICO",
       "HOMOCISTEINA",
@@ -1999,7 +2033,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "CALCIO",
       "FERRITINA",
       "VITAMINA B12",
-      "25-HIDROXIVITAMINA D (VIT D25)",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "ZINCO SERICO",
       "ACIDO FOLICO",
       "CORTISOL",
@@ -2015,12 +2049,12 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "TGP - TRANSAMINASE ALANINA",
       "AMILASE",
       "LIPASE",
-      "ANTI GLIADINA IGA",
+      "Anticorpos antigliadina - IgA",
       "GASTRINA",
-      "HELICOBACTER PYLORI IGG",
-      "HELICOBACTER PYLORI IGM",
-      "SANGUE OCULTO NAS FEZES",
-      "TESTE DE ABSORCAO DE LACTOSE",
+      "Helicobacter pylori, anticorpos - IgG",
+      "Helicobacter pylori, anticorpos - IgM",
+      "Sangue oculto, pesquisa nas fezes",
+      "Lactose, teste de tolerância",
       "ALFA FETO PROTEINA",
       "CA 125",
       "CA 15-3",
@@ -2037,7 +2071,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
     "nome": "IPM-CR-F",
     "exames": [
       "HEMOGRAMA COMPLETO",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "GLICOSE",
       "UREIA",
       "CREATININA",
@@ -2052,7 +2086,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "T3 REVERSO",
       "LIPIDOGRAMA",
       "VITAMINA B12",
-      "25-HIDROXIVITAMINA D (VIT D25)",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "VITAMINA A",
       "VITAMINA E",
       "ACIDO FOLICO",
@@ -2091,7 +2125,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
     "nome": "IPM-CR-M",
     "exames": [
       "HEMOGRAMA COMPLETO",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "GLICOSE",
       "UREIA",
       "CREATININA",
@@ -2106,7 +2140,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "T3 REVERSO",
       "LIPIDOGRAMA",
       "VITAMINA B12",
-      "25-HIDROXIVITAMINA D (VIT D25)",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "VITAMINA A",
       "VITAMINA E",
       "ACIDO FOLICO",
@@ -2154,7 +2188,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "UREIA",
       "ACIDO URICO",
       "GLICOSE",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "INSULINA",
       "BNP / PROBNP - PEPTIDEO NATRIURETICO",
       "HOMOCISTEINA",
@@ -2163,7 +2197,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "ALBUMINA",
       "FERRITINA",
       "VITAMINA B12",
-      "25-HIDROXIVITAMINA D (VIT D25)",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "ZINCO SERICO",
       "ACIDO FOLICO",
       "CORTISOL",
@@ -2179,13 +2213,13 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "TGP - TRANSAMINASE ALANINA",
       "AMILASE",
       "LIPASE",
-      "ANTI ENDOMISIO IGA/IGG/IGM",
-      "ANTI GLIADINA IGA",
+      "Anticorpos antiendomísio - IgG, IgM, IgA",
+      "Anticorpos antigliadina - IgA",
       "GASTRINA",
-      "HELICOBACTER PYLORI IGG",
-      "HELICOBACTER PYLORI IGM",
-      "SANGUE OCULTO NAS FEZES",
-      "TESTE DE ABSORCAO DE LACTOSE",
+      "Helicobacter pylori, anticorpos - IgG",
+      "Helicobacter pylori, anticorpos - IgM",
+      "Sangue oculto, pesquisa nas fezes",
+      "Lactose, teste de tolerância",
       "ALFA FETO PROTEINA",
       "CA 125",
       "CA 19-9",
@@ -2202,7 +2236,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
     "exames": [
       "HEMOGRAMA COMPLETO",
       "GLICOSE",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "TGO - TRANSAMINASE ASPARTICA",
       "TGP - TRANSAMINASE ALANINA",
       "UREIA",
@@ -2225,7 +2259,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "CD8 - LINFOCITOS",
       "ACIDO FOLICO",
       "CROMO",
-      "25-HIDROXIVITAMINA D (VIT D25)",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "VITAMINA B12",
       "TESTOSTERONA TOTAL",
       "TESTOSTERONA LIVRE",
@@ -2258,7 +2292,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
     "exames": [
       "HEMOGRAMA COMPLETO",
       "GLICOSE",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "TGO - TRANSAMINASE ASPARTICA",
       "TGP - TRANSAMINASE ALANINA",
       "UREIA",
@@ -2281,7 +2315,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "CD8 - LINFOCITOS",
       "ACIDO FOLICO",
       "CROMO",
-      "25-HIDROXIVITAMINA D (VIT D25)",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "VITAMINA B12",
       "TESTOSTERONA LIVRE",
       "CALCITONINA",
@@ -2321,7 +2355,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "UREIA",
       "ACIDO URICO",
       "GLICOSE",
-      "HEMOGLOBINA GLICADA - HBA1C",
+      "Hemoglobina glicada (HbA1c)",
       "INSULINA",
       "BNP / PROBNP - PEPTIDEO NATRIURETICO",
       "HOMOCISTEINA",
@@ -2330,7 +2364,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "ALBUMINA",
       "FERRITINA",
       "VITAMINA B12",
-      "25-HIDROXIVITAMINA D (VIT D25)",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "ZINCO SERICO",
       "ACIDO FOLICO",
       "CORTISOL",
@@ -2346,13 +2380,13 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "TGP - TRANSAMINASE ALANINA",
       "AMILASE",
       "LIPASE",
-      "ANTI ENDOMISIO IGA/IGG/IGM",
-      "ANTI GLIADINA IGA",
+      "Anticorpos antiendomísio - IgG, IgM, IgA",
+      "Anticorpos antigliadina - IgA",
       "GASTRINA",
-      "HELICOBACTER PYLORI IGG",
-      "HELICOBACTER PYLORI IGM",
-      "SANGUE OCULTO NAS FEZES",
-      "TESTE DE ABSORCAO DE LACTOSE",
+      "Helicobacter pylori, anticorpos - IgG",
+      "Helicobacter pylori, anticorpos - IgM",
+      "Sangue oculto, pesquisa nas fezes",
+      "Lactose, teste de tolerância",
       "ALFA FETO PROTEINA",
       "CA 19-9",
       "CA 72-4",

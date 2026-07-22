@@ -1,5 +1,5 @@
 import { callAI } from '../config/gemini';
-import { CATEGORIAS_EXAMES } from '../data/exames';
+import { CATEGORIAS_EXAMES, NOME_ALIASES } from '../data/exames';
 
 export interface ExameOrganizado {
   nomeOriginal: string;
@@ -120,6 +120,15 @@ export function findExamPreciso(rawName: string) {
   const allExams = CATEGORIAS_EXAMES.flatMap((c) => c.exames);
   const alvo = normalize(cleanVerboseTerms(rawName));
   if (!alvo) return null;
+
+  // 0. Alias explícito (nomes antigos após padronização TUSS). Fica antes de
+  // qualquer heurística — retrocompatibilidade sem risco de sequestro.
+  const aliasParaNome = NOME_ALIASES[alvo];
+  if (aliasParaNome) {
+    const alvoAlias = normalize(aliasParaNome);
+    const porAlias = allExams.find((e) => normalize(e.nome) === alvoAlias);
+    if (porAlias) return porAlias;
+  }
 
   // 1. Igualdade normalizada
   for (const exame of allExams) {

@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
 import { formatExamNameForDisplay } from '../../lib/formatters';
@@ -258,6 +258,21 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
     setExamesSelecionados, setJustificativa, setPaciente, toggleProcedimento,
     addProcedimentoPersonalizado, removeProcedimentoPersonalizado,
   } = useAppStore();
+
+  // Migração dos nomes antigos → canônicos TUSS (uma vez, ao montar).
+  // Sem isso, um rascunho salvo antes da padronização imprimia o nome antigo na
+  // guia — motivo comum de glosa. Usa o alias no findExamPreciso; nomes que não
+  // têm alias e não casam ficam intocados (respeita "não catalogado" digitado).
+  useEffect(() => {
+    if (examesSelecionados.length === 0) return;
+    const atualizados = examesSelecionados.map((nome) => {
+      const match = findExamPreciso(nome);
+      return match && match.nome !== nome ? match.nome : nome;
+    });
+    const mudou = atualizados.some((n, i) => n !== examesSelecionados[i]);
+    if (mudou) setExamesSelecionados([...new Set(atualizados)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const isLab = mode ? mode === 'exames' : tipoGuia === 'LABORATORIO';
   const buscaNormalizada = busca.trim().toLowerCase();
