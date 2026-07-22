@@ -103,6 +103,52 @@ function isAcronym(token: string): boolean {
   return /^[A-Z0-9]{3,6}$/.test(token) && !EXCLUDED_ACRONYMS.has(token);
 }
 
+/**
+ * Match PRECISO para uso fora da IA (chips selecionados e "Adicionar direto").
+ *
+ * Por que não usar findMatchingExam aqui: ele casa por acrônimo solto, então
+ * "ZZZ EXAME FICTÍCIO DO TESTE" casava com "TESTE DE ABSORCAO DE LACTOSE" —
+ * trocando o exame digitado pelo médico por outro completamente diferente.
+ * Isso é aceitável quando a IA já validou o termo, mas não para texto cru.
+ *
+ * Regra: casa por igualdade normalizada ou quando TODOS os tokens
+ * significativos do texto digitado aparecem no nome do catálogo (ordem livre).
+ * Assim "PTH - PARATORMONIO" ainda casa com "PARATORMONIO - PTH" e
+ * "T4 LIVRE" com "T4 LIVRE - TIROXINA LIVRE", mas um nome novo não é sequestrado.
+ */
+export function findExamPreciso(rawName: string) {
+  const allExams = CATEGORIAS_EXAMES.flatMap((c) => c.exames);
+  const alvo = normalize(cleanVerboseTerms(rawName));
+  if (!alvo) return null;
+
+  // 1. Igualdade normalizada
+  for (const exame of allExams) {
+    if (normalize(exame.nome) === alvo) return exame;
+  }
+
+  // 2. Contenção total de tokens significativos (ignora conectivos)
+  const tokensAlvo = alvo.split(' ').filter((t) => t && !EXCLUDED_ACRONYMS.has(t));
+  if (tokensAlvo.length === 0) return null;
+
+  let melhor: (typeof allExams)[number] | null = null;
+  let menorExcedente = Infinity;
+
+  for (const exame of allExams) {
+    const tokensDb = normalize(exame.nome).split(' ').filter(Boolean);
+    const setDb = new Set(tokensDb);
+    const contemTodos = tokensAlvo.every((t) => setDb.has(t));
+    if (!contemTodos) continue;
+    // Entre os que contêm tudo, prefere o nome com menos palavras extras.
+    const excedente = tokensDb.length - tokensAlvo.length;
+    if (excedente < menorExcedente) {
+      menorExcedente = excedente;
+      melhor = exame;
+    }
+  }
+
+  return melhor;
+}
+
 export function findMatchingExam(aiName: string) {
   const allExams = CATEGORIAS_EXAMES.flatMap(c => c.exames);
   

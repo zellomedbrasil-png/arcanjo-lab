@@ -2,6 +2,7 @@ import { useMemo, useState, useRef } from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
 import { formatExamNameForDisplay } from '../../lib/formatters';
+import { findExamPreciso } from '../../services/groqExames';
 import { PROCEDIMENTOS as PROCEDIMENTOS_BASE, GRUPOS_PROCEDIMENTOS, PROCEDIMENTOS_POR_GRUPO } from '../../data/procedimentos';
 import type { ProcedimentoGrupo } from '../../data/procedimentos';
 import {
@@ -175,6 +176,10 @@ const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {
 // coberto (evita descobrir só na glosa).
 type Cobertura = 'AMBOS' | 'SO_ISSEC' | 'SO_IPM' | 'SEM_CODIGO';
 
+// Nos chips há um estado a mais: o exame digitado livremente ("Adicionar direto")
+// que não existe no catálogo — cobertura DESCONHECIDA, não ausente.
+type CoberturaChip = Cobertura | 'NAO_CATALOGADO';
+
 function getCobertura(exame: { codIssec: string; codIpm: string }): Cobertura {
   const temIssec = !!exame.codIssec?.trim();
   const temIpm = !!exame.codIpm?.trim();
@@ -206,6 +211,28 @@ const COBERTURA_META: Record<Cobertura, { label: string; cls: string; title: str
     cls: 'bg-slate-100 text-slate-600 border-slate-200',
     title: 'Sem código de convênio cadastrado — provável particular. Confirme com a operadora.',
   },
+};
+
+/** Rótulo/tooltip dos chips — inclui o estado extra "não catalogado". */
+const CHIP_META: Record<CoberturaChip, { label: string; title: string }> = {
+  AMBOS: { label: COBERTURA_META.AMBOS.label, title: COBERTURA_META.AMBOS.title },
+  SO_ISSEC: { label: COBERTURA_META.SO_ISSEC.label, title: COBERTURA_META.SO_ISSEC.title },
+  SO_IPM: { label: COBERTURA_META.SO_IPM.label, title: COBERTURA_META.SO_IPM.title },
+  SEM_CODIGO: { label: COBERTURA_META.SEM_CODIGO.label, title: COBERTURA_META.SEM_CODIGO.title },
+  NAO_CATALOGADO: {
+    label: 'Não catalogado',
+    title: 'Exame digitado manualmente — não consta no catálogo do sistema. Confira o nome e a cobertura com a operadora.',
+  },
+};
+
+// Cor da bolinha por estado — classes completas (Tailwind não compila classe
+// montada por template string).
+const CHIP_DOT: Record<CoberturaChip, string> = {
+  AMBOS: 'bg-emerald-500',
+  SO_ISSEC: 'bg-blue-500',
+  SO_IPM: 'bg-amber-500',
+  SEM_CODIGO: 'bg-slate-400',
+  NAO_CATALOGADO: 'bg-violet-400',
 };
 
 /** true quando o exame NÃO é coberto pelo convênio selecionado agora. */
@@ -252,6 +279,33 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
   const totalMatches = useMemo(() => {
     return categoriasFiltradas.reduce((acc, cat) => acc + cat.exames.length, 0);
   }, [categoriasFiltradas]);
+
+  // Cobertura de cada exame JÁ SELECIONADO. Os chips guardam só o nome, e os
+  // painéis aplicam nomes que nem sempre batem exatamente com o catálogo
+  // ("T4 LIVRE" vs "T4 LIVRE - TIROXINA LIVRE"), por isso usamos o matcher
+  // PRECISO (contenção de tokens) — o fuzzy da IA casaria por acrônimo solto e
+  // exibiria a cobertura de outro exame. Memoizado: recalcula só na mudança.
+  const coberturaPorChip = useMemo(() => {
+    const map = new Map<string, CoberturaChip>();
+    for (const nome of examesSelecionados) {
+      const match = findExamPreciso(nome);
+      map.set(nome, match ? getCobertura(match) : 'NAO_CATALOGADO');
+    }
+    return map;
+  }, [examesSelecionados]);
+
+  // Separa os que o convênio ativo não cobre — viram bloco de alerta.
+  // "Não catalogado" fica de fora: é cobertura desconhecida, não ausente.
+  const { examesFora, examesOk } = useMemo(() => {
+    const fora: string[] = [];
+    const ok: string[] = [];
+    for (const nome of examesSelecionados) {
+      const cob = coberturaPorChip.get(nome) ?? 'NAO_CATALOGADO';
+      if (cob !== 'NAO_CATALOGADO' && isForaDoConvenio(cob, convenio)) fora.push(nome);
+      else ok.push(nome);
+    }
+    return { examesFora: fora, examesOk: ok };
+  }, [examesSelecionados, coberturaPorChip, convenio]);
 
   const toggleExame = (exameNome: string) => {
     if (examesSelecionados.includes(exameNome)) {
@@ -623,20 +677,98 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
             </div>
 
             {examesSelecionados.length > 0 && (
-              <div className="mb-5.5 flex flex-wrap gap-1.5 rounded-lg border border-blue-100 bg-blue-50/30 p-2.5 max-h-24 overflow-y-auto">
-                {examesSelecionados.map((exame) => (
-                  <span key={exame} className="inline-flex items-center gap-1 rounded bg-white border border-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 shadow-none transition-all">
-                    {formatExamNameForDisplay(exame)}
-                    <button
-                      type="button"
-                      onClick={() => toggleExame(exame)}
-                      className="text-blue-300 hover:text-red-500 transition-colors cursor-pointer ml-0.5"
-                      title={`Remover ${exame}`}
-                    >
-                      <X size={11} />
-                    </button>
+              <div className="mb-5.5 rounded-lg border border-blue-100 bg-blue-50/20 overflow-hidden">
+                {/* Cabeçalho: contagem + legenda das bolinhas + limpar */}
+                <div className="flex items-center justify-between gap-3 flex-wrap px-3.5 py-2.5 bg-white/70 border-b border-blue-100/70">
+                  <span className="text-[11px] font-bold text-blue-800 uppercase tracking-wider">
+                    {examesSelecionados.length} exame{examesSelecionados.length !== 1 ? 's' : ''} selecionado{examesSelecionados.length !== 1 ? 's' : ''}
                   </span>
-                ))}
+
+                  <div className="flex items-center gap-2.5 flex-wrap text-[9px] font-semibold text-neutral-text-muted">
+                    {(['AMBOS', 'SO_ISSEC', 'SO_IPM', 'SEM_CODIGO', 'NAO_CATALOGADO'] as CoberturaChip[]).map((c) => (
+                      <span key={c} className="inline-flex items-center gap-1" title={CHIP_META[c].title}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${CHIP_DOT[c]}`} />
+                        {CHIP_META[c].label}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('Limpar todos os exames selecionados e justificativa?')) {
+                        setExamesSelecionados([]);
+                        setPaciente({ justificativaExames: '' });
+                        setJustificativa('');
+                      }
+                    }}
+                    className="text-[10px] font-bold text-neutral-text-muted hover:text-red-600 transition-colors cursor-pointer"
+                  >
+                    Limpar seleção
+                  </button>
+                </div>
+
+                {/* Alerta: exames que o convênio ativo não cobre */}
+                {examesFora.length > 0 && (
+                  <div className="px-3.5 py-2.5 bg-red-50/60 border-b border-red-100">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <ShieldAlert size={12} className="text-red-600 shrink-0" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-700">
+                        {examesFora.length} exame{examesFora.length !== 1 ? 's' : ''} fora do {convenio} — provável glosa ou particular
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {examesFora.map((exame) => {
+                        const cob = coberturaPorChip.get(exame) ?? 'NAO_CATALOGADO';
+                        return (
+                          <span
+                            key={exame}
+                            title={CHIP_META[cob].title}
+                            className="inline-flex items-center gap-1.5 rounded-md bg-white border border-red-200 px-2 py-1 text-[11px] font-semibold text-red-700"
+                          >
+                            <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${CHIP_DOT[cob]}`} />
+                            {formatExamNameForDisplay(exame)}
+                            <button
+                              type="button"
+                              onClick={() => toggleExame(exame)}
+                              className="text-red-300 hover:text-red-600 transition-colors cursor-pointer ml-0.5"
+                              title={`Remover ${exame}`}
+                            >
+                              <X size={11} />
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Demais selecionados */}
+                {examesOk.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 p-3 max-h-32 overflow-y-auto">
+                    {examesOk.map((exame) => {
+                      const cob = coberturaPorChip.get(exame) ?? 'NAO_CATALOGADO';
+                      return (
+                        <span
+                          key={exame}
+                          title={CHIP_META[cob].title}
+                          className="inline-flex items-center gap-1.5 rounded-md bg-white border border-blue-100 px-2 py-1 text-[11px] font-semibold text-blue-700 transition-all"
+                        >
+                          <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${CHIP_DOT[cob]}`} />
+                          {formatExamNameForDisplay(exame)}
+                          <button
+                            type="button"
+                            onClick={() => toggleExame(exame)}
+                            className="text-blue-300 hover:text-red-500 transition-colors cursor-pointer ml-0.5"
+                            title={`Remover ${exame}`}
+                          >
+                            <X size={11} />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

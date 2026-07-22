@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
 import { formatExamNameForDisplay } from '../../lib/formatters';
-import { organizarExamesIA, findMatchingExam, type ExameOrganizado, type ResultadoExamesIA } from '../../services/groqExames';
+import { organizarExamesIA, findMatchingExam, findExamPreciso, type ExameOrganizado, type ResultadoExamesIA } from '../../services/groqExames';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import {
@@ -77,9 +77,12 @@ export default function ExamPastePanel() {
     }
 
     const nomes = itens.map((item) => {
-      const match = findMatchingExam(item);
+      // Matcher PRECISO: o fuzzy da IA casa por acrônimo solto e trocaria o
+      // exame digitado por outro (ex.: "...do teste" viraria "TESTE DE
+      // ABSORCAO DE LACTOSE"). Aqui só casa quando é realmente o mesmo exame.
+      const match = findExamPreciso(item);
       // Casou com o catálogo → usa o nome oficial (garante o código na guia).
-      // Não casou → respeita o que o médico escreveu.
+      // Não casou → respeita exatamente o que o médico escreveu.
       return match ? match.nome : item.toUpperCase();
     });
 
