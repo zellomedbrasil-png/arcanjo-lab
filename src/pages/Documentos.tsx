@@ -658,43 +658,11 @@ export default function Documentos() {
                   </p>
                 </div>
 
-                {/* Informações de Reabilitação (aparecem se a finalidade for de reabilitação) */}
-                {(doc.laudoFinalidade.toLowerCase().includes('fisioterapia') ||
-                  doc.laudoFinalidade.toLowerCase().includes('fonoaudiologia') ||
-                  doc.laudoFinalidade.toLowerCase().includes('ocupacional')) && (
-                  <div className="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 space-y-3">
-                    <p className="text-[11px] font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
-                      ♿ Dados Complementares de Reabilitação
-                    </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className={labelCls}>Especialidade / Serviço Solicitado</label>
-                        <input
-                          type="text"
-                          placeholder="Ex: Fisioterapia Motora, Fonoaudiologia"
-                          className={inputCls}
-                          value={doc.laudoFinalidade.includes('Fisioterapia') ? 'Fisioterapia Motora' :
-                            doc.laudoFinalidade.includes('Fonoaudiologia') ? 'Fonoaudiologia / Reabilitação da Deglutição' :
-                            'Terapia Ocupacional Cognitiva'}
-                          readOnly
-                        />
-                      </div>
-                      <div>
-                        <label className={labelCls}>Nº de Sessões Indicadas (por semana)</label>
-                        <select className={inputCls} defaultValue="3">
-                          <option value="1">1 sessão semanal</option>
-                          <option value="2">2 sessões semanais</option>
-                          <option value="3">3 sessões semanais</option>
-                          <option value="5">5 sessões semanais (intensivo)</option>
-                          <option value="indeterminate">Duração indeterminada</option>
-                        </select>
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-indigo-500 italic">
-                      * Essas informações serão impressas como nota de encaminhamento no rodapé do laudo.
-                    </p>
-                  </div>
-                )}
+                {/* Removido: bloco "Dados Complementares de Reabilitação". Prometia na
+                    tela que a especialidade e o nº de sessões sairiam no rodapé do laudo,
+                    mas os campos não eram salvos nem chegavam ao documento impresso —
+                    informação falsa para o médico. O nº de sessões deve ir na Conduta
+                    Terapêutica, onde os presets de reabilitação já o incluem. */}
               </div>
             )}
 
