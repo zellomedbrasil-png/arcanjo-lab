@@ -1,10 +1,10 @@
 import { useAppStore } from '../../store/useAppStore';
 import {
-  SERVICOS, GRUPOS_SERVICOS, SERVICOS_POR_GRUPO, SERVICO_REGRAS,
+  SERVICOS, GRUPOS_SERVICOS, SERVICOS_POR_GRUPO, SERVICO_REGRAS, SERVICO_POR_ID,
 } from '../../data/servicos';
 import type { ServicoGrupo, ServicoDef } from '../../data/servicos';
 import {
-  Activity, Wind, Ear, Brain, Apple, Hand, Sparkles, X, CheckCircle2, Wand2, Info,
+  Activity, Wind, Ear, Brain, Apple, Hand, Sparkles, X, CheckCircle2, Wand2, Info, Pencil,
 } from 'lucide-react';
 import type { ElementType } from 'react';
 import { toast } from '../../lib/toast';
@@ -37,9 +37,17 @@ export default function ServicoSelector() {
   const total = servicosSelecionados.length;
   const regras = convenio === 'ISSEC' ? SERVICO_REGRAS.ISSEC : convenio === 'IPM' ? SERVICO_REGRAS.IPM : null;
 
+  // Serviço digitado à mão (não faz parte do catálogo). Uma guia = um serviço.
+  const servicoCustom = servicosSelecionados.find((id) => !SERVICO_POR_ID[id]);
+
   // Guia de Serviço II aceita UM serviço por vez → seleção única.
   const selecionar = (id: string) => {
     setServicosSelecionados(servicosSelecionados.includes(id) ? [] : [id]);
+  };
+
+  // Serviço personalizado: substitui as pré-seleções (mantém uma guia = um serviço).
+  const alterarCustom = (valor: string) => {
+    setServicosSelecionados(valor.trim() === '' ? [] : [valor]);
   };
 
   const cobertura = (s: ServicoDef) =>
@@ -95,12 +103,13 @@ export default function ServicoSelector() {
           <div className="flex flex-wrap gap-2 mb-4 p-3.5 bg-emerald-50/50 rounded-lg border border-emerald-100">
             {servicosSelecionados.map(id => {
               const s = SERVICOS.find(x => x.id === id);
-              if (!s) return null;
-              const Icon = ICON_POR_ID[id] ?? Activity;
+              const isCustom = !s;
+              const Icon = isCustom ? Pencil : (ICON_POR_ID[id] ?? Activity);
+              const label = isCustom ? id : s.nomeCurto;
               return (
                 <span key={id} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-full">
                   <Icon size={11} />
-                  {s.nomeCurto}
+                  {label}
                   <button onClick={() => selecionar(id)} className="ml-1 hover:text-emerald-200 transition-colors cursor-pointer">
                     <X size={11} />
                   </button>
@@ -109,6 +118,37 @@ export default function ServicoSelector() {
             })}
           </div>
         )}
+
+        {/* Serviço personalizado (texto livre) */}
+        <div className="mb-4 rounded-xl border border-neutral-border overflow-hidden">
+          <div className="px-4 py-2.5 bg-slate-50">
+            <h4 className="text-[11px] font-bold text-neutral-text-muted uppercase tracking-wider">✏️ Outro serviço (personalizado)</h4>
+          </div>
+          <div className="p-3 bg-white">
+            <label className="block text-xs text-neutral-text-muted mb-1.5">
+              Digite qualquer serviço/terapia para imprimir na guia — não precisa estar na lista abaixo. Substitui a pré-seleção.
+            </label>
+            <div className="relative">
+              <Pencil size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-text-muted pointer-events-none" />
+              <input
+                type="text"
+                value={servicoCustom ?? ''}
+                onChange={(e) => alterarCustom(e.target.value)}
+                placeholder="Ex.: Drenagem linfática, Hidroterapia, RPG, Pilates terapêutico..."
+                className={`w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 ${
+                  servicoCustom
+                    ? 'border-emerald-400 bg-emerald-50/40 text-neutral-text'
+                    : 'border-neutral-border bg-white text-neutral-text'
+                }`}
+              />
+            </div>
+            {servicoCustom && (
+              <p className="mt-1.5 text-[11px] text-emerald-600 font-medium flex items-center gap-1">
+                <CheckCircle2 size={11} /> Este serviço será impresso na guia.
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* Therapy grid grouped */}
         <div className="space-y-4">
