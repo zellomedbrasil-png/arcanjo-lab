@@ -18,7 +18,8 @@ export function runStorageCleanup(): void {
     //    A chave atual vive somente no servidor (/api/claude).
     localStorage.removeItem('arcanjo_anthropic_key');
 
-    // 2. Reset one-time do modelo selecionado — volta ao padrão google/gemini-3.1-flash-lite.
+    // 2. Reset one-time do modelo selecionado — volta ao padrão atual
+    //    (getDefaultModelId). Também cobre ids de modelos que saíram do catálogo.
     localStorage.removeItem('arcanjo_selected_model');
 
     // 3. Badge de modelo antigo dentro do draft persistido do useAppStore.

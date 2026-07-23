@@ -83,28 +83,20 @@ export interface AIModel {
 
 export const AI_MODELS: AIModel[] = [
   {
-    id: 'google/gemini-3.1-flash-lite',
-    label: 'Gemini 3.1 Flash Lite ⚡',
-    badge: 'Gemini 3.1 Flash Lite',
+    id: 'google/gemini-3.5-flash-lite',
+    label: 'Gemini 3.5 Flash Lite ⚡',
+    badge: 'Gemini 3.5 Flash Lite',
     provider: 'gemini',
-    note: 'Padrão — mais recente e barato do Google, ótimo custo-benefício (via proxy seguro)',
+    note: 'Padrão — o mais rápido e barato do Google, ótimo custo-benefício (via proxy seguro)',
     timeoutMs: 60_000,
   },
   {
-    id: 'google/gemini-2.5-flash',
-    label: 'Gemini 2.5 Flash ⚡',
-    badge: 'Gemini 2.5 Flash',
+    id: 'google/gemini-3.6-flash',
+    label: 'Gemini 3.6 Flash 🧠',
+    badge: 'Gemini 3.6 Flash',
     provider: 'gemini',
-    note: 'Mais inteligente do Google, cota generosa (via proxy seguro)',
+    note: 'Mais recente do Google — equilibra velocidade e raciocínio (via proxy seguro)',
     timeoutMs: 90_000,
-  },
-  {
-    id: 'google/gemini-3.5-flash',
-    label: 'Gemini 3.5 Flash ⚡',
-    badge: 'Gemini 3.5 Flash (OpenRouter)',
-    provider: 'openrouter',
-    note: 'Mais recente do Google via OpenRouter',
-    timeoutMs: 60_000,
   },
   {
     id: 'claude-sonnet-5',
@@ -177,7 +169,7 @@ export function getDefaultModelId(): string {
   if (saved && AI_MODELS.some(m => m.id === saved)) {
     return saved;
   }
-  return 'google/gemini-3.1-flash-lite';
+  return 'google/gemini-3.5-flash-lite';
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -474,7 +466,7 @@ async function callGroq(
 
 export async function callGemini(
   params: AICallParams,
-  modelId = 'gemini-2.5-flash',
+  modelId = 'gemini-3.5-flash-lite',
   signal?: AbortSignal
 ): Promise<string> {
   // Remove eventual prefixo "google/" (vindo dos ids de modelo da UI)
@@ -499,10 +491,12 @@ export async function callGemini(
     },
   };
 
-  // Desativa o "thinking" do Gemini 2.5/3 (exceto 3.5 e 3.1-pro que geram erro ao definir thinkingBudget: 0 na API direta)
+  // Desativa o "thinking" do Gemini 2.5/3 (exceto 3.5, 3.6 e 3.1-pro, que geram
+  // erro ao definir thinkingBudget: 0 na API direta — deixam o thinking no padrão).
   if (
     (modelId.includes('2.5') || modelId.includes('3')) &&
     !modelId.includes('3.5') &&
+    !modelId.includes('3.6') &&
     !modelId.includes('3.1-pro')
   ) {
     payload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
@@ -775,10 +769,10 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
     // Claude indisponível (ex.: sem créditos) não pode travar o médico:
     // cai para o Gemini nativo e depois DeepSeek.
     fallbackChain.push({
-      id: 'google/gemini-2.5-flash',
-      badge: 'Gemini 2.5 Flash (fallback)',
+      id: 'google/gemini-3.5-flash-lite',
+      badge: 'Gemini 3.5 Flash Lite (fallback)',
       provider: 'gemini',
-      timeoutMs: 90_000,
+      timeoutMs: 60_000,
     });
     fallbackChain.push({
       id: 'deepseek/deepseek-v4-flash',
@@ -818,9 +812,9 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       });
     } else {
       fallbackChain.push({
-        id: 'google/gemini-3.5-flash',
-        badge: 'Gemini 3.5 Flash (fallback)',
-        provider: 'openrouter',
+        id: 'google/gemini-3.5-flash-lite',
+        badge: 'Gemini 3.5 Flash Lite (fallback)',
+        provider: 'gemini',
         timeoutMs: 30_000,
       });
     }
