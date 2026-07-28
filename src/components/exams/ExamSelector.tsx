@@ -9,7 +9,7 @@ import {
   Activity, Stethoscope, Beaker, HeartPulse, ScanFace, FileHeart, Search, Scan,
   Bone, Disc, X, CheckCircle2, Moon, Ear, Wind, Brain, ChevronDown, ChevronUp,
   Droplet, FlaskConical, Target, ShieldAlert, Dna, User, Layers, Apple, Flame,
-  Heart, TestTube, Baby, Microscope, Plus, Pencil, Zap
+  Heart, TestTube, Baby, Microscope, Plus, Pencil, Zap, Filter
 } from 'lucide-react';
 import type { ElementType } from 'react';
 
@@ -59,7 +59,8 @@ const formatCategoryName = (nome: string) => {
 
 const GRUPO_LABELS: Record<ProcedimentoGrupo, string> = {
   CARDIOLOGIA: '🫀 Cardiologia',
-  ULTRASSONOGRAFIA: '🔊 Ultrassonografia',
+  ULTRASSONOGRAFIA: '🔊 Ultrassonografia & Dopplers',
+  ARTICULACOES: '🦴 Articulações (US Joelho, Ombro...)',
   ENDOSCOPIA: '🔬 Endoscopia Digestiva',
   GASTRO_FUNCIONAL: '🧪 Gastro Funcional (SIBO / Lactose)',
   IMAGEM: '🩻 Imagem (Rx / TC / RM)',
@@ -72,6 +73,7 @@ const GRUPO_LABELS: Record<ProcedimentoGrupo, string> = {
 const GRUPO_COLORS: Record<ProcedimentoGrupo, { bg: string; badge: string; border: string }> = {
   CARDIOLOGIA: { bg: 'bg-red-50', badge: 'bg-red-100 text-red-700', border: 'border-red-100' },
   ULTRASSONOGRAFIA: { bg: 'bg-blue-50', badge: 'bg-blue-100 text-blue-700', border: 'border-blue-100' },
+  ARTICULACOES: { bg: 'bg-emerald-50', badge: 'bg-emerald-100 text-emerald-700', border: 'border-emerald-100' },
   ENDOSCOPIA: { bg: 'bg-amber-50', badge: 'bg-amber-100 text-amber-700', border: 'border-amber-100' },
   GASTRO_FUNCIONAL: { bg: 'bg-lime-50', badge: 'bg-lime-100 text-lime-700', border: 'border-lime-100' },
   IMAGEM: { bg: 'bg-slate-50', badge: 'bg-slate-100 text-slate-700', border: 'border-slate-200' },
@@ -81,9 +83,14 @@ const GRUPO_COLORS: Record<ProcedimentoGrupo, { bg: string; badge: string; borde
   UROLOGIA: { bg: 'bg-teal-50', badge: 'bg-teal-100 text-teal-700', border: 'border-teal-100' },
 };
 
-type ProcDef = {
+export type ProcDef = {
   id: string;
   nome: string;
+  nomeCompleto: string;
+  grupo: ProcedimentoGrupo;
+  codIssec: string;
+  codIpm: string;
+  detalhes?: string;
   icon: ElementType;
   color: string;
   activeColor: string;
@@ -92,66 +99,117 @@ type ProcDef = {
 };
 
 // Icon & color definitions per procedure ID
-const PROC_UI_MAP: Record<string, Omit<ProcDef, 'id' | 'nome' | 'hasAsterisk'>> = {
-  ECOCARDIOGRAMA:      { icon: HeartPulse, color: 'text-red-400',      activeColor: 'text-white', activeBg: 'bg-red-500' },
-  ECODOPPLER:          { icon: Activity,   color: 'text-orange-400',   activeColor: 'text-white', activeBg: 'bg-orange-500' },
-  MAPA:                { icon: FileHeart,  color: 'text-rose-400',     activeColor: 'text-white', activeBg: 'bg-rose-500' },
-  HOLTER:              { icon: FileHeart,  color: 'text-pink-400',     activeColor: 'text-white', activeBg: 'bg-pink-500' },
-  ECG:                 { icon: Activity,   color: 'text-rose-400',     activeColor: 'text-white', activeBg: 'bg-rose-600' },
+const PROC_UI_MAP: Record<string, Omit<ProcDef, 'id' | 'nome' | 'nomeCompleto' | 'grupo' | 'codIssec' | 'codIpm' | 'detalhes' | 'hasAsterisk'>> = {
+  // Cardiologia
+  ECOCARDIOGRAMA:      { icon: HeartPulse, color: 'text-red-500',      activeColor: 'text-white', activeBg: 'bg-red-600' },
+  ECODOPPLER:          { icon: Activity,   color: 'text-orange-500',   activeColor: 'text-white', activeBg: 'bg-orange-600' },
+  MAPA:                { icon: FileHeart,  color: 'text-rose-500',     activeColor: 'text-white', activeBg: 'bg-rose-600' },
+  HOLTER:              { icon: FileHeart,  color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
+  ECG:                 { icon: Activity,   color: 'text-rose-600',     activeColor: 'text-white', activeBg: 'bg-rose-700' },
   TEST_ERGOMETRICO:    { icon: Zap,        color: 'text-orange-500',   activeColor: 'text-white', activeBg: 'bg-orange-600' },
   ANGIOTC_CORONARIA:   { icon: Scan,       color: 'text-red-500',      activeColor: 'text-white', activeBg: 'bg-red-600' },
   ECOSTRESS:           { icon: HeartPulse, color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
   DOPPLER_MEMBROS:     { icon: Activity,   color: 'text-rose-500',     activeColor: 'text-white', activeBg: 'bg-rose-700' },
-  US_ABD_TOTAL:        { icon: ScanFace,   color: 'text-blue-400',     activeColor: 'text-white', activeBg: 'bg-blue-500' },
-  US_PELVICO:          { icon: ScanFace,   color: 'text-purple-400',   activeColor: 'text-white', activeBg: 'bg-purple-500' },
-  US_TRANSVAGINAL:     { icon: ScanFace,   color: 'text-pink-400',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
-  US_PROSTATA:         { icon: ScanFace,   color: 'text-blue-400',     activeColor: 'text-white', activeBg: 'bg-blue-600' },
-  US_TIREOIDE:         { icon: ScanFace,   color: 'text-teal-400',     activeColor: 'text-white', activeBg: 'bg-teal-500' },
-  US_VIAS_BILIARES:    { icon: ScanFace,   color: 'text-amber-400',    activeColor: 'text-white', activeBg: 'bg-amber-500' },
-  US_MAMA_BILATERAL:   { icon: ScanFace,   color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-700' },
-  US_RENAL:            { icon: ScanFace,   color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
-  US_PARTES_MOLES:     { icon: ScanFace,   color: 'text-sky-500',      activeColor: 'text-white', activeBg: 'bg-sky-600' },
-  US_DOPPLER_CAROTIDAS:{ icon: Activity,   color: 'text-blue-500',     activeColor: 'text-white', activeBg: 'bg-blue-700' },
-  EDA:                 { icon: Search,     color: 'text-amber-400',    activeColor: 'text-white', activeBg: 'bg-amber-600' },
-  EDA_BIOPSIA_HPYLORI: { icon: Microscope, color: 'text-amber-500',   activeColor: 'text-white', activeBg: 'bg-amber-600' },
-  COLONOSCOPIA:        { icon: Search,     color: 'text-stone-400',    activeColor: 'text-white', activeBg: 'bg-stone-500' },
-  COLONOSCOPIA_BIOPSIA:{ icon: Microscope, color: 'text-stone-500',   activeColor: 'text-white', activeBg: 'bg-stone-600' },
-  RETOSSIGMOIDOSCOPIA: { icon: Search,     color: 'text-stone-400',    activeColor: 'text-white', activeBg: 'bg-stone-600' },
-  RETOSSIGMOIDOSCOPIA_BIOPSIA: { icon: Microscope, color: 'text-stone-500', activeColor: 'text-white', activeBg: 'bg-stone-700' },
-  PHMETRIA_ESOFAGICA:  { icon: Activity,   color: 'text-emerald-500',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
-  MANOMETRIA_ESOFAGICA:{ icon: Activity,   color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
-  ECOENDOSCOPIA:       { icon: Search,     color: 'text-yellow-500',   activeColor: 'text-white', activeBg: 'bg-yellow-600' },
-  TESTE_H2_LACTULOSE:  { icon: Wind,       color: 'text-lime-500',     activeColor: 'text-white', activeBg: 'bg-lime-600' },
-  TESTE_H2_GLICOSE:    { icon: Wind,       color: 'text-lime-500',     activeColor: 'text-white', activeBg: 'bg-lime-700' },
-  TESTE_H2_LACTOSE:    { icon: Wind,       color: 'text-emerald-500',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
-  RX_TORAX:            { icon: Bone,       color: 'text-slate-400',    activeColor: 'text-white', activeBg: 'bg-slate-500' },
-  RX_COLUNA:           { icon: Bone,       color: 'text-slate-400',    activeColor: 'text-white', activeBg: 'bg-slate-600' },
-  RX_BACIA:            { icon: Bone,       color: 'text-slate-500',    activeColor: 'text-white', activeBg: 'bg-slate-700' },
-  TC_ABD:              { icon: Scan,       color: 'text-indigo-400',   activeColor: 'text-white', activeBg: 'bg-indigo-500' },
-  TC_CRANIO:           { icon: Scan,       color: 'text-indigo-400',   activeColor: 'text-white', activeBg: 'bg-indigo-600' },
-  TC_TORAX:            { icon: Scan,       color: 'text-violet-400',   activeColor: 'text-white', activeBg: 'bg-violet-600' },
-  RM_ABD:              { icon: Disc,       color: 'text-violet-400',   activeColor: 'text-white', activeBg: 'bg-violet-500' },
-  RM_CRANIO:           { icon: Disc,       color: 'text-violet-400',   activeColor: 'text-white', activeBg: 'bg-violet-600' },
-  RM_COLUNA:           { icon: Disc,       color: 'text-purple-400',   activeColor: 'text-white', activeBg: 'bg-purple-600' },
-  RM_JOELHO:           { icon: Disc,       color: 'text-purple-500',   activeColor: 'text-white', activeBg: 'bg-purple-700' },
-  RM_OMBRO:            { icon: Disc,       color: 'text-indigo-500',   activeColor: 'text-white', activeBg: 'bg-indigo-700' },
-  DENSITOMETRIA:       { icon: Bone,       color: 'text-emerald-400',  activeColor: 'text-white', activeBg: 'bg-emerald-500' },
-  CINTILOGRAFIA_OSSEA: { icon: Scan,       color: 'text-orange-400',   activeColor: 'text-white', activeBg: 'bg-orange-500' },
-  PET_CT:              { icon: Scan,       color: 'text-yellow-500',   activeColor: 'text-white', activeBg: 'bg-yellow-600' },
-  MAMOGRAFIA:          { icon: Baby,       color: 'text-pink-400',     activeColor: 'text-white', activeBg: 'bg-pink-500' },
-  MAMOGRAFIA_BILATERAL:{ icon: Baby,       color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
-  US_MAMA_UNILATERAL:  { icon: ScanFace,   color: 'text-pink-400',     activeColor: 'text-white', activeBg: 'bg-pink-500' },
-  POLISSONOGRAFIA:     { icon: Moon,       color: 'text-indigo-400',   activeColor: 'text-white', activeBg: 'bg-indigo-500' },
-  DOPPLER_TRANSCRANIANO:{ icon: Activity,  color: 'text-sky-400',      activeColor: 'text-white', activeBg: 'bg-sky-500' },
-  ELETRONEUROMIOGRAFIA:{ icon: Activity,   color: 'text-pink-400',     activeColor: 'text-white', activeBg: 'bg-pink-500' },
-  AUDIOMETRIA:         { icon: Ear,        color: 'text-teal-400',     activeColor: 'text-white', activeBg: 'bg-teal-500' },
-  ESPIROMETRIA:        { icon: Wind,       color: 'text-blue-400',     activeColor: 'text-white', activeBg: 'bg-blue-500' },
-  EEG_MAPEAMENTO:      { icon: Brain,      color: 'text-purple-400',   activeColor: 'text-white', activeBg: 'bg-purple-500' },
-  CITOLOGIA_CERVICAL:  { icon: Microscope, color: 'text-purple-500',   activeColor: 'text-white', activeBg: 'bg-purple-600' },
-  COLPOSCOPIA:         { icon: Search,     color: 'text-purple-400',   activeColor: 'text-white', activeBg: 'bg-purple-500' },
-  HISTEROSCOPIA:       { icon: Search,     color: 'text-fuchsia-400',  activeColor: 'text-white', activeBg: 'bg-fuchsia-600' },
-  UROFLUXOMETRIA:      { icon: Droplet,    color: 'text-teal-400',     activeColor: 'text-white', activeBg: 'bg-teal-500' },
-  URODINAMICA:         { icon: Droplet,    color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
+
+  // Ultrassonografia
+  US_ABD_TOTAL:        { icon: ScanFace,   color: 'text-blue-500',     activeColor: 'text-white', activeBg: 'bg-blue-600' },
+  US_ABD_TOTAL_DOPPLER:{ icon: ScanFace,   color: 'text-blue-600',     activeColor: 'text-white', activeBg: 'bg-blue-700' },
+  US_ABD_SUPERIOR:      { icon: ScanFace,   color: 'text-blue-500',     activeColor: 'text-white', activeBg: 'bg-blue-600' },
+  US_PELVICO:          { icon: ScanFace,   color: 'text-purple-500',   activeColor: 'text-white', activeBg: 'bg-purple-600' },
+  US_TRANSVAGINAL:     { icon: ScanFace,   color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
+  US_TRANSVAGINAL_DOPPLER:{ icon: ScanFace, color: 'text-pink-600',     activeColor: 'text-white', activeBg: 'bg-pink-700' },
+  US_PROSTATA:         { icon: ScanFace,   color: 'text-blue-600',     activeColor: 'text-white', activeBg: 'bg-blue-700' },
+  US_TIREOIDE:         { icon: ScanFace,   color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
+  US_TIREOIDE_DOPPLER:  { icon: ScanFace,   color: 'text-teal-600',     activeColor: 'text-white', activeBg: 'bg-teal-700' },
+  US_BOLSA_ESCROTAL:    { icon: ScanFace,   color: 'text-sky-500',      activeColor: 'text-white', activeBg: 'bg-sky-600' },
+  US_BOLSA_ESCROTAL_DOPPLER:{ icon: ScanFace,color: 'text-sky-600',     activeColor: 'text-white', activeBg: 'bg-sky-700' },
+  US_CERVICAL:          { icon: ScanFace,   color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
+  US_CERVICAL_DOPPLER:  { icon: ScanFace,   color: 'text-teal-600',     activeColor: 'text-white', activeBg: 'bg-teal-700' },
+  US_AXILAS:            { icon: ScanFace,   color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
+  US_PAREDE_ABD:        { icon: ScanFace,   color: 'text-indigo-500',   activeColor: 'text-white', activeBg: 'bg-indigo-600' },
+  US_VIAS_BILIARES:    { icon: ScanFace,   color: 'text-amber-500',    activeColor: 'text-white', activeBg: 'bg-amber-600' },
+  US_MAMA_BILATERAL:   { icon: ScanFace,   color: 'text-pink-600',     activeColor: 'text-white', activeBg: 'bg-pink-700' },
+  US_RENAL:            { icon: ScanFace,   color: 'text-teal-600',     activeColor: 'text-white', activeBg: 'bg-teal-700' },
+  US_VIAS_URINARIAS_FEM:{ icon: Droplet,    color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
+  US_VIAS_URINARIAS_MASC:{ icon: Droplet,   color: 'text-teal-600',     activeColor: 'text-white', activeBg: 'bg-teal-700' },
+  US_PARTES_MOLES:     { icon: ScanFace,   color: 'text-sky-600',      activeColor: 'text-white', activeBg: 'bg-sky-700' },
+  US_DOPPLER_CAROTIDAS:{ icon: Activity,   color: 'text-blue-600',     activeColor: 'text-white', activeBg: 'bg-blue-700' },
+  US_DOPPLER_RENAIS:    { icon: Activity,   color: 'text-teal-600',     activeColor: 'text-white', activeBg: 'bg-teal-700' },
+  US_DOPPLER_COLORIDO_ESTRUT:{ icon: Activity, color: 'text-rose-500',  activeColor: 'text-white', activeBg: 'bg-rose-600' },
+  DOPPLER_MMI_ARTE:     { icon: Activity,   color: 'text-red-500',      activeColor: 'text-white', activeBg: 'bg-red-600' },
+  DOPPLER_MMI_VENO:     { icon: Activity,   color: 'text-blue-500',     activeColor: 'text-white', activeBg: 'bg-blue-600' },
+  DOPPLER_MMS_DIR:      { icon: Activity,   color: 'text-amber-500',    activeColor: 'text-white', activeBg: 'bg-amber-600' },
+  DOPPLER_MMS_ESQ:      { icon: Activity,   color: 'text-amber-600',    activeColor: 'text-white', activeBg: 'bg-amber-700' },
+  DOPPLER_MMI_INF_DIR:  { icon: Activity,   color: 'text-rose-500',     activeColor: 'text-white', activeBg: 'bg-rose-600' },
+  DOPPLER_MMI_INF_ESQ:  { icon: Activity,   color: 'text-rose-600',     activeColor: 'text-white', activeBg: 'bg-rose-700' },
+
+  // Articulações
+  ARTICULACAO_GERAL:    { icon: Bone,       color: 'text-emerald-600',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  ARTICULACAO_DOPPLER:   { icon: Bone,       color: 'text-emerald-700',  activeColor: 'text-white', activeBg: 'bg-emerald-700' },
+  ARTICULACAO_JOELHO:    { icon: Bone,       color: 'text-emerald-600',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  ARTICULACAO_QUADRIL:   { icon: Bone,       color: 'text-emerald-700',  activeColor: 'text-white', activeBg: 'bg-emerald-700' },
+  ARTICULACAO_OMBRO:     { icon: Bone,       color: 'text-emerald-600',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  ARTICULACAO_COTOVELO:  { icon: Bone,       color: 'text-emerald-500',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  ARTICULACAO_PUNHO:     { icon: Bone,       color: 'text-emerald-500',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  ARTICULACAO_MAO:       { icon: Bone,       color: 'text-emerald-600',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  ARTICULACAO_PE:        { icon: Bone,       color: 'text-emerald-600',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  ARTICULACAO_TORNOZELO:{ icon: Bone,       color: 'text-emerald-700',  activeColor: 'text-white', activeBg: 'bg-emerald-700' },
+  ARTICULACAO_ESTERNOCLAVICULA:{ icon: Bone, color: 'text-emerald-500', activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  ARTICULACAO_SACROILIACA:{ icon: Bone,     color: 'text-emerald-700',  activeColor: 'text-white', activeBg: 'bg-emerald-700' },
+
+  // Endoscopia
+  EDA:                 { icon: Search,     color: 'text-amber-500',    activeColor: 'text-white', activeBg: 'bg-amber-600' },
+  EDA_BIOPSIA_HPYLORI: { icon: Microscope, color: 'text-amber-600',   activeColor: 'text-white', activeBg: 'bg-amber-700' },
+  COLONOSCOPIA:        { icon: Search,     color: 'text-stone-500',    activeColor: 'text-white', activeBg: 'bg-stone-600' },
+  COLONOSCOPIA_BIOPSIA:{ icon: Microscope, color: 'text-stone-600',   activeColor: 'text-white', activeBg: 'bg-stone-700' },
+  RETOSSIGMOIDOSCOPIA: { icon: Search,     color: 'text-stone-500',    activeColor: 'text-white', activeBg: 'bg-stone-600' },
+  RETOSSIGMOIDOSCOPIA_BIOPSIA: { icon: Microscope, color: 'text-stone-600', activeColor: 'text-white', activeBg: 'bg-stone-700' },
+  PHMETRIA_ESOFAGICA:  { icon: Activity,   color: 'text-emerald-600',  activeColor: 'text-white', activeBg: 'bg-emerald-700' },
+  MANOMETRIA_ESOFAGICA:{ icon: Activity,   color: 'text-teal-600',     activeColor: 'text-white', activeBg: 'bg-teal-700' },
+  ECOENDOSCOPIA:       { icon: Search,     color: 'text-yellow-600',   activeColor: 'text-white', activeBg: 'bg-yellow-700' },
+
+  // Gastro Funcional
+  TESTE_H2_LACTULOSE:  { icon: Wind,       color: 'text-lime-600',     activeColor: 'text-white', activeBg: 'bg-lime-700' },
+  TESTE_H2_GLICOSE:    { icon: Wind,       color: 'text-lime-600',     activeColor: 'text-white', activeBg: 'bg-lime-700' },
+  TESTE_H2_LACTOSE:    { icon: Wind,       color: 'text-emerald-600',  activeColor: 'text-white', activeBg: 'bg-emerald-700' },
+
+  // Imagem
+  RX_TORAX:            { icon: Bone,       color: 'text-slate-500',    activeColor: 'text-white', activeBg: 'bg-slate-600' },
+  RX_COLUNA:           { icon: Bone,       color: 'text-slate-500',    activeColor: 'text-white', activeBg: 'bg-slate-600' },
+  RX_BACIA:            { icon: Bone,       color: 'text-slate-600',    activeColor: 'text-white', activeBg: 'bg-slate-700' },
+  TC_ABD:              { icon: Scan,       color: 'text-indigo-500',   activeColor: 'text-white', activeBg: 'bg-indigo-600' },
+  TC_CRANIO:           { icon: Scan,       color: 'text-indigo-500',   activeColor: 'text-white', activeBg: 'bg-indigo-600' },
+  TC_TORAX:            { icon: Scan,       color: 'text-violet-500',   activeColor: 'text-white', activeBg: 'bg-violet-600' },
+  RM_ABD:              { icon: Disc,       color: 'text-violet-500',   activeColor: 'text-white', activeBg: 'bg-violet-600' },
+  RM_CRANIO:           { icon: Disc,       color: 'text-violet-500',   activeColor: 'text-white', activeBg: 'bg-violet-600' },
+  RM_COLUNA:           { icon: Disc,       color: 'text-purple-500',   activeColor: 'text-white', activeBg: 'bg-purple-600' },
+  RM_JOELHO:           { icon: Disc,       color: 'text-purple-600',   activeColor: 'text-white', activeBg: 'bg-purple-700' },
+  RM_OMBRO:            { icon: Disc,       color: 'text-indigo-600',   activeColor: 'text-white', activeBg: 'bg-indigo-700' },
+  DENSITOMETRIA:       { icon: Bone,       color: 'text-emerald-500',  activeColor: 'text-white', activeBg: 'bg-emerald-600' },
+  CINTILOGRAFIA_OSSEA: { icon: Scan,       color: 'text-orange-500',   activeColor: 'text-white', activeBg: 'bg-orange-600' },
+  PET_CT:              { icon: Scan,       color: 'text-yellow-600',   activeColor: 'text-white', activeBg: 'bg-yellow-700' },
+
+  // Mastologia
+  MAMOGRAFIA:          { icon: Baby,       color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
+  MAMOGRAFIA_BILATERAL:{ icon: Baby,       color: 'text-pink-600',     activeColor: 'text-white', activeBg: 'bg-pink-700' },
+  US_MAMA_UNILATERAL:  { icon: ScanFace,   color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
+
+  // Geriatria / Funcionais
+  POLISSONOGRAFIA:     { icon: Moon,       color: 'text-indigo-500',   activeColor: 'text-white', activeBg: 'bg-indigo-600' },
+  DOPPLER_TRANSCRANIANO:{ icon: Activity,  color: 'text-sky-500',      activeColor: 'text-white', activeBg: 'bg-sky-600' },
+  ELETRONEUROMIOGRAFIA:{ icon: Activity,   color: 'text-pink-500',     activeColor: 'text-white', activeBg: 'bg-pink-600' },
+  AUDIOMETRIA:         { icon: Ear,        color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
+  ESPIROMETRIA:        { icon: Wind,       color: 'text-blue-500',     activeColor: 'text-white', activeBg: 'bg-blue-600' },
+  EEG_MAPEAMENTO:      { icon: Brain,      color: 'text-purple-500',   activeColor: 'text-white', activeBg: 'bg-purple-600' },
+
+  // Ginecologia / Preventivo
+  CITOLOGIA_CERVICAL:  { icon: Microscope, color: 'text-purple-600',   activeColor: 'text-white', activeBg: 'bg-purple-700' },
+  COLPOSCOPIA:         { icon: Search,     color: 'text-purple-500',   activeColor: 'text-white', activeBg: 'bg-purple-600' },
+  HISTEROSCOPIA:       { icon: Search,     color: 'text-fuchsia-500',  activeColor: 'text-white', activeBg: 'bg-fuchsia-600' },
+
+  // Urologia
+  UROFLUXOMETRIA:      { icon: Droplet,    color: 'text-teal-500',     activeColor: 'text-white', activeBg: 'bg-teal-600' },
+  URODINAMICA:         { icon: Droplet,    color: 'text-teal-600',     activeColor: 'text-white', activeBg: 'bg-teal-700' },
 };
 
 const DEFAULT_UI = { icon: Activity, color: 'text-gray-400', activeColor: 'text-white', activeBg: 'bg-gray-500' };
@@ -161,6 +219,11 @@ const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {
   return {
     id: procedimento.id,
     nome: procedimento.nomeCurto,
+    nomeCompleto: procedimento.nome,
+    grupo: procedimento.grupo,
+    codIssec: procedimento.codIssec ?? '',
+    codIpm: procedimento.codIpm ?? '',
+    detalhes: procedimento.detalhes ?? '',
     icon: ui.icon,
     color: ui.color,
     activeColor: ui.activeColor,
@@ -169,15 +232,7 @@ const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {
   };
 });
 
-// ─── Cobertura por convênio ────────────────────────────────────────────────
-// Derivada dos códigos do próprio catálogo: sem código = a operadora não tem
-// aquele exame na tabela. O app ANTES escondia o exame não coberto; agora
-// mostra sempre e sinaliza — o médico precisa saber que existe e que não é
-// coberto (evita descobrir só na glosa).
 type Cobertura = 'AMBOS' | 'SO_ISSEC' | 'SO_IPM' | 'SEM_CODIGO';
-
-// Nos chips há um estado a mais: o exame digitado livremente ("Adicionar direto")
-// que não existe no catálogo — cobertura DESCONHECIDA, não ausente.
 type CoberturaChip = Cobertura | 'NAO_CATALOGADO';
 
 function getCobertura(exame: { codIssec: string; codIpm: string }): Cobertura {
@@ -189,7 +244,6 @@ function getCobertura(exame: { codIssec: string; codIpm: string }): Cobertura {
   return 'SEM_CODIGO';
 }
 
-// Classes completas por estado — Tailwind não compila classe montada dinamicamente.
 const COBERTURA_META: Record<Cobertura, { label: string; cls: string; title: string }> = {
   AMBOS: {
     label: 'ISSEC+IPM',
@@ -209,11 +263,10 @@ const COBERTURA_META: Record<Cobertura, { label: string; cls: string; title: str
   SEM_CODIGO: {
     label: 'Sem cobertura',
     cls: 'bg-slate-100 text-slate-600 border-slate-200',
-    title: 'Sem código de convênio cadastrado — provável particular. Confirme com a operadora.',
+    title: 'Sem código cadastrado nas tabelas oficiais. Confirme com a operadora.',
   },
 };
 
-/** Rótulo/tooltip dos chips — inclui o estado extra "não catalogado". */
 const CHIP_META: Record<CoberturaChip, { label: string; title: string }> = {
   AMBOS: { label: COBERTURA_META.AMBOS.label, title: COBERTURA_META.AMBOS.title },
   SO_ISSEC: { label: COBERTURA_META.SO_ISSEC.label, title: COBERTURA_META.SO_ISSEC.title },
@@ -221,12 +274,10 @@ const CHIP_META: Record<CoberturaChip, { label: string; title: string }> = {
   SEM_CODIGO: { label: COBERTURA_META.SEM_CODIGO.label, title: COBERTURA_META.SEM_CODIGO.title },
   NAO_CATALOGADO: {
     label: 'Não catalogado',
-    title: 'Exame digitado manualmente — não consta no catálogo do sistema. Confira o nome e a cobertura com a operadora.',
+    title: 'Item digitado manualmente — não consta no catálogo oficial do sistema.',
   },
 };
 
-// Cor da bolinha por estado — classes completas (Tailwind não compila classe
-// montada por template string).
 const CHIP_DOT: Record<CoberturaChip, string> = {
   AMBOS: 'bg-emerald-500',
   SO_ISSEC: 'bg-blue-500',
@@ -235,11 +286,10 @@ const CHIP_DOT: Record<CoberturaChip, string> = {
   NAO_CATALOGADO: 'bg-violet-400',
 };
 
-/** true quando o exame NÃO é coberto pelo convênio selecionado agora. */
 function isForaDoConvenio(cobertura: Cobertura, convenio: string): boolean {
   if (convenio === 'ISSEC') return cobertura === 'SO_IPM' || cobertura === 'SEM_CODIGO';
   if (convenio === 'IPM') return cobertura === 'SO_ISSEC' || cobertura === 'SEM_CODIGO';
-  return false; // SADT / Particular: não há tabela para confrontar
+  return false;
 }
 
 interface ExamSelectorProps {
@@ -248,6 +298,8 @@ interface ExamSelectorProps {
 
 export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
   const [busca, setBusca] = useState('');
+  const [buscaProc, setBuscaProc] = useState('');
+  const [grupoProcFiltro, setGrupoProcFiltro] = useState<string>('TODOS');
   const [paineisExpanded, setPaineisExpanded] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('HEMATOLOGIA E COAGULAÇÃO');
   const [customInput, setCustomInput] = useState('');
@@ -259,10 +311,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
     addProcedimentoPersonalizado, removeProcedimentoPersonalizado,
   } = useAppStore();
 
-  // Migração dos nomes antigos → canônicos TUSS (uma vez, ao montar).
-  // Sem isso, um rascunho salvo antes da padronização imprimia o nome antigo na
-  // guia — motivo comum de glosa. Usa o alias no findExamPreciso; nomes que não
-  // têm alias e não casam ficam intocados (respeita "não catalogado" digitado).
   useEffect(() => {
     if (examesSelecionados.length === 0) return;
     const atualizados = examesSelecionados.map((nome) => {
@@ -276,13 +324,12 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
 
   const isLab = mode ? mode === 'exames' : tipoGuia === 'LABORATORIO';
   const buscaNormalizada = busca.trim().toLowerCase();
+  const buscaProcNorm = buscaProc.trim().toLowerCase();
 
   const totalSelecionados = procedimentosSelecionados.length + procedimentosPersonalizados.length;
 
   const categoriasFiltradas = useMemo(() => {
     return CATEGORIAS_EXAMES.map((categoria) => {
-      // Não escondemos mais por convênio — todo exame aparece, com selo de
-      // cobertura. Aqui só filtramos pela busca.
       const exames = categoria.exames.filter((exame) => {
         if (!buscaNormalizada) return true;
         return `${categoria.nome} ${exame.nome}`.toLowerCase().includes(buscaNormalizada);
@@ -295,11 +342,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
     return categoriasFiltradas.reduce((acc, cat) => acc + cat.exames.length, 0);
   }, [categoriasFiltradas]);
 
-  // Cobertura de cada exame JÁ SELECIONADO. Os chips guardam só o nome, e os
-  // painéis aplicam nomes que nem sempre batem exatamente com o catálogo
-  // ("T4 LIVRE" vs "T4 LIVRE - TIROXINA LIVRE"), por isso usamos o matcher
-  // PRECISO (contenção de tokens) — o fuzzy da IA casaria por acrônimo solto e
-  // exibiria a cobertura de outro exame. Memoizado: recalcula só na mudança.
   const coberturaPorChip = useMemo(() => {
     const map = new Map<string, CoberturaChip>();
     for (const nome of examesSelecionados) {
@@ -309,11 +351,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
     return map;
   }, [examesSelecionados]);
 
-  // Separa os que o convênio ativo não cobre — viram bloco de alerta.
-  // Também isola os SEM COBERTURA EM NENHUM CONVÊNIO (particular provável) dos
-  // que apenas estão fora do convênio ATIVO mas existem no outro — decisões
-  // clínicas diferentes: sem cobertura = paciente paga; disponível no outro =
-  // trocar convênio da guia. Não catalogado fica na lista normal (é desconhecido).
   const outroConvenio = convenio === 'ISSEC' ? 'IPM' : 'ISSEC';
   const { examesSemCobertura, examesNoOutroConvenio, examesOk } = useMemo(() => {
     const semCob: string[] = [];
@@ -329,6 +366,32 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
     return { examesSemCobertura: semCob, examesNoOutroConvenio: noOutro, examesOk: ok };
   }, [examesSelecionados, coberturaPorChip, convenio]);
   const totalAlerta = examesSemCobertura.length + examesNoOutroConvenio.length;
+
+  // ── Cobertura & Alertas para Procedimentos Eletivos ─────────────────────
+  const { procsSemCobertura, procsNoOutroConvenio } = useMemo(() => {
+    const semCob: string[] = [];
+    const noOutro: string[] = [];
+    for (const id of procedimentosSelecionados) {
+      const proc = PROCEDIMENTOS.find(p => p.id === id);
+      if (!proc) continue;
+      const cob = getCobertura(proc);
+      if (cob === 'SEM_CODIGO') { semCob.push(id); continue; }
+      if (isForaDoConvenio(cob, convenio)) { noOutro.push(id); continue; }
+    }
+    return { procsSemCobertura: semCob, procsNoOutroConvenio: noOutro };
+  }, [procedimentosSelecionados, convenio]);
+  const totalAlertaProcs = procsSemCobertura.length + procsNoOutroConvenio.length;
+
+  // Procedimentos filtrados pela busca e grupo selecionado
+  const procedimentosFiltrados = useMemo(() => {
+    return PROCEDIMENTOS.filter((proc) => {
+      const bateGrupo = grupoProcFiltro === 'TODOS' || proc.grupo === grupoProcFiltro;
+      if (!bateGrupo) return false;
+      if (!buscaProcNorm) return true;
+      const texto = `${proc.nome} ${proc.nomeCompleto} ${proc.grupo} ${proc.codIssec} ${proc.codIpm} ${proc.detalhes}`.toLowerCase();
+      return texto.includes(buscaProcNorm);
+    });
+  }, [buscaProcNorm, grupoProcFiltro]);
 
   const toggleExame = (exameNome: string) => {
     if (examesSelecionados.includes(exameNome)) {
@@ -416,7 +479,9 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                 <p className="text-sm text-neutral-text font-medium">
                   Selecione até <strong>3 procedimentos</strong> por guia.
                 </p>
-                <p className="text-xs text-neutral-text-muted mt-0.5">Limitação da guia oficial — emita guias separadas para mais procedimentos.</p>
+                <p className="text-xs text-neutral-text-muted mt-0.5">
+                  Códigos de convênio cadastrados para <strong>ISSEC</strong> e <strong>IPM</strong>.
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 {[0, 1, 2].map(i => (
@@ -433,52 +498,167 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
               </div>
             </div>
 
-            {/* Selected chips — both catalog and custom */}
-            {(procedimentosSelecionados.length > 0 || procedimentosPersonalizados.length > 0) && (
-              <div className="flex flex-wrap gap-2 mb-4 p-3.5 bg-emerald-50/50 rounded-lg border border-emerald-100">
-                {procedimentosSelecionados.map(id => {
-                  const proc = PROCEDIMENTOS.find(p => p.id === id);
-                  if (!proc) return null;
-                  const Icon = proc.icon;
-                  return (
-                    <span
-                      key={id}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-full"
-                    >
-                      <Icon size={11} />
-                      {proc.nome}
-                      <button
-                        onClick={() => toggleProcedimento(id)}
-                        className="ml-1 hover:text-emerald-250 transition-colors cursor-pointer"
+            {/* Selected chips — both catalog and custom with coverage dots */}
+            {totalSelecionados > 0 && (
+              <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50/30 overflow-hidden">
+                {/* Header with dots legend & clear button */}
+                <div className="flex items-center justify-between gap-3 flex-wrap px-4 py-2.5 bg-emerald-100/50 border-b border-emerald-200/60">
+                  <span className="text-[11px] font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 size={13} className="text-emerald-600" />
+                    {totalSelecionados} procedimento{totalSelecionados !== 1 ? 's' : ''} selecionado{totalSelecionados !== 1 ? 's' : ''}
+                  </span>
+
+                  <div className="flex items-center gap-2.5 flex-wrap text-[9px] font-semibold text-neutral-text-muted">
+                    {(['AMBOS', 'SO_ISSEC', 'SO_IPM', 'SEM_CODIGO', 'NAO_CATALOGADO'] as CoberturaChip[]).map((c) => (
+                      <span key={c} className="inline-flex items-center gap-1" title={CHIP_META[c].title}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${CHIP_DOT[c]}`} />
+                        {CHIP_META[c].label}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm('Limpar todos os procedimentos selecionados?')) {
+                        setPaciente({ procedimentosSelecionados: [] });
+                        procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
+                      }
+                    }}
+                    className="text-[10px] font-bold text-emerald-800 hover:text-red-600 transition-colors cursor-pointer ml-auto"
+                  >
+                    Limpar seleção
+                  </button>
+                </div>
+
+                {/* Restrictive coverage alert for active convenio */}
+                {totalAlertaProcs > 0 && (
+                  <div className="px-4 py-3 bg-red-50/70 border-b border-red-200 space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <ShieldAlert size={13} className="text-red-600 shrink-0" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-700">
+                        {totalAlertaProcs} procedimento{totalAlertaProcs !== 1 ? 's' : ''} com restrição de cobertura no convênio selecionado ({convenio})
+                      </span>
+                    </div>
+
+                    {procsSemCobertura.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-red-700 mb-1">
+                          Sem código no ISSEC e no IPM
+                          <span className="font-normal text-red-600/80"> · particular ou sob consulta</span>
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {procsSemCobertura.map((id) => {
+                            const proc = PROCEDIMENTOS.find(p => p.id === id);
+                            if (!proc) return null;
+                            return (
+                              <span
+                                key={id}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-white border border-red-200 px-2.5 py-1 text-[11px] font-semibold text-red-700"
+                              >
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                                {proc.nome}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleProcedimento(id)}
+                                  className="text-red-400 hover:text-red-700 cursor-pointer ml-0.5"
+                                >
+                                  <X size={11} />
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {procsNoOutroConvenio.length > 0 && (
+                      <div>
+                        <p className="text-[10px] font-bold text-red-700 mb-1">
+                          Sem código no {convenio}, mas cadastrado no {outroConvenio}
+                          <span className="font-normal text-red-600/80"> · considerar alterar a operadora da guia se viável</span>
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {procsNoOutroConvenio.map((id) => {
+                            const proc = PROCEDIMENTOS.find(p => p.id === id);
+                            if (!proc) return null;
+                            const cob = getCobertura(proc);
+                            const codText = outroConvenio === 'ISSEC' ? proc.codIssec : proc.codIpm;
+                            return (
+                              <span
+                                key={id}
+                                className="inline-flex items-center gap-1.5 rounded-md bg-white border border-red-200 px-2.5 py-1 text-[11px] font-semibold text-red-700"
+                              >
+                                <span className={`h-1.5 w-1.5 rounded-full ${CHIP_DOT[cob]}`} />
+                                {proc.nome}
+                                {codText && <span className="font-mono text-[9.5px] text-red-500">({outroConvenio}: {codText})</span>}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleProcedimento(id)}
+                                  className="text-red-400 hover:text-red-700 cursor-pointer ml-0.5"
+                                >
+                                  <X size={11} />
+                                </button>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Selected procedure chips */}
+                <div className="flex flex-wrap gap-2 p-3.5">
+                  {procedimentosSelecionados.map((id) => {
+                    const proc = PROCEDIMENTOS.find(p => p.id === id);
+                    if (!proc) return null;
+                    const cob = getCobertura(proc);
+                    const Icon = proc.icon;
+                    return (
+                      <span
+                        key={id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white text-xs font-semibold rounded-full shadow-sm"
                       >
-                        <X size={11} />
+                        <span className={`h-1.5 w-1.5 rounded-full ${CHIP_DOT[cob]}`} />
+                        <Icon size={12} />
+                        <span>{proc.nome}</span>
+                        {proc.codIpm && <span className="text-[9.5px] opacity-80 font-mono">IPM:{proc.codIpm}</span>}
+                        {proc.codIssec && <span className="text-[9.5px] opacity-80 font-mono">ISSEC:{proc.codIssec}</span>}
+                        <button
+                          onClick={() => toggleProcedimento(id)}
+                          className="ml-0.5 text-emerald-200 hover:text-white transition-colors cursor-pointer"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    );
+                  })}
+                  {procedimentosPersonalizados.map((nome) => (
+                    <span
+                      key={nome}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-full shadow-sm"
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${CHIP_DOT.NAO_CATALOGADO}`} />
+                      <Pencil size={11} />
+                      {nome}
+                      <button
+                        onClick={() => removeProcedimentoPersonalizado(nome)}
+                        className="ml-0.5 text-indigo-200 hover:text-white transition-colors cursor-pointer"
+                      >
+                        <X size={12} />
                       </button>
                     </span>
-                  );
-                })}
-                {procedimentosPersonalizados.map((nome) => (
-                  <span
-                    key={nome}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-full"
-                  >
-                    <Pencil size={11} />
-                    {nome}
-                    <button
-                      onClick={() => removeProcedimentoPersonalizado(nome)}
-                      className="ml-1 hover:text-indigo-200 transition-colors cursor-pointer"
-                    >
-                      <X size={11} />
-                    </button>
-                  </span>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* ── Custom / Free-text exam entry ──────────────────────── */}
+            {/* Custom / Free-text exam entry */}
             <div className="mb-5 bg-gradient-to-r from-indigo-50 to-blue-50/50 border border-indigo-100 rounded-xl p-4">
-              <p className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <p className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <Pencil size={12} />
-                Adicionar Exame Personalizado / Não Listado
+                Adicionar Procedimento Personalizado / Não Listado
               </p>
               <div className="flex gap-2">
                 <input
@@ -513,82 +693,197 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                 </button>
               </div>
               <p className="text-[10px] text-indigo-500 mt-2 font-medium">
-                Pressione Enter ou clique em Adicionar. Use para procedimentos não catalogados abaixo.
+                Pressione Enter ou clique em Adicionar. Use para exames não catalogados abaixo.
               </p>
             </div>
 
-            {/* Procedure grid — grouped by specialty */}
-            <div className="space-y-4">
-              {(GRUPOS_PROCEDIMENTOS.map(grupo => ({ grupo, procs: PROCEDIMENTOS_POR_GRUPO[grupo] }))).map(({ grupo, procs }) => {
-                const procsUI = procs.map(p => PROCEDIMENTOS.find(u => u.id === p.id)!).filter(Boolean);
-                const colors = GRUPO_COLORS[grupo];
-                return (
-                  <div key={grupo} className={`rounded-xl border ${colors.border} overflow-hidden`}>
-                    <div className={`px-4 py-2.5 ${colors.bg}`}>
-                      <h4 className="text-[11px] font-bold text-neutral-text-muted uppercase tracking-wider">
-                        {GRUPO_LABELS[grupo]}
-                      </h4>
-                    </div>
-                    <div className="p-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 bg-white">
-                      {procsUI.map((proc) => {
-                        const isSelected = procedimentosSelecionados.includes(proc.id);
-                        const isFull = totalSelecionados >= 3 && !isSelected;
-                        const Icon = proc.icon;
-                        return (
-                          <button
-                            key={proc.id}
-                            onClick={() => toggleProcedimento(proc.id)}
-                            disabled={isFull}
-                            title={isFull ? 'Limite de 3 procedimentos atingido' : proc.nome}
-                            className={`relative flex flex-col items-center gap-2 p-3 rounded-lg border text-center transition-all text-xs font-semibold cursor-pointer
-                              ${isSelected
-                                ? `${proc.activeBg} ${proc.activeColor} border-transparent font-bold shadow-sm`
-                                : isFull
-                                  ? 'border-neutral-border bg-slate-50 text-neutral-text-muted/40 cursor-not-allowed'
-                                  : `border-neutral-border bg-white ${proc.color} hover:border-slate-355 hover:bg-slate-50/50`
-                              }`}
-                          >
-                            {isSelected && (
-                              <CheckCircle2
-                                size={12}
-                                className="absolute top-1.5 right-1.5 text-white opacity-90"
-                              />
-                            )}
-                            <div className="relative">
-                              <Icon size={18} className={isFull && !isSelected ? 'opacity-30' : ''} />
-                              {proc.hasAsterisk && (
-                                <span className={`absolute -top-1.5 -right-2 text-[11px] font-black select-none leading-none ${
-                                  isSelected ? 'text-white' : 'text-red-500'
-                                }`}>
-                                  *
-                                </span>
-                              )}
-                            </div>
-                            <span className="leading-tight">{proc.nome}</span>
-                            {isFull && (
-                              <span className="text-[9px] text-neutral-text-muted/40 font-normal">Limite atingido</span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+            {/* ── Search & Specialty Filter Bar for Procedures ────────────────── */}
+            <div className="mb-5 space-y-3">
+              {/* Search input */}
+              <div className="relative">
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-text-muted" />
+                <input
+                  type="search"
+                  value={buscaProc}
+                  onChange={(e) => setBuscaProc(e.target.value)}
+                  placeholder="Buscar procedimento por nome ou código (ex: 40901211, 33010021, joelho, doppler, tireoide...)..."
+                  className="w-full rounded-xl border border-neutral-border bg-white py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500 transition-all shadow-sm"
+                />
+                {buscaProc && (
+                  <button
+                    onClick={() => setBuscaProc('')}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Specialty pills filter */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mr-1 flex items-center gap-1 shrink-0">
+                  <Filter size={11} />
+                  Especialidade:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setGrupoProcFiltro('TODOS')}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                    grupoProcFiltro === 'TODOS'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'bg-slate-100 text-neutral-text-muted hover:bg-slate-200'
+                  }`}
+                >
+                  Todas ({PROCEDIMENTOS.length})
+                </button>
+                {GRUPOS_PROCEDIMENTOS.map((grupo) => {
+                  const countGroup = PROCEDIMENTOS_POR_GRUPO[grupo]?.length ?? 0;
+                  const isSel = grupoProcFiltro === grupo;
+                  return (
+                    <button
+                      key={grupo}
+                      type="button"
+                      onClick={() => setGrupoProcFiltro(grupo)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                        isSel
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-slate-100 text-neutral-text-muted hover:bg-slate-200'
+                      }`}
+                    >
+                      {GRUPO_LABELS[grupo].replace(/^[\p{Emoji}\s]+/u, '')} ({countGroup})
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* ── Procedure Cards Grid ────────────────────────────────────── */}
+            {procedimentosFiltrados.length === 0 ? (
+              <div className="text-center py-12 text-gray-400 border border-dashed border-gray-200 rounded-xl bg-slate-50/50">
+                <Search size={32} className="mx-auto mb-2 opacity-30 text-gray-400" />
+                <p className="text-sm font-medium text-gray-600">Nenhum procedimento encontrado para "{buscaProc}"</p>
+                <p className="text-xs text-gray-400 mt-1">Verifique a ortografia ou adicione como procedimento personalizado acima.</p>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {(grupoProcFiltro === 'TODOS' && !buscaProcNorm
+                  ? GRUPOS_PROCEDIMENTOS
+                  : [...new Set(procedimentosFiltrados.map(p => p.grupo))]
+                ).map((grupo) => {
+                  const procsNoGrupo = procedimentosFiltrados.filter(p => p.grupo === grupo);
+                  if (procsNoGrupo.length === 0) return null;
+                  const colors = GRUPO_COLORS[grupo];
+                  return (
+                    <div key={grupo} className={`rounded-xl border ${colors.border} overflow-hidden shadow-xs`}>
+                      <div className={`px-4 py-2.5 ${colors.bg} flex items-center justify-between`}>
+                        <h4 className="text-[11px] font-extrabold text-neutral-text-muted uppercase tracking-wider">
+                          {GRUPO_LABELS[grupo]}
+                        </h4>
+                        <span className="text-[10px] font-bold text-neutral-text-muted/70 bg-white/60 px-2 py-0.5 rounded-full">
+                          {procsNoGrupo.length} item{procsNoGrupo.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <div className="p-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 bg-white">
+                        {procsNoGrupo.map((proc) => {
+                          const isSelected = procedimentosSelecionados.includes(proc.id);
+                          const isFull = totalSelecionados >= 3 && !isSelected;
+                          const cob = getCobertura(proc);
+                          const meta = COBERTURA_META[cob];
+                          const fora = isForaDoConvenio(cob, convenio);
+                          const Icon = proc.icon;
+
+                          return (
+                            <button
+                              key={proc.id}
+                              type="button"
+                              onClick={() => toggleProcedimento(proc.id)}
+                              disabled={isFull}
+                              title={`${proc.nomeCompleto}\n• ISSEC: ${proc.codIssec || 'Sem código'}\n• IPM: ${proc.codIpm || 'Sem código'}`}
+                              className={`relative flex flex-col items-start text-left gap-1.5 p-3 rounded-xl border transition-all cursor-pointer ${
+                                isSelected
+                                  ? `${proc.activeBg} ${proc.activeColor} border-transparent font-bold shadow-md ring-2 ring-emerald-400/50`
+                                  : isFull
+                                    ? 'border-neutral-border bg-slate-50 text-neutral-text-muted/40 cursor-not-allowed opacity-60'
+                                    : `border-neutral-border bg-white text-gray-800 hover:border-emerald-300 hover:bg-emerald-50/20 shadow-xs`
+                              }`}
+                            >
+                              {/* Header row inside card */}
+                              <div className="w-full flex items-center justify-between gap-1.5">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                  <Icon size={16} className={isSelected ? 'text-white' : proc.color} />
+                                  {proc.hasAsterisk && (
+                                    <span className={`text-[11px] font-black ${isSelected ? 'text-white' : 'text-red-500'}`}>*</span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-1 shrink-0">
+                                  {/* Fora do convenio warning badge */}
+                                  {fora ? (
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded border font-extrabold uppercase ${
+                                      isSelected ? 'bg-white/20 text-white border-white/30' : 'bg-red-50 text-red-700 border-red-200'
+                                    }`}>
+                                      Fora do {convenio}
+                                    </span>
+                                  ) : (
+                                    <span className={`text-[8px] px-1.5 py-0.5 rounded border font-extrabold uppercase ${
+                                      isSelected ? 'bg-white/20 text-white border-white/30' : meta.cls
+                                    }`}>
+                                      {meta.label}
+                                    </span>
+                                  )}
+
+                                  {isSelected && (
+                                    <CheckCircle2 size={13} className="text-white shrink-0 ml-0.5" />
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Title */}
+                              <span className="text-xs font-semibold leading-snug line-clamp-2 mt-0.5">
+                                {proc.nome}
+                              </span>
+
+                              {/* Exact Codes Row */}
+                              <div className={`w-full flex items-center gap-1.5 flex-wrap text-[9.5px] font-mono mt-1 pt-1.5 border-t ${
+                                isSelected ? 'border-white/20 text-white/90' : 'border-slate-100 text-gray-500'
+                              }`}>
+                                {proc.codIpm ? (
+                                  <span className={`px-1 rounded ${isSelected ? 'bg-white/10' : 'bg-amber-50 text-amber-800 border border-amber-200/60'}`}>
+                                    IPM: <strong>{proc.codIpm}</strong>
+                                  </span>
+                                ) : (
+                                  <span className={`opacity-40 line-through ${isSelected ? 'text-white/60' : 'text-gray-400'}`}>IPM: —</span>
+                                )}
+
+                                {proc.codIssec ? (
+                                  <span className={`px-1 rounded ${isSelected ? 'bg-white/10' : 'bg-blue-50 text-blue-800 border border-blue-200/60'}`}>
+                                    ISSEC: <strong>{proc.codIssec}</strong>
+                                  </span>
+                                ) : (
+                                  <span className={`opacity-40 line-through ${isSelected ? 'text-white/60' : 'text-gray-400'}`}>ISSEC: —</span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {totalSelecionados > 0 && (
               <button
                 onClick={() => {
                   if (confirm('Tem certeza que deseja limpar todos os procedimentos selecionados?')) {
                     setPaciente({ procedimentosSelecionados: [] });
-                    // Also clear all custom ones
                     procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
                   }
                 }}
-                className="mt-4.5 text-xs text-neutral-text-muted hover:text-neutral-text underline transition-colors cursor-pointer"
+                className="mt-5 text-xs text-neutral-text-muted hover:text-neutral-text underline transition-colors cursor-pointer"
               >
-                Limpar toda a seleção
+                Limpar toda a seleção de procedimentos
               </button>
             )}
 
@@ -701,7 +996,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
 
             {examesSelecionados.length > 0 && (
               <div className="mb-5.5 rounded-lg border border-blue-100 bg-blue-50/20 overflow-hidden">
-                {/* Cabeçalho: contagem + legenda das bolinhas + limpar */}
                 <div className="flex items-center justify-between gap-3 flex-wrap px-3.5 py-2.5 bg-white/70 border-b border-blue-100/70">
                   <span className="text-[11px] font-bold text-blue-800 uppercase tracking-wider">
                     {examesSelecionados.length} exame{examesSelecionados.length !== 1 ? 's' : ''} selecionado{examesSelecionados.length !== 1 ? 's' : ''}
@@ -731,9 +1025,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                   </button>
                 </div>
 
-                {/* Alerta: cobertura problemática. Sempre menciona os DOIS
-                    convênios explicitamente — o médico decide por eles, não só
-                    pelo ativo. Duas situações distintas, com condutas diferentes. */}
                 {totalAlerta > 0 && (
                   <div className="px-3.5 py-2.5 bg-red-50/60 border-b border-red-100 space-y-2">
                     <div className="flex items-center gap-1.5">
@@ -743,7 +1034,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                       </span>
                     </div>
 
-                    {/* Sem cobertura em ISSEC E IPM — particular provável */}
                     {examesSemCobertura.length > 0 && (
                       <div>
                         <p className="text-[10px] font-bold text-red-700 mb-1">
@@ -776,7 +1066,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                       </div>
                     )}
 
-                    {/* Só o convênio ativo não cobre; o outro tem — trocar guia é opção */}
                     {examesNoOutroConvenio.length > 0 && (
                       <div>
                         <p className="text-[10px] font-bold text-red-700 mb-1">
@@ -811,7 +1100,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                   </div>
                 )}
 
-                {/* Demais selecionados */}
                 {examesOk.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 p-3 max-h-32 overflow-y-auto">
                     {examesOk.map((exame) => {
@@ -840,7 +1128,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
               </div>
             )}
 
-            {/* Empty state */}
             {categoriasFiltradas.length === 0 && buscaNormalizada && (
               <div className="text-center py-12 text-gray-400">
                 <Search size={32} className="mx-auto mb-3 opacity-25" />
@@ -849,7 +1136,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
               </div>
             )}
 
-            {/* Catalog Visualization: Global Search vs Dual-Pane Category View */}
             {buscaNormalizada ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-neutral-border pb-2.5">
@@ -907,7 +1193,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5.5 items-stretch">
-                {/* 1. Desktop vertical category sidebar */}
                 <div className="hidden lg:block lg:col-span-4 border-r border-neutral-border pr-4.5">
                   <div className="max-h-[500px] overflow-y-auto space-y-1.5 pr-1.5 scrollbar-thin">
                     {CATEGORIAS_EXAMES.map((cat) => {
@@ -942,7 +1227,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                   </div>
                 </div>
 
-                {/* 2. Mobile horizontal categories strip */}
                 <div className="lg:hidden w-full overflow-x-auto pb-3 mb-2 flex gap-2 scrollbar-none">
                   {CATEGORIAS_EXAMES.map((cat) => {
                     const countInCat = cat.exames.filter((e) => examesSelecionados.includes(e.nome)).length;
@@ -973,9 +1257,7 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                   })}
                 </div>
 
-                {/* 3. Main panel for active category exams */}
                 <div className="lg:col-span-8 flex flex-col">
-                  {/* Category Header Actions */}
                   {(() => {
                     const catObj = CATEGORIAS_EXAMES.find((c) => c.nome === activeCategory);
                     if (!catObj) return null;
@@ -1016,7 +1298,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                     );
                   })()}
 
-                  {/* Category exams grid */}
                   <div className="max-h-[500px] overflow-y-auto pr-1 flex-1">
                     {(() => {
                       const catObj = categoriasFiltradas.find((c) => c.nome === activeCategory);
