@@ -24,6 +24,37 @@ const formatCnpj = (v: string) => {
   return `${digits.slice(0, 2)}.${digits.slice(2, 5)}.${digits.slice(5, 8)}/${digits.slice(8, 12)}-${digits.slice(12)}`;
 };
 
+const getHojeStr = () => new Date().toLocaleDateString('pt-BR');
+
+const getOntemStr = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toLocaleDateString('pt-BR');
+};
+
+const getAmanhaStr = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString('pt-BR');
+};
+
+const formatIsoToPtBr = (iso: string) => {
+  if (!iso) return '';
+  const [ano, mes, dia] = iso.split('-');
+  if (ano && mes && dia) return `${dia}/${mes}/${ano}`;
+  return iso;
+};
+
+const formatPtBrToIso = (ptBr: string) => {
+  if (!ptBr) return '';
+  const parts = ptBr.split('/');
+  if (parts.length === 3 && parts[2].length === 4) {
+    const [dia, mes, ano] = parts;
+    return `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+  }
+  return '';
+};
+
 // Common Medical Presets
 const PRESETS = {
   LAUDO: [
@@ -196,8 +227,16 @@ export default function Documentos() {
 
   useEffect(() => {
     const atual = useDocumentStore.getState();
+    const updates: Partial<typeof atual> = {};
     if (atual.pacienteNome !== appPacienteNome || atual.pacienteCpf !== appPacienteCpf) {
-      atual.setDocumento({ pacienteNome: appPacienteNome, pacienteCpf: appPacienteCpf });
+      updates.pacienteNome = appPacienteNome;
+      updates.pacienteCpf = appPacienteCpf;
+    }
+    if (!atual.data) {
+      updates.data = getHojeStr();
+    }
+    if (Object.keys(updates).length > 0) {
+      atual.setDocumento(updates);
     }
   }, [appPacienteNome, appPacienteCpf]);
 
@@ -565,14 +604,82 @@ export default function Documentos() {
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Data Emissão</label>
-                  <input
-                    type="text"
-                    value={doc.data}
-                    onChange={(e) => doc.setDocumento({ data: e.target.value })}
-                    placeholder="DD/MM/AAAA"
-                    className={inputCls}
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className={labelCls}>Data Emissão</label>
+                    <button
+                      type="button"
+                      onClick={() => doc.setDocumento({ data: getHojeStr() })}
+                      className="text-[10px] font-bold text-indigo-650 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer"
+                      title="Clique para atualizar imediatamente para a data de hoje"
+                    >
+                      <RotateCcw size={10} />
+                      Usar Hoje ({getHojeStr()})
+                    </button>
+                  </div>
+                  <div className="relative flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={doc.data}
+                      onChange={(e) => doc.setDocumento({ data: e.target.value })}
+                      placeholder="DD/MM/AAAA (ou digite texto manual)"
+                      className={inputCls}
+                    />
+                    <div className="relative shrink-0">
+                      <input
+                        type="date"
+                        value={formatPtBrToIso(doc.data)}
+                        onChange={(e) => {
+                          const ptBr = formatIsoToPtBr(e.target.value);
+                          if (ptBr) doc.setDocumento({ data: ptBr });
+                        }}
+                        className="w-10 h-10 p-0 opacity-0 absolute inset-0 cursor-pointer z-10"
+                        title="Escolher data no calendário"
+                      />
+                      <button
+                        type="button"
+                        className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-indigo-50 hover:text-indigo-650 text-gray-600 rounded-xl border border-gray-200 transition-all"
+                        title="Abrir calendário"
+                      >
+                        <Clock size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-2">
+                    <span className="text-[10px] font-bold text-gray-400">Atalhos:</span>
+                    <button
+                      type="button"
+                      onClick={() => doc.setDocumento({ data: getHojeStr() })}
+                      className={`px-2 py-0.5 text-[10px] font-bold rounded-lg transition-all ${
+                        doc.data === getHojeStr()
+                          ? 'bg-indigo-600 text-white shadow-xs'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Hoje
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => doc.setDocumento({ data: getOntemStr() })}
+                      className={`px-2 py-0.5 text-[10px] font-bold rounded-lg transition-all ${
+                        doc.data === getOntemStr()
+                          ? 'bg-indigo-600 text-white shadow-xs'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Ontem
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => doc.setDocumento({ data: getAmanhaStr() })}
+                      className={`px-2 py-0.5 text-[10px] font-bold rounded-lg transition-all ${
+                        doc.data === getAmanhaStr()
+                          ? 'bg-indigo-600 text-white shadow-xs'
+                          : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Amanhã
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

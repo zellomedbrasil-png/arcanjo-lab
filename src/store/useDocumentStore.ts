@@ -54,14 +54,14 @@ interface DocumentState {
   resetDocumento: () => void;
 }
 
-const hoje = () => new Date().toLocaleDateString('pt-BR');
+const getHojeFormatted = () => new Date().toLocaleDateString('pt-BR');
 
 const initialState = {
   tipoDocumento: 'LAUDO' as TipoDocumento,
   pacienteNome: '',
   pacienteCpf: '',
   pacienteDataNascimento: '',
-  data: hoje(),
+  data: getHojeFormatted(),
   local: 'Fortaleza-CE',
 
   // Laudo Médico
@@ -117,7 +117,7 @@ export const useDocumentStore = create<DocumentState>()(
         return next;
       }),
       resetDocumento: () => {
-        set({ ...initialState, data: hoje() });
+        set({ ...initialState, data: getHojeFormatted() });
         publishPatientSync('document', {
           pacienteNome: '',
           pacienteCpf: '',
