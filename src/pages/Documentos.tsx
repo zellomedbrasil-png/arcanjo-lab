@@ -10,8 +10,6 @@ import {
   Clock, Dumbbell, ShieldCheck, HeartHandshake, FileSpreadsheet, RotateCcw,
   CheckCircle2, Loader2, Eye
 } from 'lucide-react';
-import { useRecentPatientsStore } from '../store/useRecentPatientsStore';
-import { savePatientToHistory } from '../store/patientSync';
 import { useAppStore } from '../store/useAppStore';
 import { getDefaultModelId, AI_MODELS } from '../config/gemini';
 
@@ -239,21 +237,6 @@ export default function Documentos() {
       atual.setDocumento(updates);
     }
   }, [appPacienteNome, appPacienteCpf]);
-
-  const handleBlur = () => {
-    if (doc.pacienteNome && doc.pacienteNome.trim().length >= 3) {
-      const existing = useRecentPatientsStore.getState().pacientes.find(
-        (p) => p.nome.toLowerCase() === doc.pacienteNome.trim().toLowerCase()
-      );
-      const appStoreGenero = useAppStore.getState().genero;
-      savePatientToHistory({
-        nome: doc.pacienteNome.trim(),
-        cpf: doc.pacienteCpf,
-        genero: existing?.genero || appStoreGenero || 'M',
-        dataNascimento: doc.pacienteDataNascimento,
-      });
-    }
-  };
 
   const [aiPrompt, setAiPrompt] = useState('');
   const [loadingAi, setLoadingAi] = useState(false);
@@ -583,16 +566,7 @@ export default function Documentos() {
                     </div>
                   )}
                 </div>
-                <div>
-                  <label className={labelCls}>Data de Nascimento</label>
-                  <input
-                    type="date"
-                    value={doc.pacienteDataNascimento}
-                    onChange={(e) => doc.setDocumento({ pacienteDataNascimento: e.target.value })}
-                    onBlur={handleBlur}
-                    className={inputCls}
-                  />
-                </div>
+                {/* Cidade-UF Emissão */}
                 <div>
                   <label className={labelCls}>Cidade-UF Emissão</label>
                   <input
