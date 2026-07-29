@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Rotas carregadas sob demanda (code-splitting): cada página vira um chunk
 // próprio. Assim o celular que abre só /gravador não baixa o Prontuário, os
@@ -17,9 +18,6 @@ const Documentos = lazy(() => import('./pages/Documentos'));
 const ImprimirDocumento = lazy(() => import('./pages/ImprimirDocumento'));
 const GravadorMobile = lazy(() => import('./pages/GravadorMobile'));
 
-// Um PrivateRoute simples seria adicionado aqui
-// Para o MVP, permitiremos acesso livre ou mockaremos o login
-
 // Tela de transição enquanto o chunk da rota carrega. Discreta e no tema escuro.
 function RouteFallback() {
   return (
@@ -35,19 +33,99 @@ function App() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/prontuario" element={<Prontuario />} />
-          <Route path="/gravador" element={<GravadorMobile />} />
-          <Route path="/exames" element={<ExamesLaboratoriais />} />
-          <Route path="/procedimentos" element={<ProcedimentosEletivos />} />
-          <Route path="/servicos" element={<Servicos />} />
-          <Route path="/servicos/imprimir" element={<ImprimirServico />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/prontuario"
+            element={
+              <ProtectedRoute>
+                <Prontuario />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/gravador"
+            element={
+              <ProtectedRoute>
+                <GravadorMobile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/exames"
+            element={
+              <ProtectedRoute>
+                <ExamesLaboratoriais />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/procedimentos"
+            element={
+              <ProtectedRoute>
+                <ProcedimentosEletivos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/servicos"
+            element={
+              <ProtectedRoute>
+                <Servicos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/servicos/imprimir"
+            element={
+              <ProtectedRoute>
+                <ImprimirServico />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/novo" element={<Navigate to="/prontuario" replace />} />
-          <Route path="/imprimir" element={<Imprimir />} />
-          <Route path="/receita" element={<NovaReceita />} />
-          <Route path="/receita/imprimir" element={<ImprimirReceita />} />
-          <Route path="/documentos" element={<Documentos />} />
-          <Route path="/documentos/imprimir" element={<ImprimirDocumento />} />
+          <Route
+            path="/imprimir"
+            element={
+              <ProtectedRoute>
+                <Imprimir />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receita"
+            element={
+              <ProtectedRoute>
+                <NovaReceita />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/receita/imprimir"
+            element={
+              <ProtectedRoute>
+                <ImprimirReceita />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/documentos"
+            element={
+              <ProtectedRoute>
+                <Documentos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/documentos/imprimir"
+            element={
+              <ProtectedRoute>
+                <ImprimirDocumento />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/" element={<Navigate to="/prontuario" replace />} />
+          <Route path="*" element={<Navigate to="/prontuario" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

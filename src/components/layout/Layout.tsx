@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, HeartPulse, Smartphone, X, Settings } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useAppStore } from '../../store/useAppStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { ToastContainer } from '../ui/ToastContainer';
 import PairingModal from '../soap/PairingModal';
 import SettingsModal from './SettingsModal';
@@ -221,8 +222,13 @@ export default function Layout({ children }: { children: ReactNode }) {
   }, [pacienteNome, syncStatus]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore signOut errors if offline or mock
+    }
     setMedico(null);
+    useAuthStore.getState().logout();
     navigate('/login');
   };
 
