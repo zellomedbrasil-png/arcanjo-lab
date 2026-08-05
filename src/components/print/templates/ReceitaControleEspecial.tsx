@@ -14,15 +14,7 @@ function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª
   const store = useReceitaStore();
   const medicamentos = medicamentosOverride || store.medicamentos;
   const isTextoLivre = !!(textoLivre && textoLivre.trim());
-  const {
-    pacienteNome, pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf,
-    pacienteCpf, pacienteTelefone, data
-  } = store;
-
-  const enderecoCompleto = [
-    pacienteEndereco,
-    pacienteCep ? `CEP: ${pacienteCep}` : '',
-  ].filter(Boolean).join(' — ');
+  const { pacienteNome, pacienteCpf, data } = store;
 
   const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
   const count = medsComConteudo.length;
@@ -40,7 +32,7 @@ function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª
     posoSize: 'text-[8px]',
     obsSize: 'text-[7.5px]',
     bottomAssinatura: '135px',
-    maxHeight: '5.5cm',
+    maxHeight: '5.3cm',
   };
 
   if (count === 4) {
@@ -54,7 +46,7 @@ function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª
     cfg.posoSize = 'text-[7.5px]';
     cfg.obsSize = 'text-[7px]';
     cfg.bottomAssinatura = '130px';
-    cfg.maxHeight = '5.8cm';
+    cfg.maxHeight = '5.6cm';
   } else if (count === 5) {
     cfg.px = 'px-6';
     cfg.py = 'py-3.5';
@@ -67,7 +59,7 @@ function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª
     cfg.posoSize = 'text-[7px]';
     cfg.obsSize = 'text-[6.5px]';
     cfg.bottomAssinatura = '125px';
-    cfg.maxHeight = '6.0cm';
+    cfg.maxHeight = '5.8cm';
   } else if (count >= 6) {
     cfg.px = 'px-6';
     cfg.py = 'py-3';
@@ -80,7 +72,7 @@ function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª
     cfg.posoSize = 'text-[6.5px]';
     cfg.obsSize = 'text-[6px]';
     cfg.bottomAssinatura = '120px';
-    cfg.maxHeight = '6.2cm';
+    cfg.maxHeight = '6.0cm';
   }
 
   const normalizarUso = (uso: string): string => {
@@ -187,6 +179,26 @@ function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª
         </div>
       </div>
 
+      {/* ── Paciente ── */}
+      <div className={`flex items-end gap-4 border-b border-black pb-0.5 ${cfg.headerMb}`}>
+        <div className="flex-[3] text-left">
+          <span className="block font-bold uppercase text-gray-600 tracking-wide" style={{ fontSize: '6.5px' }}>
+            Paciente
+          </span>
+          <span className="font-semibold" style={{ fontSize: count >= 5 ? '8.5px' : '9.5px' }}>
+            {pacienteNome || ' '}
+          </span>
+        </div>
+        <div className="text-left" style={{ minWidth: '85px' }}>
+          <span className="block font-bold uppercase text-gray-600 tracking-wide" style={{ fontSize: '6.5px' }}>
+            CPF
+          </span>
+          <span style={{ fontSize: count >= 5 ? '8.5px' : '9.5px' }}>
+            {pacienteCpf || ' '}
+          </span>
+        </div>
+      </div>
+
       {/* ── Prescrição ── */}
       <div style={{ fontSize: '9px' }}>
         <span className={`font-bold ${cfg.prescricaoLabelSize} block text-left`}>Prescrição:</span>
@@ -259,43 +271,31 @@ function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª
           </div>
           <div className="flex items-end gap-1 mb-0.5">
             <span>Nome:</span>
-            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }}>
-              {pacienteNome && <span className="text-[8.5px] font-semibold">{pacienteNome}</span>}
-            </div>
+            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
           </div>
           <div className="flex items-end gap-3 mb-0.5">
             <div className="flex items-end gap-1 flex-1">
               <span className="shrink-0">CPF:</span>
-              <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }}>
-                {pacienteCpf && <span>{pacienteCpf}</span>}
-              </div>
+              <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
             </div>
           </div>
           <div className="flex items-end gap-1 mb-0.5">
             <span>End.:</span>
-            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }}>
-              {enderecoCompleto && <span className="text-[8px]">{enderecoCompleto}</span>}
-            </div>
+            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
           </div>
           <div className="flex items-end gap-3 mb-0.5">
             <div className="flex items-end gap-1 flex-1">
               <span className="shrink-0">Cidade:</span>
-              <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }}>
-                {pacienteCidade && <span>{pacienteCidade}</span>}
-              </div>
+              <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
             </div>
             <div className="flex items-end gap-1">
               <span className="shrink-0">UF:</span>
-              <div className="border-b border-black w-8" style={{ minHeight: '12px' }}>
-                {pacienteUf && <span>{pacienteUf}</span>}
-              </div>
+              <div className="border-b border-black w-8" style={{ minHeight: '12px' }} />
             </div>
           </div>
           <div className="flex items-end gap-1">
             <span>Telefone:</span>
-            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }}>
-              {pacienteTelefone && <span>{pacienteTelefone}</span>}
-            </div>
+            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
           </div>
         </div>
 
