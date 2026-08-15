@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useReceitaStore } from '../store/useReceitaStore';
 import GuiaPrescricaoRapida from '../components/receita/GuiaPrescricaoRapida';
-import type { MedicamentoPreset } from '../data/medicamentosGuia';
+import type { MedicamentoDef } from '../data/medicamentos';
 import { gerarPosologia, processarListaMedicamentos } from '../services/groqReceita';
 import { getErrorMessage } from '../lib/errors';
 import { toast } from '../lib/toast';
@@ -52,8 +52,8 @@ const formatTelefone = (v: string) => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 };
 
-// Dados do guia (presets geriátricos/gastro/SUS) vivem em src/data/medicamentosGuia.ts;
-// o painel visual é o componente GuiaPrescricaoRapida.
+// O catálogo único de medicamentos vive em src/data/medicamentos.ts;
+// o painel visual (busca, filtros, recentes) é o componente GuiaPrescricaoRapida.
 
 // ─── Card de medicamento ───────────────────────────────────────
 function MedicamentoCard({
@@ -267,7 +267,7 @@ export default function NovaReceita() {
     pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf, pacienteTelefone,
     local, data, medicamentos,
     modoEntrada, textoLivre, melhorarComIA, prescricaoManual,
-    setTipoReceita, setPacienteReceita, addMedicamento, resetReceita, updateMedicamento,
+    setTipoReceita, setPacienteReceita, addMedicamento, addMedicamentos, resetReceita, updateMedicamento,
     setModoEntrada, setTextoLivre, setMelhorarComIA, setAlertas, setPrescricaoManual,
   } = useReceitaStore();
 
@@ -385,30 +385,26 @@ export default function NovaReceita() {
   const alertaSimples = tipoReceita === 'ESPECIAL' &&
     medicamentos.every((m) => m.tipoRecomendado === 'SIMPLES');
 
-  const handleAddPreset = (preset: MedicamentoPreset) => {
-    const cardVazio = medicamentos.find((m) => !m.nomeDigitado.trim() && !m.principioAtivo);
-    
-    let targetId: string;
-    if (cardVazio) {
-      targetId = cardVazio.id;
-    } else {
-      addMedicamento();
-      const updatedMeds = useReceitaStore.getState().medicamentos;
-      targetId = updatedMeds[updatedMeds.length - 1].id;
-    }
+  // Adiciona um medicamento do catálogo à receita. O addMedicamentos do store já
+  // reaproveita cards vazios antes de criar novos — não precisa procurar aqui.
+  const handleAddPreset = (medicamento: MedicamentoDef) => {
+    addMedicamentos([
+      {
+        nomeDigitado: medicamento.nome,
+        principioAtivo: medicamento.principioAtivo,
+        formaFarmaceutica: medicamento.formaFarmaceutica,
+        uso: medicamento.uso,
+        posologia: medicamento.posologiaPadrao,
+        quantidade: medicamento.quantidadePadrao,
+        duracao: medicamento.duracaoPadrao,
+        tipoRecomendado: medicamento.tipoRecomendado,
+        indicacao: medicamento.indicacao,
+        observacoes: medicamento.observacoes ?? '',
+        motivoEspecial: medicamento.motivoEspecial ?? '',
+      },
+    ]);
 
-    updateMedicamento(targetId, {
-      nomeDigitado: preset.nome,
-      principioAtivo: preset.principioAtivo,
-      formaFarmaceutica: preset.formaFarmaceutica,
-      uso: preset.uso,
-      posologia: preset.posologia,
-      quantidade: preset.quantidade,
-      duracao: preset.duracao,
-      tipoRecomendado: preset.tipoRecomendado,
-    });
-
-    if (preset.tipoRecomendado === 'ESPECIAL') {
+    if (medicamento.tipoRecomendado === 'ESPECIAL') {
       setTipoReceita('ESPECIAL');
     }
   };

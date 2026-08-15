@@ -47,6 +47,11 @@ interface ReceitaState {
   setTipoReceita: (tipo: TipoReceita) => void;
   setPacienteReceita: (dados: Partial<ReceitaState>) => void;
   addMedicamento: () => void;
+  /**
+   * Adiciona vários medicamentos de uma vez (aplicar protocolo).
+   * O `id` é gerado internamente — por isso fica fora do tipo aceito.
+   */
+  addMedicamentos: (itens: Array<Omit<Partial<MedicamentoReceita>, 'id'>>) => void;
   removeMedicamento: (id: string) => void;
   updateMedicamento: (id: string, dados: Partial<MedicamentoReceita>) => void;
   setAlertas: (alertas: string[]) => void;
@@ -122,6 +127,24 @@ export const useReceitaStore = create<ReceitaState>()(
           medicamentos: [...state.medicamentos, novoMedicamento()],
           lastSavedAt: touch(),
         })),
+
+      addMedicamentos: (itens) =>
+        set((state) => {
+          if (itens.length === 0) return {};
+          let i = 0;
+          // 1. Preenche primeiro os cards que já estão vazios — evita deixar um
+          //    card em branco no topo ao aplicar um protocolo em receita nova.
+          const medicamentos = state.medicamentos.map((m) => {
+            const vazio = !m.nomeDigitado.trim() && !m.principioAtivo.trim();
+            if (!vazio || i >= itens.length) return m;
+            return { ...m, ...itens[i++] };
+          });
+          // 2. O que sobrou entra como card novo, preservando a ordem do protocolo.
+          while (i < itens.length) {
+            medicamentos.push({ ...novoMedicamento(), ...itens[i++] });
+          }
+          return { medicamentos, lastSavedAt: touch() };
+        }),
 
       removeMedicamento: (id) =>
         set((state) => {

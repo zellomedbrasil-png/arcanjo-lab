@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { CANAL_INFO, type CanalGratuito, type MedicamentoPreset } from '../../data/medicamentosGuia';
+import { CANAL_INFO, type CanalGratuito, type MedicamentoDef } from '../../data/medicamentos';
 
 // Classes completas por canal — Tailwind não compila classe montada dinamicamente.
 const CANAL_BADGE: Record<CanalGratuito, string> = {
@@ -15,21 +15,21 @@ const CANAL_NOTA_TEXTO: Record<CanalGratuito, string> = {
 };
 
 export default function GuiaPresetCard({
-  preset,
+  medicamento,
   onPrescrever,
 }: {
-  preset: MedicamentoPreset;
-  onPrescrever: (preset: MedicamentoPreset) => void;
+  medicamento: MedicamentoDef;
+  onPrescrever: (medicamento: MedicamentoDef) => void;
 }) {
-  const isEspecial = preset.tipoRecomendado === 'ESPECIAL';
-  const gratuito = preset.gratuito;
+  const isEspecial = medicamento.tipoRecomendado === 'ESPECIAL';
+  const gratuito = medicamento.gratuito;
 
   return (
     <div className="group flex flex-col justify-between p-2.5 rounded-lg border border-gray-200/80 bg-white hover:border-indigo-300 hover:shadow transition-all duration-200">
       <div>
         <div className="flex items-center justify-between gap-1">
           <span className="font-bold text-gray-800 text-xs truncate">
-            {preset.nome}
+            {medicamento.nome}
           </span>
           <span className="flex items-center gap-1 shrink-0">
             {gratuito && (
@@ -41,19 +41,27 @@ export default function GuiaPresetCard({
               </span>
             )}
             {isEspecial && (
-              <span className="text-[8px] bg-amber-100 border border-amber-200 px-1 py-0.5 rounded font-extrabold uppercase text-amber-800">
-                C344
+              <span
+                title={medicamento.motivoEspecial}
+                className="text-[8px] bg-amber-100 border border-amber-200 px-1 py-0.5 rounded font-extrabold uppercase text-amber-800"
+              >
+                2 VIAS
               </span>
             )}
           </span>
         </div>
 
         <span className="block text-[9px] text-gray-400 font-semibold truncate mt-0.5">
-          {preset.principioAtivo}
+          {medicamento.principioAtivo}
+        </span>
+
+        {/* Marca de referência — orienta o paciente na farmácia. Não vai impressa. */}
+        <span className="block text-[9px] text-indigo-400 font-semibold truncate">
+          ref.: {medicamento.marcaReferencia}
         </span>
 
         <p className="text-[10px] text-gray-500 mt-1 leading-normal font-normal line-clamp-2 italic">
-          {preset.explicacao}
+          {medicamento.explicacao}
         </p>
 
         {gratuito?.nota && (
@@ -65,11 +73,11 @@ export default function GuiaPresetCard({
 
       <div className="mt-2 pt-2 border-t border-dashed border-gray-100 flex items-center justify-between gap-2">
         <span className="text-[8px] text-indigo-500 font-bold bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider">
-          {preset.uso}
+          {medicamento.uso}
         </span>
         <button
           type="button"
-          onClick={() => onPrescrever(preset)}
+          onClick={() => onPrescrever(medicamento)}
           className="flex items-center gap-0.5 px-2 py-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-md text-[10px] font-bold transition-all shadow-sm group-hover:shadow"
         >
           <Plus size={10} />
