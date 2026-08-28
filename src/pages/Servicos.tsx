@@ -12,9 +12,13 @@ import { toast } from '../lib/toast';
 
 export default function Servicos() {
   const navigate = useNavigate();
-  const {
-    pacienteNome, servicosSelecionados, lastSavedAt, setServicosSelecionados, resetForm,
-  } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const servicosSelecionados = useAppStore((s) => s.servicosSelecionados);
+  const lastSavedAt = useAppStore((s) => s.lastSavedAt);
+  const setServicosSelecionados = useAppStore((s) => s.setServicosSelecionados);
+  const resetForm = useAppStore((s) => s.resetForm);
 
   const total = servicosSelecionados.length;
   const isFormValid = pacienteNome.trim() !== '';

@@ -9,9 +9,18 @@ const MEDICO = {
 };
 
 export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string } = {}) {
-  const store = useReceitaStore();
-  const medicamentos = medicamentosOverride || store.medicamentos;
-  const { pacienteNome, pacienteCpf, local, data } = store;
+  // Seletores por campo: na prévia A4 ao vivo, os medicamentos chegam por prop
+  // (medicamentosOverride). Assinando o store inteiro, digitar um medicamento
+  // redesenhava a folha toda a cada tecla; com seletores, a folha só reage a
+  // mudança de paciente/data — que é quando ela realmente muda.
+  const pacienteNome = useReceitaStore((s) => s.pacienteNome);
+  const pacienteCpf = useReceitaStore((s) => s.pacienteCpf);
+  const local = useReceitaStore((s) => s.local);
+  const data = useReceitaStore((s) => s.data);
+  const medicamentosStore = useReceitaStore((s) =>
+    medicamentosOverride ? undefined : s.medicamentos
+  );
+  const medicamentos = medicamentosOverride ?? medicamentosStore ?? [];
   const dataFormatada = data || new Date().toLocaleDateString('pt-BR');
 
   // Modo texto livre: a prescrição é impressa exatamente como digitada (bloco único)

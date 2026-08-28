@@ -59,21 +59,21 @@ export default function JustificativaPanel({ mode }: JustificativaPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const elapsedJust = useElapsedTimer(isLoadingJust);
 
-  const {
-    pacienteNome,
-    pacienteIdade,
-    genero,
-    examesSelecionados,
-    procedimentosSelecionados,
-    queixa,
-    setQueixa,
-    justificativaExames,
-    setJustificativaExames,
-    justificativaProcedimentos,
-    setJustificativaProcedimentos,
-    setIaModel,
-    iaModel,
-  } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const pacienteIdade = useAppStore((s) => s.pacienteIdade);
+  const genero = useAppStore((s) => s.genero);
+  const examesSelecionados = useAppStore((s) => s.examesSelecionados);
+  const procedimentosSelecionados = useAppStore((s) => s.procedimentosSelecionados);
+  const queixa = useAppStore((s) => s.queixa);
+  const setQueixa = useAppStore((s) => s.setQueixa);
+  const justificativaExames = useAppStore((s) => s.justificativaExames);
+  const setJustificativaExames = useAppStore((s) => s.setJustificativaExames);
+  const justificativaProcedimentos = useAppStore((s) => s.justificativaProcedimentos);
+  const setJustificativaProcedimentos = useAppStore((s) => s.setJustificativaProcedimentos);
+  const setIaModel = useAppStore((s) => s.setIaModel);
+  const iaModel = useAppStore((s) => s.iaModel);
 
   const isLab = mode === 'exames';
   const justificativaValue = isLab ? justificativaExames : justificativaProcedimentos;

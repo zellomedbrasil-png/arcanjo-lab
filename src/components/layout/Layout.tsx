@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { prefetchRota } from '../../routes/lazyRoutes';
 import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, HeartPulse, Smartphone, X, Settings } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useAppStore } from '../../store/useAppStore';
@@ -10,7 +11,7 @@ import SettingsModal from './SettingsModal';
 import { SyncService } from '../../services/syncService';
 import { callAI, getLastUsedModel } from '../../config/gemini';
 
-import { SYSTEM_PROMPT_SOAP, SYSTEM_PROMPT_JUSTIFICATIVA } from '../soap/SOAPPanel';
+import { SYSTEM_PROMPT_SOAP, SYSTEM_PROMPT_JUSTIFICATIVA } from '../soap/prompts';
 import { toast } from '../../lib/toast';
 import { cleanSoapMarkdown } from '../../lib/formatters';
 import { buildPacienteContexto } from '../../lib/aiContext';
@@ -18,13 +19,21 @@ import { buildPacienteContexto } from '../../lib/aiContext';
 
 export default function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
-  const setMedico = useAppStore(state => state.setMedico);
-
-  const {
-    pacienteNome,
-    syncRoomCode, syncStatus, setSyncStatus, setIsPairingModalOpen, resetSyncSession,
-    quickNotes, setQuickNotes
-  } = useAppStore();
+  // Seletores granulares, um por campo. O Layout envolve TODAS as páginas: se
+  // ele assinar o store inteiro (useAppStore() sem seletor), qualquer tecla
+  // digitada em qualquer tela — queixa, justificativa, nome do paciente —
+  // re-renderiza o Layout e, com ele, a árvore inteira do app. Com seletor,
+  // cada campo só re-renderiza quem realmente o lê.
+  const setMedico = useAppStore((s) => s.setMedico);
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const syncRoomCode = useAppStore((s) => s.syncRoomCode);
+  const syncStatus = useAppStore((s) => s.syncStatus);
+  const quickNotes = useAppStore((s) => s.quickNotes);
+  // Ações do zustand têm referência estável — assinar cada uma nunca re-renderiza.
+  const setSyncStatus = useAppStore((s) => s.setSyncStatus);
+  const setIsPairingModalOpen = useAppStore((s) => s.setIsPairingModalOpen);
+  const resetSyncSession = useAppStore((s) => s.resetSyncSession);
+  const setQuickNotes = useAppStore((s) => s.setQuickNotes);
 
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -347,6 +356,9 @@ export default function Layout({ children }: { children: ReactNode }) {
           <p className="px-3 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-text-muted/70">Atendimento</p>
           <NavLink
             to="/prontuario"
+            onMouseEnter={() => prefetchRota('/prontuario')}
+            onFocus={() => prefetchRota('/prontuario')}
+            onTouchStart={() => prefetchRota('/prontuario')}
             className={({ isActive }) =>
               `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
@@ -361,6 +373,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           <NavLink
             to="/exames"
+            onMouseEnter={() => prefetchRota('/exames')}
+            onFocus={() => prefetchRota('/exames')}
+            onTouchStart={() => prefetchRota('/exames')}
             className={({ isActive }) =>
               `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
@@ -375,6 +390,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           <NavLink
             to="/procedimentos"
+            onMouseEnter={() => prefetchRota('/procedimentos')}
+            onFocus={() => prefetchRota('/procedimentos')}
+            onTouchStart={() => prefetchRota('/procedimentos')}
             className={({ isActive }) =>
               `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
@@ -389,6 +407,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           <NavLink
             to="/servicos"
+            onMouseEnter={() => prefetchRota('/servicos')}
+            onFocus={() => prefetchRota('/servicos')}
+            onTouchStart={() => prefetchRota('/servicos')}
             className={({ isActive }) =>
               `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
@@ -404,6 +425,9 @@ export default function Layout({ children }: { children: ReactNode }) {
           <p className="px-3 pt-4 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-text-muted/70">Emissão</p>
           <NavLink
             to="/receita"
+            onMouseEnter={() => prefetchRota('/receita')}
+            onFocus={() => prefetchRota('/receita')}
+            onTouchStart={() => prefetchRota('/receita')}
             className={({ isActive }) =>
               `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
@@ -418,6 +442,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
           <NavLink
             to="/documentos"
+            onMouseEnter={() => prefetchRota('/documentos')}
+            onFocus={() => prefetchRota('/documentos')}
+            onTouchStart={() => prefetchRota('/documentos')}
             className={({ isActive }) =>
               `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
                 isActive
@@ -569,6 +596,9 @@ export default function Layout({ children }: { children: ReactNode }) {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 min-h-14 pb-[env(safe-area-inset-bottom)] bg-white border-t border-neutral-border z-40 flex justify-around items-center px-2 no-print shadow-[0_-2px_10px_rgba(0,0,0,0.035)]">
         <NavLink
           to="/prontuario"
+          onMouseEnter={() => prefetchRota('/prontuario')}
+          onFocus={() => prefetchRota('/prontuario')}
+          onTouchStart={() => prefetchRota('/prontuario')}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center flex-1 py-1 text-center transition-colors ${
               isActive ? 'text-accent-indigo' : 'text-neutral-text-muted hover:text-neutral-text'
@@ -581,6 +611,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         <NavLink
           to="/exames"
+          onMouseEnter={() => prefetchRota('/exames')}
+          onFocus={() => prefetchRota('/exames')}
+          onTouchStart={() => prefetchRota('/exames')}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center flex-1 py-1 text-center transition-colors ${
               isActive ? 'text-accent-sky' : 'text-neutral-text-muted hover:text-neutral-text'
@@ -593,6 +626,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         <NavLink
           to="/procedimentos"
+          onMouseEnter={() => prefetchRota('/procedimentos')}
+          onFocus={() => prefetchRota('/procedimentos')}
+          onTouchStart={() => prefetchRota('/procedimentos')}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center flex-1 py-1 text-center transition-colors ${
               isActive ? 'text-accent-emerald' : 'text-neutral-text-muted hover:text-neutral-text'
@@ -605,6 +641,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         <NavLink
           to="/servicos"
+          onMouseEnter={() => prefetchRota('/servicos')}
+          onFocus={() => prefetchRota('/servicos')}
+          onTouchStart={() => prefetchRota('/servicos')}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center flex-1 py-1 text-center transition-colors ${
               isActive ? 'text-accent-emerald' : 'text-neutral-text-muted hover:text-neutral-text'
@@ -617,6 +656,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         <NavLink
           to="/receita"
+          onMouseEnter={() => prefetchRota('/receita')}
+          onFocus={() => prefetchRota('/receita')}
+          onTouchStart={() => prefetchRota('/receita')}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center flex-1 py-1 text-center transition-colors ${
               isActive ? 'text-accent-amber' : 'text-neutral-text-muted hover:text-neutral-text'
@@ -629,6 +671,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         <NavLink
           to="/documentos"
+          onMouseEnter={() => prefetchRota('/documentos')}
+          onFocus={() => prefetchRota('/documentos')}
+          onTouchStart={() => prefetchRota('/documentos')}
           className={({ isActive }) =>
             `flex flex-col items-center justify-center flex-1 py-1 text-center transition-colors ${
               isActive ? 'text-accent-indigo' : 'text-neutral-text-muted hover:text-neutral-text'

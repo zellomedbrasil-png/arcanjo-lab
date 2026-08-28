@@ -11,10 +11,17 @@ const MEDICO = {
 
 // ── Uma via (bloco que se repete 2x) ──────────────────────────
 function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA — PACIENTE'; medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string }) {
-  const store = useReceitaStore();
-  const medicamentos = medicamentosOverride || store.medicamentos;
+  // Seletores por campo — mesmo motivo do ReceitaBranca: na prévia ao vivo os
+  // medicamentos vêm por prop, então assinar o store inteiro fazia as DUAS vias
+  // serem redesenhadas a cada tecla digitada num medicamento.
+  const pacienteNome = useReceitaStore((s) => s.pacienteNome);
+  const pacienteCpf = useReceitaStore((s) => s.pacienteCpf);
+  const data = useReceitaStore((s) => s.data);
+  const medicamentosStore = useReceitaStore((s) =>
+    medicamentosOverride ? undefined : s.medicamentos
+  );
+  const medicamentos = medicamentosOverride ?? medicamentosStore ?? [];
   const isTextoLivre = !!(textoLivre && textoLivre.trim());
-  const { pacienteNome, pacienteCpf, data } = store;
 
   const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
   const count = medsComConteudo.length;

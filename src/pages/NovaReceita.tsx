@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useReceitaStore } from '../store/useReceitaStore';
@@ -56,16 +56,24 @@ const formatTelefone = (v: string) => {
 // o painel visual (busca, filtros, recentes) é o componente GuiaPrescricaoRapida.
 
 // ─── Card de medicamento ───────────────────────────────────────
-function MedicamentoCard({
+// memo: a página re-renderiza ao digitar qualquer campo do paciente. Sem isto,
+// todos os cards re-renderizariam junto mesmo com props idênticas.
+const MedicamentoCard = memo(function MedicamentoCard({
   id, index, tipoAtual,
 }: { id: string; index: number; tipoAtual: string }) {
-  const { medicamentos, updateMedicamento, removeMedicamento, setTipoReceita } = useReceitaStore();
-  const med = medicamentos.find((m) => m.id === id)!;
+  // Assina APENAS este medicamento, não a lista inteira. Antes o card lia o
+  // store todo e fazia .find() — então digitar uma letra no medicamento 1
+  // re-renderizava todos os outros cards, a página e a prévia A4 junto.
+  // updateMedicamento troca só o objeto do id alterado, e os demais mantêm a
+  // identidade, então a comparação padrão do zustand já barra o re-render.
+  const med = useReceitaStore((s) => s.medicamentos.find((m) => m.id === id));
+  // Só a contagem (número): muda ao adicionar/remover, não ao digitar.
+  const totalMedicamentos = useReceitaStore((s) => s.medicamentos.length);
+  const updateMedicamento = useReceitaStore((s) => s.updateMedicamento);
+  const removeMedicamento = useReceitaStore((s) => s.removeMedicamento);
+  const setTipoReceita = useReceitaStore((s) => s.setTipoReceita);
   const [expandido, setExpandido] = useState(false);
-  const [inputNome, setInputNome] = useState(med.nomeDigitado);
-
-  const mismatch =
-    med.tipoRecomendado === 'ESPECIAL' && tipoAtual === 'SIMPLES';
+  const [inputNome, setInputNome] = useState(med?.nomeDigitado ?? '');
 
   const handleNomeChange = (valor: string) => {
     setInputNome(valor);
@@ -88,6 +96,13 @@ function MedicamentoCard({
       setExpandido(true);
     }
   };
+
+  // O card pode renderizar uma última vez logo após o medicamento ser removido
+  // do store. Guarda depois dos hooks para não quebrar a ordem deles.
+  if (!med) return null;
+
+  const mismatch =
+    med.tipoRecomendado === 'ESPECIAL' && tipoAtual === 'SIMPLES';
 
   const temConteudo = !!(med.nomeDigitado.trim() || med.principioAtivo || med.posologia);
 
@@ -132,7 +147,7 @@ function MedicamentoCard({
             }}
             onEnterPress={handleGerarIA}
             placeholder={`Medicamento ${index + 1} (ex: Clonazepam 2mg)`}
-            autoFocus={index === medicamentos.length - 1 && !med.nomeDigitado}
+            autoFocus={index === totalMedicamentos - 1 && !med.nomeDigitado}
           />
         </div>
 
@@ -250,7 +265,7 @@ function MedicamentoCard({
       )}
     </div>
   );
-}
+});
 
 // ─── Página principal ──────────────────────────────────────────
 export default function NovaReceita() {

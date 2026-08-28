@@ -305,11 +305,21 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
   const [customInput, setCustomInput] = useState('');
   const customInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    tipoGuia, convenio, examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados,
-    setExamesSelecionados, setJustificativa, setPaciente, toggleProcedimento,
-    addProcedimentoPersonalizado, removeProcedimentoPersonalizado,
-  } = useAppStore();
+  // Seletores por campo. Este componente renderiza centenas de itens de exame:
+  // assinando o store inteiro, digitar o nome do paciente (outro campo do mesmo
+  // store) re-renderizava a grade toda a cada tecla.
+  const tipoGuia = useAppStore((s) => s.tipoGuia);
+  const convenio = useAppStore((s) => s.convenio);
+  const examesSelecionados = useAppStore((s) => s.examesSelecionados);
+  const procedimentosSelecionados = useAppStore((s) => s.procedimentosSelecionados);
+  const procedimentosPersonalizados = useAppStore((s) => s.procedimentosPersonalizados);
+  // Ações têm referência estável no zustand — nunca disparam re-render.
+  const setExamesSelecionados = useAppStore((s) => s.setExamesSelecionados);
+  const setJustificativa = useAppStore((s) => s.setJustificativa);
+  const setPaciente = useAppStore((s) => s.setPaciente);
+  const toggleProcedimento = useAppStore((s) => s.toggleProcedimento);
+  const addProcedimentoPersonalizado = useAppStore((s) => s.addProcedimentoPersonalizado);
+  const removeProcedimentoPersonalizado = useAppStore((s) => s.removeProcedimentoPersonalizado);
 
   useEffect(() => {
     if (examesSelecionados.length === 0) return;

@@ -11,15 +11,15 @@ import { formatDraftTime } from '../lib/formatters';
 
 export default function ExamesLaboratoriais() {
   const navigate = useNavigate();
-  const {
-    pacienteNome,
-    examesSelecionados,
-    justificativaExames,
-    lastSavedAt,
-    setPaciente,
-    setJustificativa,
-    resetForm,
-  } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const examesSelecionados = useAppStore((s) => s.examesSelecionados);
+  const justificativaExames = useAppStore((s) => s.justificativaExames);
+  const lastSavedAt = useAppStore((s) => s.lastSavedAt);
+  const setPaciente = useAppStore((s) => s.setPaciente);
+  const setJustificativa = useAppStore((s) => s.setJustificativa);
+  const resetForm = useAppStore((s) => s.resetForm);
 
   const hasExames = examesSelecionados.length > 0;
   const isFormValid = pacienteNome.trim() !== '';

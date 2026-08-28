@@ -4,14 +4,14 @@ import { useAppStore } from '../../store/useAppStore';
 import { toast } from '../../lib/toast';
 
 export default function PairingModal() {
-  const {
-    syncRoomCode,
-    syncStatus,
-    isPairingModalOpen,
-    setIsPairingModalOpen,
-    setSyncRoomCode,
-    setSyncStatus,
-  } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const syncRoomCode = useAppStore((s) => s.syncRoomCode);
+  const syncStatus = useAppStore((s) => s.syncStatus);
+  const isPairingModalOpen = useAppStore((s) => s.isPairingModalOpen);
+  const setIsPairingModalOpen = useAppStore((s) => s.setIsPairingModalOpen);
+  const setSyncRoomCode = useAppStore((s) => s.setSyncRoomCode);
+  const setSyncStatus = useAppStore((s) => s.setSyncStatus);
 
   // Generates a room code when the modal opens if it doesn't exist
   useEffect(() => {

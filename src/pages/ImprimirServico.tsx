@@ -10,10 +10,14 @@ import { getServicoNome } from '../data/servicos';
 
 export default function ImprimirServico() {
   const navigate = useNavigate();
-  const {
-    pacienteNome, convenio, servicosSelecionados, justificativaServicos,
-    sadtOperadora, sadtRegistroAns
-  } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const convenio = useAppStore((s) => s.convenio);
+  const servicosSelecionados = useAppStore((s) => s.servicosSelecionados);
+  const justificativaServicos = useAppStore((s) => s.justificativaServicos);
+  const sadtOperadora = useAppStore((s) => s.sadtOperadora);
+  const sadtRegistroAns = useAppStore((s) => s.sadtRegistroAns);
 
   useEffect(() => {
     if (!pacienteNome) navigate('/servicos');

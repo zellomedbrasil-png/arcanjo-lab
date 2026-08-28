@@ -1,28 +1,48 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { routeImports } from './routes/lazyRoutes';
 
 // Rotas carregadas sob demanda (code-splitting): cada página vira um chunk
 // próprio. Assim o celular que abre só /gravador não baixa o Prontuário, os
 // templates de impressão nem as libs de PDF — o carregamento fica muito mais leve.
+// As rotas de menu usam routeImports para que o React.lazy() e o prefetch do
+// menu (Layout) partam do MESMO import — não há como divergirem.
 const Login = lazy(() => import('./pages/Login'));
-const Prontuario = lazy(() => import('./pages/Prontuario'));
-const ExamesLaboratoriais = lazy(() => import('./pages/ExamesLaboratoriais'));
-const ProcedimentosEletivos = lazy(() => import('./pages/ProcedimentosEletivos'));
-const Servicos = lazy(() => import('./pages/Servicos'));
+const Prontuario = lazy(routeImports['/prontuario']);
+const ExamesLaboratoriais = lazy(routeImports['/exames']);
+const ProcedimentosEletivos = lazy(routeImports['/procedimentos']);
+const Servicos = lazy(routeImports['/servicos']);
 const ImprimirServico = lazy(() => import('./pages/ImprimirServico'));
 const Imprimir = lazy(() => import('./pages/Imprimir'));
-const NovaReceita = lazy(() => import('./pages/NovaReceita'));
+const NovaReceita = lazy(routeImports['/receita']);
 const ImprimirReceita = lazy(() => import('./pages/ImprimirReceita'));
-const Documentos = lazy(() => import('./pages/Documentos'));
+const Documentos = lazy(routeImports['/documentos']);
 const ImprimirDocumento = lazy(() => import('./pages/ImprimirDocumento'));
 const GravadorMobile = lazy(() => import('./pages/GravadorMobile'));
 
-// Tela de transição enquanto o chunk da rota carrega. Discreta e no tema escuro.
+// Tela de transição enquanto o chunk da rota carrega.
+//
+// Antes era bg-slate-950 (quase preto) enquanto o app inteiro é claro
+// (--color-neutral-bg: #f8fafc), então cada troca de rota piscava uma tela
+// escura e voltava — parecia travamento. Agora usa o mesmo fundo do app, e o
+// spinner só aparece depois de 250ms: em navegação rápida (o caso normal, com
+// o chunk já em cache) não pisca nada, que é a transição mais fluida possível.
 function RouteFallback() {
+  const [mostrarSpinner, setMostrarSpinner] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setMostrarSpinner(true), 250);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
-    <div className="min-h-dvh bg-slate-950 flex items-center justify-center">
-      <div className="h-8 w-8 rounded-full border-2 border-slate-700 border-t-indigo-500 animate-spin" />
+    <div className="min-h-dvh bg-neutral-bg flex items-center justify-center">
+      <div
+        className={`h-8 w-8 rounded-full border-2 border-neutral-border border-t-indigo-500 animate-spin transition-opacity duration-200 ${
+          mostrarSpinner ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
     </div>
   );
 }

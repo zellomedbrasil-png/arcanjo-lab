@@ -11,16 +11,16 @@ import type { TipoGuia } from '../types';
 
 export default function ProcedimentosEletivos() {
   const navigate = useNavigate();
-  const {
-    pacienteNome,
-    procedimentosSelecionados,
-    procedimentosPersonalizados,
-    justificativaProcedimentos,
-    lastSavedAt,
-    setPaciente,
-    setJustificativa,
-    resetForm,
-  } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const procedimentosSelecionados = useAppStore((s) => s.procedimentosSelecionados);
+  const procedimentosPersonalizados = useAppStore((s) => s.procedimentosPersonalizados);
+  const justificativaProcedimentos = useAppStore((s) => s.justificativaProcedimentos);
+  const lastSavedAt = useAppStore((s) => s.lastSavedAt);
+  const setPaciente = useAppStore((s) => s.setPaciente);
+  const setJustificativa = useAppStore((s) => s.setJustificativa);
+  const resetForm = useAppStore((s) => s.resetForm);
 
   const totalProcedimentos = procedimentosSelecionados.length + procedimentosPersonalizados.length;
   const hasProcedimentos = totalProcedimentos > 0;

@@ -23,7 +23,11 @@ export default function ExamPastePanel() {
   const [examesSelecionados, setExamesSelecionadosLocal] = useState<Set<number>>(new Set());
   const [expandido, setExpandido] = useState(false);
 
-  const { genero, setExamesSelecionados, setJustificativa } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const genero = useAppStore((s) => s.genero);
+  const setExamesSelecionados = useAppStore((s) => s.setExamesSelecionados);
+  const setJustificativa = useAppStore((s) => s.setJustificativa);
   const elapsed = useElapsedTimer(isLoading);
 
   const getActiveModelLabel = () => {

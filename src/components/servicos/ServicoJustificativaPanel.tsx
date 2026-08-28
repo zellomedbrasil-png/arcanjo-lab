@@ -35,11 +35,18 @@ export default function ServicoJustificativaPanel() {
   const [error, setError] = useState<string | null>(null);
   const elapsed = useElapsedTimer(isLoading);
 
-  const {
-    pacienteNome, pacienteIdade, genero, queixa, setQueixa,
-    servicosSelecionados, justificativaServicos, setJustificativaServicos,
-    setIaModel, iaModel,
-  } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const pacienteIdade = useAppStore((s) => s.pacienteIdade);
+  const genero = useAppStore((s) => s.genero);
+  const queixa = useAppStore((s) => s.queixa);
+  const setQueixa = useAppStore((s) => s.setQueixa);
+  const servicosSelecionados = useAppStore((s) => s.servicosSelecionados);
+  const justificativaServicos = useAppStore((s) => s.justificativaServicos);
+  const setJustificativaServicos = useAppStore((s) => s.setJustificativaServicos);
+  const setIaModel = useAppStore((s) => s.setIaModel);
+  const iaModel = useAppStore((s) => s.iaModel);
 
   const buildContext = () => {
     const terapias = servicosSelecionados.map(getServicoNome).join(', ') || 'nenhuma selecionada';

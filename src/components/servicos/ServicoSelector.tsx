@@ -29,10 +29,13 @@ const ICON_POR_ID: Record<string, ElementType> = {
 };
 
 export default function ServicoSelector() {
-  const {
-    convenio, servicosSelecionados, setServicosSelecionados,
-    justificativaServicos, setJustificativaServicos,
-  } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const convenio = useAppStore((s) => s.convenio);
+  const servicosSelecionados = useAppStore((s) => s.servicosSelecionados);
+  const setServicosSelecionados = useAppStore((s) => s.setServicosSelecionados);
+  const justificativaServicos = useAppStore((s) => s.justificativaServicos);
+  const setJustificativaServicos = useAppStore((s) => s.setJustificativaServicos);
 
   const total = servicosSelecionados.length;
   const regras = convenio === 'ISSEC' ? SERVICO_REGRAS.ISSEC : convenio === 'IPM' ? SERVICO_REGRAS.IPM : null;

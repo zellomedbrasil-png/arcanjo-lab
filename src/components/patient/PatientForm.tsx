@@ -7,13 +7,20 @@ import { useRecentPatientsStore, type PacienteRecente } from '../../store/useRec
 import { savePatientToHistory } from '../../store/patientSync';
 
 export default function PatientForm() {
-  const {
-    pacienteNome, pacienteCpf, pacienteIdade, numeroBeneficiario,
-    sadtOperadora, sadtRegistroAns,
-    genero, convenio, setPaciente,
-  } = useAppStore();
+  // Seletores por campo: este formulário é digitado o tempo todo e divide o
+  // store com telas pesadas (grade de exames, painel SOAP). Assinando o store
+  // inteiro, ele também re-renderizava quando nada seu havia mudado.
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const pacienteCpf = useAppStore((s) => s.pacienteCpf);
+  const pacienteIdade = useAppStore((s) => s.pacienteIdade);
+  const numeroBeneficiario = useAppStore((s) => s.numeroBeneficiario);
+  const sadtOperadora = useAppStore((s) => s.sadtOperadora);
+  const sadtRegistroAns = useAppStore((s) => s.sadtRegistroAns);
+  const genero = useAppStore((s) => s.genero);
+  const convenio = useAppStore((s) => s.convenio);
+  const setPaciente = useAppStore((s) => s.setPaciente);
 
-  const { pacientes: pacientesRecentes } = useRecentPatientsStore();
+  const pacientesRecentes = useRecentPatientsStore((s) => s.pacientes);
 
   const convenios: Array<{ value: Convenio; label: string }> = [
     { value: 'IPM',        label: 'IPM' },

@@ -6,7 +6,10 @@ import { useAppStore } from '../store/useAppStore';
 import { formatDraftTime } from '../lib/formatters';
 
 export default function Prontuario() {
-  const { lastSavedAt, resetForm } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const lastSavedAt = useAppStore((s) => s.lastSavedAt);
+  const resetForm = useAppStore((s) => s.resetForm);
 
   return (
     <Layout>

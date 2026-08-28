@@ -11,7 +11,12 @@ import type { Convenio } from '../types';
 
 export default function Imprimir() {
   const navigate = useNavigate();
-  const { pacienteNome, convenio, sadtOperadora, sadtRegistroAns } = useAppStore();
+  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
+  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
+  const pacienteNome = useAppStore((s) => s.pacienteNome);
+  const convenio = useAppStore((s) => s.convenio);
+  const sadtOperadora = useAppStore((s) => s.sadtOperadora);
+  const sadtRegistroAns = useAppStore((s) => s.sadtRegistroAns);
 
   const isSADT = convenio === 'SADT';
 
