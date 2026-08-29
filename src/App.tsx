@@ -17,6 +17,8 @@ const ImprimirServico = lazy(() => import('./pages/ImprimirServico'));
 const Imprimir = lazy(() => import('./pages/Imprimir'));
 const NovaReceita = lazy(routeImports['/receita']);
 const ImprimirReceita = lazy(() => import('./pages/ImprimirReceita'));
+const Manipulados = lazy(routeImports['/manipulados']);
+const ImprimirManipulado = lazy(() => import('./pages/ImprimirManipulado'));
 const Documentos = lazy(routeImports['/documentos']);
 const ImprimirDocumento = lazy(() => import('./pages/ImprimirDocumento'));
 const GravadorMobile = lazy(() => import('./pages/GravadorMobile'));
@@ -125,6 +127,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <ImprimirReceita />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manipulados"
+            element={
+              <ProtectedRoute>
+                <Manipulados />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manipulados/imprimir"
+            element={
+              <ProtectedRoute>
+                <ImprimirManipulado />
               </ProtectedRoute>
             }
           />

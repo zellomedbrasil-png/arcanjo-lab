@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { prefetchRota } from '../../routes/lazyRoutes';
-import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, HeartPulse, Smartphone, X, Settings } from 'lucide-react';
+import { FileText, LogOut, Activity, ClipboardList, FolderOpen, Beaker, Stethoscope, HeartPulse, Smartphone, X, Settings, FlaskConical } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useAppStore } from '../../store/useAppStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -441,6 +441,23 @@ export default function Layout({ children }: { children: ReactNode }) {
           </NavLink>
 
           <NavLink
+            to="/manipulados"
+            onMouseEnter={() => prefetchRota('/manipulados')}
+            onFocus={() => prefetchRota('/manipulados')}
+            onTouchStart={() => prefetchRota('/manipulados')}
+            className={({ isActive }) =>
+              `flex items-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
+                isActive
+                  ? 'bg-accent-amber/10 text-accent-amber'
+                  : 'text-neutral-text-muted hover:bg-neutral-bg hover:text-neutral-text'
+              }`
+            }
+          >
+            <FlaskConical className="mr-3 h-4 w-4 flex-shrink-0" />
+            Manipulados
+          </NavLink>
+
+          <NavLink
             to="/documentos"
             onMouseEnter={() => prefetchRota('/documentos')}
             onFocus={() => prefetchRota('/documentos')}
@@ -667,6 +684,21 @@ export default function Layout({ children }: { children: ReactNode }) {
         >
           <ClipboardList size={18} />
           <span className="text-[10px] font-bold mt-1 font-display">Receitas</span>
+        </NavLink>
+
+        <NavLink
+          to="/manipulados"
+          onMouseEnter={() => prefetchRota('/manipulados')}
+          onFocus={() => prefetchRota('/manipulados')}
+          onTouchStart={() => prefetchRota('/manipulados')}
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center flex-1 py-1 text-center transition-colors ${
+              isActive ? 'text-accent-amber' : 'text-neutral-text-muted hover:text-neutral-text'
+            }`
+          }
+        >
+          <FlaskConical size={18} />
+          <span className="text-[10px] font-bold mt-1 font-display">Manipul.</span>
         </NavLink>
 
         <NavLink

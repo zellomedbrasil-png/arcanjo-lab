@@ -16,6 +16,7 @@ export const routeImports = {
   '/procedimentos': () => import('../pages/ProcedimentosEletivos'),
   '/servicos': () => import('../pages/Servicos'),
   '/receita': () => import('../pages/NovaReceita'),
+  '/manipulados': () => import('../pages/Manipulados'),
   '/documentos': () => import('../pages/Documentos'),
 } as const;
 
