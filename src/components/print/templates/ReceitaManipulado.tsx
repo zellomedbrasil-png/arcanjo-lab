@@ -1,14 +1,7 @@
 import { useManipuladosStore, type FormulaNaReceita } from '../../../store/useManipuladosStore';
 import { getAtivo } from '../../../data/ativosManipulados';
 import { FORMA_INFO } from '../../../data/formulasManipuladas';
-
-// ── Dados fixos do médico ──────────────────────────────────────
-const MEDICO = {
-  nome: 'Dr. Roberto Arcanjo',
-  crm: 'CRM/CE: 26.155',
-  endereco: 'R. João Lobo Filho, 250 - AllMed',
-  cidade: 'Fortaleza/Ceará',
-};
+import { enderecoCompleto, registroConselho, usePrescritorStore } from '../../../config/prescritor';
 
 /** Uma fórmula impressa: composição em linhas, quantidade e posologia. */
 function BlocoFormula({
@@ -82,9 +75,16 @@ function ViaManipulado({
   rotulo,
   duasVias,
 }: {
-  rotulo?: '1ª VIA — FARMÁCIA' | '2ª VIA — PACIENTE';
+  rotulo?: '1ª via — Retenção da farmácia' | '2ª via — Orientação ao paciente';
   duasVias: boolean;
 }) {
+  const prescritor = usePrescritorStore((s) => s.prescritor);
+  const MEDICO = {
+    nome: prescritor.nome,
+    crm: registroConselho(prescritor),
+    endereco: enderecoCompleto(prescritor),
+    telefone: prescritor.telefone,
+  };
   // Seletores por campo — nunca assinar o store inteiro (ver commit 41ae3d7).
   const pacienteNome = useManipuladosStore((s) => s.pacienteNome);
   const pacienteCpf = useManipuladosStore((s) => s.pacienteCpf);
@@ -117,8 +117,11 @@ function ViaManipulado({
           </p>
           <p className={compacto ? 'text-[8px]' : 'text-[10px]'}>{MEDICO.crm}</p>
           <p className={`${compacto ? 'text-[7.5px]' : 'text-[9px]'} text-gray-600`}>
-            {MEDICO.endereco} — {MEDICO.cidade}
+            {MEDICO.endereco}
           </p>
+          {MEDICO.telefone && (
+            <p className={`${compacto ? 'text-[7.5px]' : 'text-[9px]'} text-gray-600`}>Telefone: {MEDICO.telefone}</p>
+          )}
         </div>
         <div className="text-right">
           <div
@@ -127,7 +130,8 @@ function ViaManipulado({
             }`}
             style={{ letterSpacing: '0.08em' }}
           >
-            Receita de Manipulação
+            {/* Fórmula com C1/C5 sai em RCE: a expressão exata é exigida (Q&A Anvisa RDC 1.000) */}
+            {duasVias ? 'Receita de Controle Especial' : 'Receita de Manipulação'}
           </div>
           {rotulo && (
             <p className={`${compacto ? 'text-[8px]' : 'text-[9px]'} font-bold mt-1`}>{rotulo}</p>
@@ -302,34 +306,11 @@ export default function ReceitaManipulado({ vias = 1 }: { vias?: 1 | 2 }) {
         overflow: 'hidden',
       }}
     >
-      <ViaManipulado rotulo="1ª VIA — FARMÁCIA" duasVias />
+      <ViaManipulado rotulo="1ª via — Retenção da farmácia" duasVias />
 
-      <div
-        className="flex items-center gap-3 no-print-hidden"
-        style={{
-          borderTop: '1px dashed #6b7280',
-          borderBottom: '1px dashed #6b7280',
-          padding: '3px 32px',
-          backgroundColor: '#f9fafb',
-        }}
-      >
-        <span style={{ color: '#9ca3af', fontSize: '11px' }}>✂</span>
-        <span
-          style={{
-            color: '#9ca3af',
-            fontSize: '9px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.15em',
-            flex: 1,
-            textAlign: 'center',
-          }}
-        >
-          Recorte aqui
-        </span>
-        <span style={{ color: '#9ca3af', fontSize: '11px' }}>✂</span>
-      </div>
+      <div style={{ borderTop: '0.5pt dashed #000', height: 0 }} />
 
-      <ViaManipulado rotulo="2ª VIA — PACIENTE" duasVias />
+      <ViaManipulado rotulo="2ª via — Orientação ao paciente" duasVias />
     </div>
   );
 }

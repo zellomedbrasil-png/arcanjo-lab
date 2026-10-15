@@ -41,9 +41,12 @@ export function renderMarkdown(text: string): string {
     processedLines.push('</ul>');
   }
 
-  // Junta as linhas utilizando quebras <br />, limpando quebras redundantes após </ul>
+  // Junta as linhas utilizando quebras <br />, limpando quebras redundantes em
+  // volta da lista (cada <br /> entre <li> virava uma linha em branco no papel)
   return processedLines.join('\n')
     .replace(/\n/g, '<br />')
     .replace(/<\/ul><br \/>/g, '</ul>')
-    .replace(/<ul(.*?)><br \/>/g, '<ul$1>');
+    .replace(/<ul(.*?)><br \/>/g, '<ul$1>')
+    .replace(/<\/li><br \/>/g, '</li>')
+    .replace(/<br \/><ul/g, '<ul');
 }

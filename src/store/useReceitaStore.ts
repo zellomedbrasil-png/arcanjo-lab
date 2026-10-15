@@ -2,7 +2,12 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { publishPatientSync, subscribePatientSync } from './patientSync';
 
-export type TipoReceita = 'SIMPLES' | 'ESPECIAL';
+/**
+ * Tipo escolhido à mão — só vale nos modos TEXTO_LIVRE e MANUAL.
+ * No modo estruturado o papel sai da substância (src/data/regrasReceita.ts).
+ * 'ESPECIAL' = Receita de Controle Especial; 'RETENCAO' = antimicrobiano/GLP-1.
+ */
+export type TipoReceita = 'SIMPLES' | 'RETENCAO' | 'ESPECIAL';
 export type TipoRecomendado = 'SIMPLES' | 'ESPECIAL' | '';
 export type ModoEntrada = 'ESTRUTURADO' | 'TEXTO_LIVRE' | 'MANUAL';
 
@@ -19,14 +24,26 @@ export interface MedicamentoReceita {
   observacoes: string;
   carregando: boolean;
   erro: string;
+  /** Sugestão da IA/catálogo. Quem decide o papel é classificar() em regrasReceita.ts. */
   tipoRecomendado: TipoRecomendado;
   motivoEspecial: string;
+  /** CID + motivo quando a RCE passa de 60 dias (ou 6 meses) — Port. 344, art. 60. */
+  justificativaLimite?: string;
+  /** Origem no catálogo — permite trocar a dose, favoritar e contar uso. */
+  catalogoId?: string;
+  /** Índice da apresentação (0 = padrão do catálogo). */
+  apresentacao?: number;
 }
 
 interface ReceitaState {
   tipoReceita: TipoReceita;
   pacienteNome: string;
   pacienteCpf: string;
+  /** Paciente sem CPF: imprime "Não possui" (aceito pela RDC 1.000/2025). */
+  pacienteSemCpf: boolean;
+  /** Idade e sexo: obrigatórios na receita de antimicrobiano (RDC 471, art. 6º). */
+  pacienteIdade: string;
+  pacienteSexo: '' | 'F' | 'M';
   pacienteEndereco: string;
   pacienteCep: string;
   pacienteCidade: string;
@@ -86,6 +103,9 @@ const initialState = {
   tipoReceita: 'SIMPLES' as TipoReceita,
   pacienteNome: '',
   pacienteCpf: '',
+  pacienteSemCpf: false,
+  pacienteIdade: '',
+  pacienteSexo: '' as '' | 'F' | 'M',
   pacienteEndereco: '',
   pacienteCep: '',
   pacienteCidade: 'Fortaleza',
@@ -113,6 +133,10 @@ export const useReceitaStore = create<ReceitaState>()(
         publishPatientSync('receita', {
           pacienteNome: next.pacienteNome,
           pacienteCpf: next.pacienteCpf,
+          // Idade/sexo só propagam quando preenchidos — vazio aqui não apaga o
+          // que outra tela (SOAP, documentos) já tem.
+          ...(next.pacienteIdade ? { pacienteIdade: next.pacienteIdade } : {}),
+          ...(next.pacienteSexo ? { genero: next.pacienteSexo } : {}),
           pacienteEndereco: next.pacienteEndereco,
           pacienteCep: next.pacienteCep,
           pacienteCidade: next.pacienteCidade,
@@ -192,6 +216,9 @@ export const useReceitaStore = create<ReceitaState>()(
         tipoReceita: state.tipoReceita,
         pacienteNome: state.pacienteNome,
         pacienteCpf: state.pacienteCpf,
+        pacienteSemCpf: state.pacienteSemCpf,
+        pacienteIdade: state.pacienteIdade,
+        pacienteSexo: state.pacienteSexo,
         pacienteEndereco: state.pacienteEndereco,
         pacienteCep: state.pacienteCep,
         pacienteCidade: state.pacienteCidade,
@@ -223,6 +250,12 @@ subscribePatientSync((senderId, data) => {
   }
   if (data.pacienteCpf !== undefined && data.pacienteCpf !== state.pacienteCpf) {
     updates.pacienteCpf = data.pacienteCpf;
+  }
+  if (data.pacienteIdade && data.pacienteIdade !== state.pacienteIdade) {
+    updates.pacienteIdade = data.pacienteIdade;
+  }
+  if (data.genero && data.genero !== state.pacienteSexo) {
+    updates.pacienteSexo = data.genero;
   }
   if (data.pacienteEndereco !== undefined && data.pacienteEndereco !== state.pacienteEndereco) {
     updates.pacienteEndereco = data.pacienteEndereco;

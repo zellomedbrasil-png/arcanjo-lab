@@ -1,120 +1,98 @@
 import { useNavigate } from 'react-router-dom';
+import { Printer, ArrowLeft, AlertTriangle, FileWarning } from 'lucide-react';
+import DocumentoReceitaView from '../components/print/templates/DocumentoReceitaView';
+import { useDocumentosReceita } from '../hooks/useDocumentosReceita';
+import { nomeDocumento } from '../utils/agruparReceita';
+import { REGRAS_MODELO } from '../data/regrasReceita';
 import { useReceitaStore } from '../store/useReceitaStore';
-import { Printer, ArrowLeft } from 'lucide-react';
-import ReceitaBranca from '../components/print/templates/ReceitaBranca';
-import ReceitaControleEspecial from '../components/print/templates/ReceitaControleEspecial';
+import { useAtalhosReceitaStore } from '../store/useAtalhosReceitaStore';
 
 export default function ImprimirReceita() {
   const navigate = useNavigate();
-  const { medicamentos, pacienteNome, modoEntrada, textoLivre, prescricaoManual, tipoReceita } = useReceitaStore();
+  const { documentos, pendencias, bloqueios } = useDocumentosReceita();
+  const guias = documentos.filter((d) => !REGRAS_MODELO[d.modelo].imprimeReceita);
+  const avisos = pendencias.filter((p) => p.nivel === 'aviso');
 
-  const isManual = modoEntrada === 'MANUAL' && prescricaoManual.trim() !== '';
-  const isTextoLivre = modoEntrada === 'TEXTO_LIVRE' && textoLivre.trim() !== '';
-
-  const medsValidos = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
-  const medsSimples = medsValidos.filter((m) => m.tipoRecomendado !== 'ESPECIAL');
-  const medsEspeciais = medsValidos.filter((m) => m.tipoRecomendado === 'ESPECIAL');
-
-  const temAmbos = !isTextoLivre && !isManual && medsSimples.length > 0 && medsEspeciais.length > 0;
-  const apenasEspecial = (isTextoLivre || isManual)
-    ? tipoReceita === 'ESPECIAL'
-    : medsEspeciais.length > 0 && medsSimples.length === 0;
-
-  const descTipo = temAmbos
-    ? '📋 Receitas Divididas (Simples + Especial)'
-    : apenasEspecial
-    ? '⚠️ Receita Controle Especial (2 Vias)'
-    : '📋 Receita Branca Simples';
+  // Guarda a receita no histórico do paciente ("Repetir última receita") e imprime.
+  const imprimir = () => {
+    const s = useReceitaStore.getState();
+    if (s.modoEntrada === 'ESTRUTURADO') {
+      useAtalhosReceitaStore.getState().registrarReceita(
+        { nome: s.pacienteNome, cpf: s.pacienteCpf, data: s.data },
+        s.medicamentos
+      );
+    }
+    window.print();
+  };
 
   return (
     <div className="min-h-screen bg-gray-200 print:bg-white p-4 print:p-0">
-      {/* Toolbar — oculta na impressão */}
-      <div className="max-w-4xl mx-auto no-print mb-6 flex justify-between items-center bg-white p-4 rounded-lg shadow-sm">
-        <button
-          onClick={() => navigate('/receita')}
-          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft className="mr-2 h-5 w-5" />
-          Voltar para Edição
-        </button>
-
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500 font-semibold">
-            {descTipo}
-          </span>
+      {/* Barra — oculta na impressão */}
+      <div className="max-w-4xl mx-auto no-print mb-6 bg-white p-4 rounded-lg shadow-sm space-y-3">
+        <div className="flex justify-between items-center gap-4 flex-wrap">
           <button
-            onClick={() => window.print()}
-            className="flex items-center px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            onClick={() => navigate('/receita')}
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-5 w-5" />
+            Voltar para edição
+          </button>
+          <button
+            onClick={imprimir}
+            disabled={bloqueios.length > 0}
+            className={`flex items-center px-6 py-2 font-medium rounded-lg transition-colors ${
+              bloqueios.length > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
           >
             <Printer className="mr-2 h-5 w-5" />
-            Imprimir Agora
+            Imprimir {documentos.length} {documentos.length === 1 ? 'folha' : 'folhas'}
           </button>
         </div>
-      </div>
 
-      {/* Container A4 */}
-      <div className="flex flex-col gap-8 print:gap-0 max-w-[210mm] mx-auto print:w-[210mm] print:m-0">
-        {(isManual || isTextoLivre) ? (
-          <div
-            className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
-            style={{ width: '210mm', height: '297mm' }}
-          >
-            {tipoReceita === 'ESPECIAL'
-              ? <ReceitaControleEspecial textoLivre={isManual ? prescricaoManual : textoLivre} />
-              : <ReceitaBranca textoLivre={isManual ? prescricaoManual : textoLivre} />}
-          </div>
-        ) : temAmbos ? (
-          <>
-            {/* Receita Simples */}
-            <div 
-              className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
-              style={{ width: '210mm', height: '297mm', breakAfter: 'page', pageBreakAfter: 'always' }}
-            >
-              <ReceitaBranca medicamentosOverride={medsSimples} />
-            </div>
+        <ol className="text-sm text-gray-700 list-decimal pl-5 space-y-0.5">
+          {documentos.map((d) => (
+            <li key={d.chave}>{nomeDocumento(d)}</li>
+          ))}
+        </ol>
 
-            {/* Divisor Visual na Tela */}
-            <div className="no-print h-8 bg-gray-300 flex items-center justify-center text-[10px] text-gray-600 font-bold uppercase tracking-wider rounded-lg shadow-inner">
-              ✂️ Fim da Receita Simples · Próxima página: Receita Controle Especial C344
-            </div>
-
-            {/* Receita Especial */}
-            <div 
-              className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
-              style={{ width: '210mm', height: '297mm' }}
-            >
-              <ReceitaControleEspecial medicamentosOverride={medsEspeciais} />
-            </div>
-          </>
-        ) : apenasEspecial ? (
-          <div 
-            className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
-            style={{ width: '210mm', height: '297mm' }}
-          >
-            <ReceitaControleEspecial medicamentosOverride={medsEspeciais} />
-          </div>
-        ) : (
-          <div 
-            className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
-            style={{ width: '210mm', height: '297mm' }}
-          >
-            <ReceitaBranca medicamentosOverride={medsSimples} />
+        {bloqueios.length > 0 && (
+          <div className="bg-red-50 border border-red-200 text-red-800 text-sm p-3 rounded-lg">
+            <p className="font-bold flex items-center gap-1.5 mb-1"><AlertTriangle size={15} /> A farmácia vai devolver — corrija antes de imprimir:</p>
+            <ul className="list-disc pl-5 space-y-0.5">{bloqueios.map((p) => <li key={p.texto}>{p.texto}</li>)}</ul>
           </div>
         )}
+        {guias.length > 0 && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm p-3 rounded-lg flex gap-2">
+            <FileWarning size={16} className="shrink-0 mt-0.5" />
+            <span>
+              {guias.length} {guias.length === 1 ? 'item exige' : 'itens exigem'} notificação em talonário numerado. As folhas marcadas
+              "NÃO É RECEITA" são só para você transcrever no talonário.
+            </span>
+          </div>
+        )}
+        {avisos.length > 0 && (
+          <ul className="text-xs text-gray-600 list-disc pl-5 space-y-0.5">{avisos.map((p) => <li key={p.texto}>{p.texto}</li>)}</ul>
+        )}
+        <p className="text-xs text-gray-500">Papel A4, sem margens, escala 100%. As receitas de 2 vias saem numa folha só: corte na linha tracejada.</p>
       </div>
 
-      {/* Dica de impressão */}
-      <div className="max-w-4xl mx-auto no-print mt-4 text-center text-xs text-gray-500">
-        {apenasEspecial || temAmbos
-          ? '⚠️ Imprima em papel branco padrão A4. O controle especial será dividido em 2 vias para recorte.'
-          : '💡 Configure a impressora para papel A4, sem margens.'}
+      {/* Folhas A4 */}
+      <div className="flex flex-col gap-8 print:gap-0 max-w-[210mm] mx-auto print:w-[210mm] print:m-0">
+        {bloqueios.length === 0 &&
+          documentos.map((doc, i) => (
+            <div
+              key={doc.chave}
+              className="bg-white shadow-xl print:shadow-none overflow-hidden relative"
+              style={{
+                width: '210mm',
+                height: '297mm',
+                ...(i < documentos.length - 1 ? { breakAfter: 'page' as const, pageBreakAfter: 'always' as const } : {}),
+              }}
+            >
+              <DocumentoReceitaView doc={doc} />
+            </div>
+          ))}
       </div>
-
-      {!pacienteNome && (
-        <div className="no-print max-w-4xl mx-auto mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm p-4 rounded-lg text-center">
-          ⚠️ Nenhum dado de paciente encontrado. <button className="underline font-medium" onClick={() => navigate('/receita')}>Voltar à receita</button>
-        </div>
-      )}
     </div>
   );
 }

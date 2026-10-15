@@ -50,7 +50,7 @@ export type RegulacaoAtivo =
   | 'LIVRE'           // suplemento / fitoterápico — receita simples
   | 'PRESCRICAO'      // fármaco de prescrição (tarja vermelha) — receita simples
   | 'C1'              // Portaria 344/98 lista C1 → Receita de Controle Especial, 2 vias
-  | 'C5'              // anabolizante, lista C5 → Notificação de Receita
+  | 'C5'              // anabolizante, lista C5 → Receita de Controle Especial, 2 vias
   | 'HORMONIO'        // hormônio: receita simples, mas exige alerta
   | 'RESTRICAO_CFM';  // uso restrito por resolução CFM / alerta ANVISA
 
@@ -59,7 +59,7 @@ export const REGULACAO_INFO: Record<RegulacaoAtivo, { rotulo: string; exige2Vias
   LIVRE: { rotulo: '', exige2Vias: false },
   PRESCRICAO: { rotulo: 'PRESCRIÇÃO', exige2Vias: false },
   C1: { rotulo: 'C1 · 2 VIAS', exige2Vias: true },
-  C5: { rotulo: 'C5 · NOTIFICAÇÃO', exige2Vias: true },
+  C5: { rotulo: 'C5 · 2 VIAS', exige2Vias: true },
   HORMONIO: { rotulo: 'HORMÔNIO', exige2Vias: false },
   RESTRICAO_CFM: { rotulo: 'RESTRIÇÃO CFM', exige2Vias: false },
 };
@@ -84,7 +84,7 @@ export interface AtivoManipulado {
 }
 
 const NOTIF_C5 =
-  'Anabolizante — Portaria 344/98 lista C5. Exige Notificação de Receita e escrituração. Uso restrito a indicação médica formal.';
+  'Anabolizante — Portaria 344/98 lista C5. Receita de Controle Especial em 2 vias, com escrituração na farmácia. Uso restrito a indicação médica formal.';
 const CTRL_C1 =
   'Portaria 344/98 lista C1. Receita de Controle Especial em 2 vias, com retenção da 1ª via na farmácia.';
 

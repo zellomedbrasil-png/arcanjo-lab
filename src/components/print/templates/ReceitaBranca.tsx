@@ -1,18 +1,19 @@
 import { useReceitaStore, type MedicamentoReceita } from '../../../store/useReceitaStore';
 import { renderMarkdown } from '../../../utils/markdown';
-
-const MEDICO = {
-  nome: 'Dr. Roberto Arcanjo',
-  crm: 'CRM/CE: 26.155',
-  endereco: 'R. João Lobo Filho, 250 - AllMed',
-  cidade: 'Fortaleza/Ceará',
-};
+import { enderecoCompleto, registroConselho, usePrescritorStore } from '../../../config/prescritor';
 
 export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string } = {}) {
   // Seletores por campo: na prévia A4 ao vivo, os medicamentos chegam por prop
   // (medicamentosOverride). Assinando o store inteiro, digitar um medicamento
   // redesenhava a folha toda a cada tecla; com seletores, a folha só reage a
   // mudança de paciente/data — que é quando ela realmente muda.
+  const prescritor = usePrescritorStore((s) => s.prescritor);
+  const MEDICO = {
+    nome: prescritor.nome,
+    crm: registroConselho(prescritor),
+    endereco: enderecoCompleto(prescritor),
+    telefone: prescritor.telefone,
+  };
   const pacienteNome = useReceitaStore((s) => s.pacienteNome);
   const pacienteCpf = useReceitaStore((s) => s.pacienteCpf);
   const local = useReceitaStore((s) => s.local);
@@ -247,7 +248,10 @@ export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { me
                 {MEDICO.nome}
               </p>
               <p className={`${count >= 7 ? 'text-[8px]' : 'text-[9px]'} text-gray-600 mt-0.5`}>{MEDICO.crm}</p>
-              <p className={`${count >= 7 ? 'text-[8px]' : 'text-[9px]'} text-gray-600`}>{MEDICO.endereco} — {MEDICO.cidade}</p>
+              <p className={`${count >= 7 ? 'text-[8px]' : 'text-[9px]'} text-gray-600`}>{MEDICO.endereco}</p>
+              {MEDICO.telefone && (
+                <p className={`${count >= 7 ? 'text-[8px]' : 'text-[9px]'} text-gray-600`}>Telefone: {MEDICO.telefone}</p>
+              )}
             </div>
             <div className="text-right">
               <p

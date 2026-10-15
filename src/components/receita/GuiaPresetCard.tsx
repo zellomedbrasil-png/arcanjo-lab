@@ -1,5 +1,7 @@
 import { Plus } from 'lucide-react';
 import { CANAL_INFO, type CanalGratuito, type MedicamentoDef } from '../../data/medicamentos';
+import { REGRAS_MODELO, seloCurto } from '../../data/regrasReceita';
+import { dosesDe } from '../../data/buscaPrescricao';
 
 // Classes completas por canal — Tailwind não compila classe montada dinamicamente.
 const CANAL_BADGE: Record<CanalGratuito, string> = {
@@ -14,75 +16,94 @@ const CANAL_NOTA_TEXTO: Record<CanalGratuito, string> = {
   CEAF: 'text-violet-700',
 };
 
+/**
+ * Card do catálogo. Clicar no card prescreve a dose padrão; os chips de dose
+ * prescrevem aquela dose direto.
+ */
 export default function GuiaPresetCard({
   medicamento,
   onPrescrever,
 }: {
   medicamento: MedicamentoDef;
-  onPrescrever: (medicamento: MedicamentoDef) => void;
+  onPrescrever: (medicamento: MedicamentoDef, dose: number) => void;
 }) {
-  const isEspecial = medicamento.tipoRecomendado === 'ESPECIAL';
+  const regra = medicamento.regra;
+  const especial = !!regra && regra.modelo !== 'SIMPLES';
+  const notificacao = !!regra && !REGRAS_MODELO[regra.modelo].imprimeReceita;
   const gratuito = medicamento.gratuito;
+  const doses = dosesDe(medicamento);
 
   return (
-    <div className="group flex flex-col justify-between p-2.5 rounded-lg border border-gray-200/80 bg-white hover:border-indigo-300 hover:shadow transition-all duration-200">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onPrescrever(medicamento, 0)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onPrescrever(medicamento, 0);
+        }
+      }}
+      className="group flex flex-col justify-between p-3 rounded-xl border border-gray-200 bg-white hover:border-indigo-400 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-300 transition-all cursor-pointer"
+    >
       <div>
-        <div className="flex items-center justify-between gap-1">
-          <span className="font-bold text-gray-800 text-xs truncate">
-            {medicamento.nome}
-          </span>
-          <span className="flex items-center gap-1 shrink-0">
+        <div className="flex items-start justify-between gap-2">
+          <span className="font-bold text-gray-900 text-sm leading-tight">{medicamento.nome}</span>
+          <span className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
             {gratuito && (
               <span
                 title={CANAL_INFO[gratuito.canal].descricao}
-                className={`text-[8px] px-1 py-0.5 rounded font-extrabold uppercase border ${CANAL_BADGE[gratuito.canal]}`}
+                className={`text-[10px] px-1.5 py-0.5 rounded font-extrabold uppercase border ${CANAL_BADGE[gratuito.canal]}`}
               >
                 {CANAL_INFO[gratuito.canal].rotulo}
               </span>
             )}
-            {isEspecial && (
+            {especial && regra && (
               <span
                 title={medicamento.motivoEspecial}
-                className="text-[8px] bg-amber-100 border border-amber-200 px-1 py-0.5 rounded font-extrabold uppercase text-amber-800"
+                className={`text-[10px] border px-1.5 py-0.5 rounded font-extrabold uppercase ${
+                  notificacao ? 'bg-red-100 border-red-200 text-red-800' : 'bg-amber-100 border-amber-200 text-amber-800'
+                }`}
               >
-                2 VIAS
+                {seloCurto(regra)}
               </span>
             )}
           </span>
         </div>
 
-        <span className="block text-[9px] text-gray-400 font-semibold truncate mt-0.5">
-          {medicamento.principioAtivo}
-        </span>
-
-        {/* Marca de referência — orienta o paciente na farmácia. Não vai impressa. */}
-        <span className="block text-[9px] text-indigo-400 font-semibold truncate">
-          ref.: {medicamento.marcaReferencia}
-        </span>
-
-        <p className="text-[10px] text-gray-500 mt-1 leading-normal font-normal line-clamp-2 italic">
-          {medicamento.explicacao}
+        <p className="text-xs text-gray-500 mt-0.5">
+          {medicamento.principioAtivo} · <span className="text-indigo-500">ref.: {medicamento.marcaReferencia}</span>
         </p>
 
+        <p className="text-xs text-gray-600 mt-1 leading-snug line-clamp-2">{medicamento.posologiaPadrao}</p>
+
         {gratuito?.nota && (
-          <p className={`text-[9px] mt-1 leading-snug font-semibold ${CANAL_NOTA_TEXTO[gratuito.canal]}`}>
-            {gratuito.nota}
-          </p>
+          <p className={`text-[11px] mt-1 leading-snug font-semibold ${CANAL_NOTA_TEXTO[gratuito.canal]}`}>{gratuito.nota}</p>
         )}
       </div>
 
-      <div className="mt-2 pt-2 border-t border-dashed border-gray-100 flex items-center justify-between gap-2">
-        <span className="text-[8px] text-indigo-500 font-bold bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider">
-          {medicamento.uso}
-        </span>
-        <button
-          type="button"
-          onClick={() => onPrescrever(medicamento)}
-          className="flex items-center gap-0.5 px-2 py-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-md text-[10px] font-bold transition-all shadow-sm group-hover:shadow"
-        >
-          <Plus size={10} />
-          Prescrever
-        </button>
+      <div className="mt-2 flex items-center gap-1 flex-wrap">
+        {doses.length > 1 ? (
+          doses.map((d, i) => (
+            <button
+              key={d.rotulo + i}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPrescrever(medicamento, i);
+              }}
+              className="px-2 py-1 rounded-md text-xs font-semibold border border-gray-200 bg-white text-gray-700 hover:border-indigo-400 hover:text-indigo-700"
+            >
+              + {d.rotulo}
+              {d.gratuito && <span className="ml-1 text-[10px] font-extrabold text-emerald-700">{CANAL_INFO[d.gratuito.canal].rotulo}</span>}
+            </button>
+          ))
+        ) : (
+          <span className="flex items-center gap-1 text-xs font-semibold text-indigo-600">
+            <Plus size={13} /> Prescrever
+          </span>
+        )}
+        <span className="ml-auto text-[10px] text-gray-400 uppercase font-semibold">{medicamento.uso}</span>
       </div>
     </div>
   );

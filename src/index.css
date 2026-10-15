@@ -107,6 +107,7 @@
   }
 
   @page {
+    size: A4;
     margin: 0;
   }
 
@@ -114,4 +115,16 @@
     margin: 0;
     padding: 0;
   }
+}
+
+/* Listas de posologia dentro das receitas de 2 vias */
+.receita-md ul {
+  list-style: disc;
+  padding-left: 14px;
+  margin: 0;
+}
+
+.receita-md li {
+  margin: 0;
+  line-height: 1.35;
 }

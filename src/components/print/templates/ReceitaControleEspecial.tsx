@@ -1,375 +1,125 @@
 import { useReceitaStore, type MedicamentoReceita } from '../../../store/useReceitaStore';
-import { renderMarkdown } from '../../../utils/markdown';
+import { REGRAS_MODELO } from '../../../data/regrasReceita';
+import FolhaDuasVias from './FolhaDuasVias';
+import BlocoEmitente from './BlocoEmitente';
+import ItemPrescricao from './ItemPrescricao';
 
-// ── Dados fixos do médico ──────────────────────────────────────
-const MEDICO = {
-  nome: 'Dr. Roberto Arcanjo',
-  crm: 'CRM/CE: 26.155',
-  endereco: 'R. João Lobo Filho, 250 - AllMed',
-  cidade: 'Fortaleza/Ceará',
-};
-
-// ── Uma via (bloco que se repete 2x) ──────────────────────────
-function ViaReceita({ rotulo, medicamentosOverride, textoLivre }: { rotulo: '1ª VIA — FARMÁCIA' | '2ª VIA — PACIENTE'; medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string }) {
-  // Seletores por campo — mesmo motivo do ReceitaBranca: na prévia ao vivo os
-  // medicamentos vêm por prop, então assinar o store inteiro fazia as DUAS vias
-  // serem redesenhadas a cada tecla digitada num medicamento.
+/**
+ * Receita de Controle Especial — listas C1, C5 e adendo A2 (Portaria 344/98).
+ * - Título com a expressão exata "Receita de Controle Especial" (sem ela a farmácia deve recusar).
+ * - 2 vias: 1ª retida na farmácia, 2ª orientação ao paciente.
+ * - Paciente: nome, CPF (ou "Não possui") e endereço completo.
+ * - Quantidade em número e por extenso; no máximo 3 substâncias (o agrupador garante).
+ * - Comprador (com identidade e órgão emissor) e fornecedor em branco para a farmácia.
+ */
+export default function ReceitaControleEspecial({
+  medicamentos = [],
+  textoLivre,
+}: {
+  medicamentos?: MedicamentoReceita[];
+  textoLivre?: string;
+}) {
   const pacienteNome = useReceitaStore((s) => s.pacienteNome);
   const pacienteCpf = useReceitaStore((s) => s.pacienteCpf);
+  const pacienteSemCpf = useReceitaStore((s) => s.pacienteSemCpf);
+  const pacienteEndereco = useReceitaStore((s) => s.pacienteEndereco);
+  const pacienteCidade = useReceitaStore((s) => s.pacienteCidade);
+  const pacienteUf = useReceitaStore((s) => s.pacienteUf);
+  const pacienteCep = useReceitaStore((s) => s.pacienteCep);
+  const local = useReceitaStore((s) => s.local);
   const data = useReceitaStore((s) => s.data);
-  const medicamentosStore = useReceitaStore((s) =>
-    medicamentosOverride ? undefined : s.medicamentos
+  const regra = REGRAS_MODELO.RCE;
+
+  const enderecoPaciente = [
+    pacienteEndereco,
+    [pacienteCidade, pacienteUf].filter(Boolean).join('/'),
+    pacienteCep ? `CEP ${pacienteCep}` : '',
+  ]
+    .filter((s) => s && s.trim())
+    .join(' - ');
+  const cpf = pacienteSemCpf && !pacienteCpf ? 'Não possui' : pacienteCpf;
+
+  const linha = (rotulo: string, largura?: string) => (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', marginBottom: '3px', ...(largura ? { width: largura } : { flex: 1 }) }}>
+      <span style={{ whiteSpace: 'nowrap' }}>{rotulo}</span>
+      <span style={{ flex: 1, borderBottom: '0.5pt solid #000', minHeight: '11px' }} />
+    </div>
   );
-  const medicamentos = medicamentosOverride ?? medicamentosStore ?? [];
-  const isTextoLivre = !!(textoLivre && textoLivre.trim());
 
-  const medsComConteudo = medicamentos.filter((m) => m.principioAtivo || m.nomeDigitado);
-  const count = medsComConteudo.length;
-
-  const cfg = {
-    px: 'px-8',
-    py: 'py-5',
-    titleMb: 'mb-2',
-    headerMb: 'mb-2',
-    contentSpaceY: 'space-y-1',
-    itemMb: 'mb-1',
-    prescricaoLabelSize: 'text-[9px]',
-    medTitleSize: 'text-[9px]',
-    medSubSize: 'text-[7.5px]',
-    posoSize: 'text-[8px]',
-    obsSize: 'text-[7.5px]',
-    bottomAssinatura: '135px',
-    maxHeight: '5.3cm',
-  };
-
-  if (count === 4) {
-    cfg.py = 'py-4';
-    cfg.titleMb = 'mb-1.5';
-    cfg.headerMb = 'mb-1.5';
-    cfg.contentSpaceY = 'space-y-0.5';
-    cfg.itemMb = 'mb-0.5';
-    cfg.medTitleSize = 'text-[8.5px]';
-    cfg.medSubSize = 'text-[7px]';
-    cfg.posoSize = 'text-[7.5px]';
-    cfg.obsSize = 'text-[7px]';
-    cfg.bottomAssinatura = '130px';
-    cfg.maxHeight = '5.6cm';
-  } else if (count === 5) {
-    cfg.px = 'px-6';
-    cfg.py = 'py-3.5';
-    cfg.titleMb = 'mb-1';
-    cfg.headerMb = 'mb-1';
-    cfg.contentSpaceY = 'space-y-0.5';
-    cfg.itemMb = 'mb-0.5';
-    cfg.medTitleSize = 'text-[8px]';
-    cfg.medSubSize = 'text-[6.5px]';
-    cfg.posoSize = 'text-[7px]';
-    cfg.obsSize = 'text-[6.5px]';
-    cfg.bottomAssinatura = '125px';
-    cfg.maxHeight = '5.8cm';
-  } else if (count >= 6) {
-    cfg.px = 'px-6';
-    cfg.py = 'py-3';
-    cfg.titleMb = 'mb-0.5';
-    cfg.headerMb = 'mb-0.5';
-    cfg.contentSpaceY = 'space-y-0.5';
-    cfg.itemMb = 'mb-0';
-    cfg.medTitleSize = 'text-[7.5px]';
-    cfg.medSubSize = 'text-[6px]';
-    cfg.posoSize = 'text-[6.5px]';
-    cfg.obsSize = 'text-[6px]';
-    cfg.bottomAssinatura = '120px';
-    cfg.maxHeight = '6.0cm';
-  }
-
-  const normalizarUso = (uso: string): string => {
-    const u = (uso || '').trim().toLowerCase();
-    if (!u) return 'Uso Oral';
-    if (u.includes('sublingual')) return 'Uso Sublingual';
-    if (u.includes('oral')) return 'Uso Oral';
-    if (u.includes('tópico') || u.includes('topico')) return 'Uso Tópico';
-    if (u.includes('nasal')) return 'Uso Nasal';
-    if (u.includes('ocular') || u.includes('oftálmico') || u.includes('oftalmico')) return 'Uso Ocular';
-    if (u.includes('inalatório') || u.includes('inalatorio') || u.includes('inalação') || u.includes('inalacao')) return 'Uso Inalatório';
-    if (u.includes('vaginal')) return 'Uso Vaginal';
-    if (u.includes('retal')) return 'Uso Retal';
-    return uso.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-  };
-
-  const gruposUso = Array.from(new Set(medsComConteudo.map(m => normalizarUso(m.uso))));
-  gruposUso.sort((a, b) => {
-    if (a === 'Uso Oral') return -1;
-    if (b === 'Uso Oral') return 1;
-    return a.localeCompare(b);
-  });
-
-  const renderMedRow = (med: typeof medicamentos[0], indexGlobal: number) => {
-    return (
-      <div key={med.id} className={`text-left ${cfg.itemMb}`}>
-        {/* Medicamento + Qtd — linha contínua, largura total */}
-        <div className="border-b border-black pb-0.5 flex justify-between items-baseline gap-2" style={{ minHeight: '13px' }}>
-          <div className="flex-1 min-w-0">
-            <span className={`font-bold ${cfg.medTitleSize}`}>{indexGlobal + 1}. </span>
-            <span className={`font-bold uppercase ${cfg.medTitleSize}`}>{med.principioAtivo || med.nomeDigitado}</span>
-            {med.formaFarmaceutica && <span className={`${cfg.medSubSize} text-gray-500 italic`}> — {med.formaFarmaceutica}</span>}
-            {med.indicacao && (
-              <span className={`${cfg.medSubSize} text-gray-400 font-medium ml-1`}>
-                ({med.indicacao.toLowerCase().startsWith('para') ? med.indicacao : `Para ${med.indicacao.toLowerCase()}`})
-              </span>
-            )}
-          </div>
-          {med.quantidade && <span className={`${cfg.medSubSize} font-bold shrink-0 ml-2`}>Qtd.: {med.quantidade}</span>}
-        </div>
-        <div className={`${cfg.posoSize} text-gray-800 pt-0.5 pb-0.5 border-b border-black w-full leading-snug`}>
-          <span className="font-semibold text-gray-700">Posologia:</span>{' '}
-          <div
-            className={`inline ${cfg.posoSize} text-gray-855`}
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(med.posologia) }}
-          />
-          {med.duracao && <span className={`text-gray-600 ${cfg.medSubSize}`}> — {med.duracao}</span>}
-          {med.observacoes && (
-            <div className={`block ${cfg.obsSize} text-gray-650 bg-gray-50/50 px-1 border-l-2 border-indigo-100 mt-0.5`}>
-              <span className="font-semibold text-indigo-755">Obs.:</span>{' '}
-              <div
-                className={`inline ${cfg.obsSize}`}
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(med.observacoes) }}
-              />
-            </div>
-          )}
-        </div>
+  const via = (rotulo: string) => (
+    <div style={{ padding: '6mm 10mm 5mm', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', fontSize: '11.5px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
+        <div style={{ fontSize: '15px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Receita de Controle Especial</div>
+        <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' }}>{rotulo}</div>
       </div>
-    );
-  };
 
-  return (
-    <div
-      className={`font-sans text-black bg-white ${cfg.px} ${cfg.py}`}
-      style={{ height: '14.2cm', boxSizing: 'border-box', overflow: 'hidden', position: 'relative' }}
-    >
-      {/* ── Título ── */}
-      <h1
-        className={`text-center font-black uppercase ${cfg.titleMb}`}
-        style={{
-          fontSize: count >= 5 ? '11px' : '13px',
-          letterSpacing: '0.2em',
-          fontFamily: 'serif',
-        }}
-      >
-        RECEITUÁRIO&nbsp;&nbsp;CONTROLE&nbsp;&nbsp;ESPECIAL
-      </h1>
+      <BlocoEmitente />
 
-      {/* ── Cabeçalho: ID Emitente + Rótulo da Via ── */}
-      <div className={`flex items-start gap-3 ${cfg.headerMb}`}>
-        {/* Box Identificação */}
-        <div
-          className="border border-black text-[9px] leading-tight text-left"
-          style={{ minWidth: count >= 5 ? '220px' : '250px', padding: count >= 5 ? '3px 5px' : '4px 6px' }}
-        >
-          <div
-            className="text-center font-bold uppercase mb-0.5 border-b border-black pb-0.5"
-            style={{ fontSize: count >= 5 ? '7px' : '7.5px', letterSpacing: '0.05em' }}
-          >
-            IDENTIFICAÇÃO DO EMITENTE
+      <div style={{ borderBottom: '1px solid #000', padding: '4px 0 2px', marginBottom: '4px', lineHeight: 1.4 }}>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ flex: 1 }}>
+            <span style={{ fontWeight: 700 }}>Paciente: </span>
+            {pacienteNome || '______________________________________'}
           </div>
-          <p className="font-bold text-[10px] mb-0">{MEDICO.nome}</p>
-          <p className="mb-0">{MEDICO.crm}</p>
-          <p className="mb-0 text-[8px]">{MEDICO.endereco}</p>
-          <p className="text-[8px]">{MEDICO.cidade}</p>
+          <div style={{ whiteSpace: 'nowrap' }}>
+            <span style={{ fontWeight: 700 }}>CPF: </span>
+            {cpf || '_______________'}
+          </div>
         </div>
-
-        {/* Rótulo da via */}
-        <div className="text-right ml-auto leading-tight pt-1">
-          <p className="text-[9px] font-bold text-gray-900">{rotulo.split('—')[0].trim()}</p>
-          <p className="text-[8px] text-gray-600" style={{ marginTop: '1px' }}>
-            {rotulo === '1ª VIA — FARMÁCIA' ? '2ª VIA — PACIENTE' : '1ª VIA — FARMÁCIA'}
-          </p>
+        <div>
+          <span style={{ fontWeight: 700 }}>Endereço: </span>
+          {enderecoPaciente || '________________________________________________________'}
         </div>
       </div>
 
-      {/* ── Paciente ── */}
-      <div className={`flex items-end gap-4 border-b border-black pb-0.5 ${cfg.headerMb}`}>
-        <div className="flex-[3] text-left">
-          <span className="block font-bold uppercase text-gray-600 tracking-wide" style={{ fontSize: '6.5px' }}>
-            Paciente
-          </span>
-          <span className="font-semibold" style={{ fontSize: count >= 5 ? '8.5px' : '9.5px' }}>
-            {pacienteNome || ' '}
-          </span>
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        <div style={{ fontWeight: 700, marginBottom: '3px' }}>Prescrição:</div>
+        {textoLivre ? (
+          <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '12px', lineHeight: 1.4 }}>{textoLivre}</div>
+        ) : (
+          medicamentos.map((m, i) => <ItemPrescricao key={m.id} med={m} numero={i + 1} />)
+        )}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', margin: '4px 0 5px' }}>
+        <div style={{ fontSize: '11px' }}>
+          {local || 'Fortaleza-CE'}, {data || '____/____/______'}
         </div>
-        <div className="text-left" style={{ minWidth: '85px' }}>
-          <span className="block font-bold uppercase text-gray-600 tracking-wide" style={{ fontSize: '6.5px' }}>
-            CPF
-          </span>
-          <span style={{ fontSize: count >= 5 ? '8.5px' : '9.5px' }}>
-            {pacienteCpf || ' '}
-          </span>
+        <div style={{ borderTop: '1px solid #000', width: '62mm', paddingTop: '2px', fontSize: '10px', textAlign: 'center' }}>
+          Assinatura do emitente
         </div>
       </div>
 
-      {/* ── Prescrição ── */}
-      <div style={{ fontSize: '9px' }}>
-        <span className={`font-bold ${cfg.prescricaoLabelSize} block text-left`}>Prescrição:</span>
-        <div className={`w-full mt-0.5 overflow-hidden ${cfg.contentSpaceY}`} style={{ maxHeight: cfg.maxHeight }}>
-          {isTextoLivre ? (
-            <div
-              className={`text-left text-black ${cfg.posoSize} leading-snug`}
-              style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
-            >
-              {textoLivre}
-            </div>
-          ) : (
-          gruposUso.map((grupo, gIdx) => {
-            const medsDoGrupo = medsComConteudo.filter(m => normalizarUso(m.uso) === grupo);
-            let indexAcumulado = 0;
-            for (let i = 0; i < gIdx; i++) {
-              indexAcumulado += medsComConteudo.filter(m => normalizarUso(m.uso) === gruposUso[i]).length;
-            }
-            return (
-              <div key={grupo} className={gIdx > 0 ? 'mt-1' : ''}>
-                <div className="text-[7.5px] font-bold text-indigo-700 uppercase tracking-wider mb-0.5 text-left">{grupo}</div>
-                <div>
-                  {medsDoGrupo.map((med, idx) => renderMedRow(med, indexAcumulado + idx))}
-                </div>
-              </div>
-            );
-          })
-          )}
-
-          {!isTextoLivre && medsComConteudo.length === 0 && (
-            <div className="border-b border-black" style={{ minHeight: '15px' }} />
-          )}
+      <div style={{ display: 'flex', border: '1px solid #000', fontSize: '10px' }}>
+        <div style={{ flex: 1, borderRight: '1px solid #000', padding: '3px 5px' }}>
+          <div style={{ fontWeight: 700, textTransform: 'uppercase', textAlign: 'center', borderBottom: '0.5pt solid #000', marginBottom: '3px' }}>
+            Identificação do comprador
+          </div>
+          {linha('Nome:')}
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {linha('Ident.:')}
+            {linha('Órg. emissor:', '40%')}
+          </div>
+          {linha('End.:')}
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {linha('Cidade:')}
+            {linha('UF:', '18%')}
+          </div>
+          {linha('Telefone:')}
         </div>
-      </div>
-
-      {/* ── Data + Assinatura — bem acima do bloco de identificações ── */}
-      <div
-        className={`flex items-end gap-4 absolute ${cfg.px.includes('px-6') ? 'left-6 right-6' : 'left-8 right-8'}`}
-        style={{ bottom: cfg.bottomAssinatura, fontSize: count >= 5 ? '7.5px' : '8.5px' }}
-      >
-        <div className="flex items-end gap-0.5">
-          <div className="border-b border-black w-8 text-center" style={{ fontSize: count >= 5 ? '7.5px' : '8.5px' }}>{data?.split('/')[0] || '__'}</div>
-          <span>/</span>
-          <div className="border-b border-black w-10 text-center" style={{ fontSize: count >= 5 ? '7.5px' : '8.5px' }}>{data?.split('/')[1] || '____'}</div>
-          <span>/</span>
-          <div className="border-b border-black w-12 text-center" style={{ fontSize: count >= 5 ? '7.5px' : '8.5px' }}>{data?.split('/')[2] || '______'}</div>
-          <span className="ml-1 text-gray-600 text-[8px]">Data</span>
-        </div>
-
-        <div className="flex-1 text-right">
-          <div className="inline-block text-center">
-            <div className="border-b border-black" style={{ width: count >= 5 ? '150px' : '180px', height: '18px' }} />
-            <p className="text-[7.5px] mt-0.5 text-gray-700">Assinatura do Emitente</p>
+        <div style={{ flex: 1, padding: '3px 5px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontWeight: 700, textTransform: 'uppercase', textAlign: 'center', borderBottom: '0.5pt solid #000', marginBottom: '3px' }}>
+            Identificação do fornecedor
           </div>
-        </div>
-      </div>
-
-      {/* ── Boxes inferiores: Comprador + Fornecedor ── */}
-      <div
-        className={`flex gap-0 border border-black absolute ${cfg.px.includes('px-6') ? 'left-6 right-6' : 'left-8 right-8'}`}
-        style={{ bottom: count >= 6 ? '6px' : '10px', fontSize: count >= 6 ? '7px' : '8px' }}
-      >
-        {/* Identificação do Comprador */}
-        <div className="flex-1 border-r border-black p-1.5 text-left">
-          <div
-            className="text-center font-bold uppercase border-b border-black mb-1 pb-0.5"
-            style={{ fontSize: count >= 6 ? '7.5px' : '8px', letterSpacing: '0.04em' }}
-          >
-            IDENTIFICAÇÃO DO COMPRADOR
-          </div>
-          <div className="flex items-end gap-1 mb-0.5">
-            <span>Nome:</span>
-            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
-          </div>
-          <div className="flex items-end gap-3 mb-0.5">
-            <div className="flex items-end gap-1 flex-1">
-              <span className="shrink-0">CPF:</span>
-              <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
-            </div>
-          </div>
-          <div className="flex items-end gap-1 mb-0.5">
-            <span>End.:</span>
-            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
-          </div>
-          <div className="flex items-end gap-3 mb-0.5">
-            <div className="flex items-end gap-1 flex-1">
-              <span className="shrink-0">Cidade:</span>
-              <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
-            </div>
-            <div className="flex items-end gap-1">
-              <span className="shrink-0">UF:</span>
-              <div className="border-b border-black w-8" style={{ minHeight: '12px' }} />
-            </div>
-          </div>
-          <div className="flex items-end gap-1">
-            <span>Telefone:</span>
-            <div className="flex-1 border-b border-black" style={{ minHeight: '12px' }} />
-          </div>
-        </div>
-
-        {/* Identificação do Fornecedor */}
-        <div className="flex-1 p-1.5 flex flex-col justify-between">
-          <div
-            className="text-center font-bold uppercase border-b border-black mb-1 pb-0.5"
-            style={{ fontSize: count >= 6 ? '7.5px' : '8px', letterSpacing: '0.04em' }}
-          >
-            IDENTIFICAÇÃO DO FORNECEDOR
-          </div>
-          <div className="flex-1" />
-          <div className="border-t border-black pt-0.5 text-[8px] text-center" style={{ fontSize: count >= 6 ? '7.5px' : '8px' }}>
-            ASSINATURA DO FARMACÊUTICO&nbsp;&nbsp;DATA&nbsp;&nbsp;___/___/___
+          <div style={{ flex: 1 }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '0.5pt solid #000', paddingTop: '2px' }}>
+            <span>Assinatura do farmacêutico</span>
+            <span>Data ____/____/______</span>
           </div>
         </div>
       </div>
     </div>
   );
-}
 
-// ── Componente exportado: A4 com 2 vias ───────────────────────
-export default function ReceitaControleEspecial({ medicamentosOverride, textoLivre }: { medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string } = {}) {
-  return (
-    <div
-      className="bg-white"
-      style={{
-        width: '210mm',
-        height: '297mm',
-        maxWidth: '210mm',
-        maxHeight: '297mm',
-        margin: '0 auto',
-        boxSizing: 'border-box',
-        overflow: 'hidden',
-      }}
-    >
-      {/* 1ª VIA — FARMÁCIA */}
-      <ViaReceita rotulo="1ª VIA — FARMÁCIA" medicamentosOverride={medicamentosOverride} textoLivre={textoLivre} />
-
-      {/* Linha de corte */}
-      <div
-        className="flex items-center gap-3 no-print-hidden"
-        style={{
-          borderTop: '1px dashed #6b7280',
-          borderBottom: '1px dashed #6b7280',
-          padding: '3px 32px',
-          backgroundColor: '#f9fafb',
-        }}
-      >
-        <span style={{ color: '#9ca3af', fontSize: '11px' }}>✂</span>
-        <span
-          style={{
-            color: '#9ca3af',
-            fontSize: '9px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.15em',
-            flex: 1,
-            textAlign: 'center',
-          }}
-        >
-          Recorte aqui
-        </span>
-        <span style={{ color: '#9ca3af', fontSize: '11px' }}>✂</span>
-      </div>
-
-      {/* 2ª VIA — PACIENTE */}
-      <ViaReceita rotulo="2ª VIA — PACIENTE" medicamentosOverride={medicamentosOverride} textoLivre={textoLivre} />
-    </div>
-  );
+  return <FolhaDuasVias rotulos={regra.rotuloVias!} renderVia={via} />;
 }
