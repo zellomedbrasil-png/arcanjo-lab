@@ -236,10 +236,13 @@ async function transcribeGemini(blob: Blob, mimeType: string, signal: AbortSigna
         ],
       },
     ],
-    generationConfig: { temperature: 0, maxOutputTokens: 8192 },
+    // 3.8 Flash raciocina antes de responder e isso conta no limite de saída:
+    // teto alto para uma consulta longa não sair cortada.
+    generationConfig: { temperature: 0, maxOutputTokens: 32768 },
   };
 
-  const response = await fetch('/api/gemini?model=gemini-2.5-flash', {
+  // gemini-2.5-flash ficou restrito a quem já usava; 3.8 Flash é o recomendado pelo Google.
+  const response = await fetch('/api/gemini?model=gemini-3.8-flash', {
     method: 'POST',
     signal,
     headers: { 'Content-Type': 'application/json' },

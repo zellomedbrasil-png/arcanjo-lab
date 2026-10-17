@@ -45,6 +45,10 @@ export default defineConfig(({ mode }) => {
                 proxyReq.setHeader('anthropic-version', '2023-06-01');
                 // Remove o header de segurança perigoso: servidor→servidor não precisa
                 proxyReq.removeHeader('anthropic-dangerous-direct-browser-access');
+                // Sem o Origin do navegador a Anthropic não trata como chamada CORS
+                // (que exigiria o header perigoso acima e devolve 401).
+                proxyReq.removeHeader('origin');
+                proxyReq.removeHeader('referer');
               }
             });
           },
@@ -69,7 +73,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => {
             const query = path.split('?')[1] || '';
-            const model = (new URLSearchParams(query).get('model') || 'gemini-2.5-flash').replace('google/', '');
+            const model = (new URLSearchParams(query).get('model') || 'gemini-3.5-flash-lite').replace('google/', '');
             const apiKey = env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY || '';
             return `/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`;
           },

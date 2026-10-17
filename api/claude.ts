@@ -39,7 +39,7 @@ export default async function handler(req: Request): Promise<Response> {
       model?: string;
       max_tokens?: number;
       system?: string;
-      temperature?: number;
+      output_config?: { effort?: string };
       messages: Array<{ role: string; content: string }>;
     };
 
@@ -51,9 +51,10 @@ export default async function handler(req: Request): Promise<Response> {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: body.model ?? 'claude-sonnet-5',
-        max_tokens: body.max_tokens ?? 8192,
-        temperature: body.temperature ?? 0.1,
+        // Sem temperature: o Claude Sonnet 5.5 recusa (400) qualquer valor fora do padrão.
+        model: body.model ?? 'claude-sonnet-5-5',
+        max_tokens: body.max_tokens ?? 16000,
+        ...(body.output_config ? { output_config: body.output_config } : {}),
         stream: true,
         ...(body.system ? { system: body.system } : {}),
         messages: body.messages,

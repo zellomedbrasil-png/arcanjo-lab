@@ -91,17 +91,17 @@ export const AI_MODELS: AIModel[] = [
     timeoutMs: 60_000,
   },
   {
-    id: 'google/gemini-3.6-flash',
-    label: 'Gemini 3.6 Flash 🧠',
-    badge: 'Gemini 3.6 Flash',
+    id: 'google/gemini-3.8-flash',
+    label: 'Gemini 3.8 Flash 🧠',
+    badge: 'Gemini 3.8 Flash',
     provider: 'gemini',
-    note: 'Mais recente do Google — equilibra velocidade e raciocínio (via proxy seguro)',
+    note: 'Flash mais recente do Google — equilibra velocidade e raciocínio (via proxy seguro)',
     timeoutMs: 90_000,
   },
   {
-    id: 'claude-sonnet-5',
-    label: 'Claude Sonnet 5 🧠',
-    badge: 'Claude Sonnet 5',
+    id: 'claude-sonnet-5-5',
+    label: 'Claude Sonnet 5.5 🧠',
+    badge: 'Claude Sonnet 5.5',
     provider: 'anthropic',
     note: 'Modelo de alta performance da Anthropic (Direct API) — requer créditos na conta',
     timeoutMs: 120_000,
@@ -164,8 +164,18 @@ export const AI_MODELS: AIModel[] = [
   },
 ];
 
+/** Modelos que saíram da lista → sucessor. Quem tinha escolhido o antigo continua na mesma família. */
+const MODELOS_SUBSTITUIDOS: Record<string, string> = {
+  'claude-sonnet-5': 'claude-sonnet-5-5',
+  'google/gemini-3.6-flash': 'google/gemini-3.8-flash',
+};
+
 export function getDefaultModelId(): string {
-  const saved = localStorage.getItem('arcanjo_selected_model');
+  let saved = localStorage.getItem('arcanjo_selected_model');
+  if (saved && MODELOS_SUBSTITUIDOS[saved]) {
+    saved = MODELOS_SUBSTITUIDOS[saved];
+    localStorage.setItem('arcanjo_selected_model', saved);
+  }
   if (saved && AI_MODELS.some(m => m.id === saved)) {
     return saved;
   }
@@ -491,12 +501,13 @@ export async function callGemini(
     },
   };
 
-  // Desativa o "thinking" do Gemini 2.5/3 (exceto 3.5, 3.6 e 3.1-pro, que geram
+  // Desativa o "thinking" do Gemini 2.5/3 (exceto 3.5, 3.6, 3.8 e 3.1-pro, que geram
   // erro ao definir thinkingBudget: 0 na API direta — deixam o thinking no padrão).
   if (
     (modelId.includes('2.5') || modelId.includes('3')) &&
     !modelId.includes('3.5') &&
     !modelId.includes('3.6') &&
+    !modelId.includes('3.8') &&
     !modelId.includes('3.1-pro')
   ) {
     payload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
@@ -522,7 +533,7 @@ export async function callGemini(
       if (errText.includes('prepayment credits are depleted')) {
         throw new Error(`Gemini 429: Créditos pré-pagos do Google esgotados. Compre créditos em Google AI Studio → Faturamento (o saldo precisa ficar acima de US$ 0).`);
       }
-      throw new Error(`Gemini 429: Limite de cota excedido para o modelo ${modelId}. Se estiver usando a chave gratuita da Google, o Gemini Pro possui limites muito estritos. Tente usar o Gemini 2.5 Flash ou ative o faturamento no Google AI Studio.`);
+      throw new Error(`Gemini 429: Limite de cota excedido para o modelo ${modelId}. Se estiver usando a chave gratuita da Google, o Gemini Pro possui limites muito estritos. Tente o Gemini 3.5 Flash Lite ou ative o faturamento no Google AI Studio.`);
     }
     throw new Error(`Gemini ${response.status}: ${errText.substring(0, 200)}`);
   }
@@ -602,18 +613,22 @@ async function callAnthropic(
   modelId: string,
   signal?: AbortSignal
 ): Promise<string> {
+  // Claude Sonnet 5.5: sem temperature (valor fora do padrão dá 400) e com o
+  // raciocínio adaptativo sempre ligado. O raciocínio conta no max_tokens, por isso
+  // o teto é maior que o dos outros provedores; esforço "medium" segura a latência
+  // de uma nota clínica sem perder a revisão do caso.
   const body: {
     model: string;
     max_tokens: number;
     messages: Array<{ role: string; content: string }>;
-    temperature: number;
+    output_config: { effort: 'low' | 'medium' | 'high' };
     stream: true;
     system?: string;
   } = {
     model: modelId,
-    max_tokens: MAX_OUTPUT_TOKENS,
+    max_tokens: 16_000,
     messages: [{ role: 'user', content: params.prompt }],
-    temperature: typeof params.temperature === 'number' ? params.temperature : 0.1,
+    output_config: { effort: 'medium' },
     // Streaming ponta a ponta: o proxy Edge repassa o SSE da Anthropic.
     // Em dev, o proxy do Vite envia este body verbatim à Anthropic — por isso o stream: true vai aqui também.
     stream: true,
@@ -685,6 +700,9 @@ async function callAnthropic(
         } else if (evt.type === 'message_delta' && evt.delta?.stop_reason === 'max_tokens') {
           // A nota atingiu o teto de tokens — avisa que pode estar incompleta.
           stopReason = 'max_tokens';
+        } else if (evt.type === 'message_delta' && evt.delta?.stop_reason === 'refusal') {
+          // Filtro de segurança da Anthropic recusou — vira erro para o roteador tentar o Gemini.
+          throw new Error('Anthropic recusou a resposta (filtro de segurança).');
         } else if (evt.type === 'error') {
           throw new Error(`Anthropic: ${evt.error?.message ?? 'erro no stream'}`);
         }
@@ -712,7 +730,8 @@ async function callAnthropic(
  * Roteador principal com timeout por modelo e fallback automático.
  *
  * Fluxo de fallback quando timeout ou erro:
- *   Modelo selecionado → DeepSeek V4 Flash → GPT-5.5 → Erro
+ *   Modelo selecionado → Gemini 3.8 Flash → Gemini 3.5 Flash Lite (→ Claude Sonnet 5.5,
+ *   só quando o escolhido era Gemini) → Erro. Sem OpenRouter/DeepSeek nas reservas.
  *
  * Retorna string com o texto gerado.
  * Lança erro somente se todos os fallbacks falharem ou se o usuário cancelou.
@@ -762,62 +781,19 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
     timeoutMs,
   });
 
-  // 2. Fallbacks multi-provedor inteligentes
-  const primaryProvider = modelMeta?.provider ?? 'openrouter';
-
-  if (primaryProvider === 'anthropic') {
-    // Claude indisponível (ex.: sem créditos) não pode travar o médico:
-    // cai para o Gemini nativo e depois DeepSeek.
-    fallbackChain.push({
-      id: 'google/gemini-3.5-flash-lite',
-      badge: 'Gemini 3.5 Flash Lite (fallback)',
-      provider: 'gemini',
-      timeoutMs: 60_000,
-    });
-    fallbackChain.push({
-      id: 'deepseek/deepseek-v4-flash',
-      badge: 'DeepSeek V4 Flash (fallback)',
-      provider: 'openrouter',
-      timeoutMs: 60_000,
-    });
-  } else if (primaryProvider === 'groq') {
-    // Se o principal for Groq, fallback para DeepSeek (barato e independente)
-    fallbackChain.push({
-      id: 'deepseek/deepseek-v4-flash',
-      badge: 'DeepSeek V4 Flash (fallback)',
-      provider: 'openrouter',
-      timeoutMs: 60_000,
-    });
-    fallbackChain.push({
-      id: 'openai/gpt-5.5',
-      badge: 'GPT-5.5 (fallback)',
-      provider: 'openrouter',
-      timeoutMs: 60_000,
-    });
-  } else {
-    // Se o principal for OpenRouter/Gemini, fallback 1 deve ser DeepSeek (barato, contexto 1M, independente)
-    fallbackChain.push({
-      id: 'deepseek/deepseek-v4-flash',
-      badge: 'DeepSeek V4 Flash (fallback)',
-      provider: 'openrouter',
-      timeoutMs: 60_000,
-    });
-    // Fallback 2: Outro modelo OpenRouter dependendo do selecionado
-    if (selectedModelId !== 'openai/gpt-5.5') {
-      fallbackChain.push({
-        id: 'openai/gpt-5.5',
-        badge: 'GPT-5.5 (fallback)',
-        provider: 'openrouter',
-        timeoutMs: 30_000,
-      });
-    } else {
-      fallbackChain.push({
-        id: 'google/gemini-3.5-flash-lite',
-        badge: 'Gemini 3.5 Flash Lite (fallback)',
-        provider: 'gemini',
-        timeoutMs: 30_000,
-      });
-    }
+  // 2. Reservas: só provedores com quem os dados do paciente já trafegam por
+  // escolha do médico (Google e Anthropic, via proxy próprio). Nada de terceiros
+  // intermediários (OpenRouter) nem DeepSeek com transcrição de consulta.
+  const RESERVAS: Array<{ id: string; badge: string; provider: 'gemini' | 'anthropic' }> = [
+    { id: 'google/gemini-3.8-flash', badge: 'Gemini 3.8 Flash (fallback)', provider: 'gemini' },
+    { id: 'google/gemini-3.5-flash-lite', badge: 'Gemini 3.5 Flash Lite (fallback)', provider: 'gemini' },
+    { id: 'claude-sonnet-5-5', badge: 'Claude Sonnet 5.5 (fallback)', provider: 'anthropic' },
+  ];
+  for (const r of RESERVAS) {
+    if (r.id === selectedModelId) continue;
+    // Claude só entra como reserva de Gemini — se o Claude foi o escolhido e falhou, não repete.
+    if (r.provider === 'anthropic' && modelMeta?.provider !== 'gemini') continue;
+    fallbackChain.push({ ...r, timeoutMs: r.provider === 'anthropic' ? 120_000 : 60_000 });
   }
 
   let lastErr: unknown = new Error('Todos os modelos falharam.');
@@ -838,21 +814,12 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
       }
 
       if (targetProvider === 'gemini') {
-        try {
-          text = await callGemini(params, targetModelId, signal);
-        } catch (geminiDirectErr) {
-          // Se a API nativa do Google falhar (ex: 429 créditos/quota), tenta o MESMO
-          // modelo via OpenRouter antes de descer para o fallback — o médico continua no Gemini.
-          if (model.id.startsWith('google/') && getOpenRouterApiKey()) {
-            console.warn(`Gemini Direct falhou (${(geminiDirectErr as Error).message}). Tentando via OpenRouter para ${model.id}...`);
-            text = await callOpenRouter(params, model.id, signal);
-            lastUsedModel = `${model.badge} — via OpenRouter`;
-          } else {
-            throw geminiDirectErr;
-          }
-        }
+        text = await callGemini(params, targetModelId, signal);
+        // Badge "(fallback)" quando foi reserva: o médico vê que não foi o modelo escolhido.
+        if (model.id !== selectedModelId) lastUsedModel = model.badge;
       } else if (targetProvider === 'anthropic') {
         text = await callAnthropic(params, targetModelId, signal);
+        if (model.id !== selectedModelId) lastUsedModel = model.badge;
       } else if (targetProvider === 'openai') {
         text = await callOpenAI(params, targetModelId, signal);
       } else if (targetProvider === 'groq') {
@@ -914,21 +881,6 @@ export async function callAI(params: AICallParams, modelId?: string): Promise<st
         toast.info('Modelo indisponível. Tentando alternativa...');
       }
       lastErr = err;
-    }
-  }
-
-  // DeepSeek como último recurso via OpenRouter
-  if (getOpenRouterApiKey()) {
-    try {
-      const { signal: lastSignal, clear: lastClear } = createTimeoutSignal(60_000);
-      const text = await callOpenRouter(params, 'deepseek/deepseek-v4-flash', lastSignal);
-      lastClear();
-      if (text.trim()) {
-        lastUsedModel = 'DeepSeek V4 Flash (último recurso)';
-        return text.trim();
-      }
-    } catch (deepseekErr) {
-      console.warn('DeepSeek último recurso também falhou.', deepseekErr);
     }
   }
 
