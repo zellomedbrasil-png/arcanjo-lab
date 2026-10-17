@@ -33,7 +33,7 @@ export default function ExamPastePanel() {
   const getActiveModelLabel = () => {
     const modelId = getDefaultModelId();
     const model = AI_MODELS.find((m) => m.id === modelId || m.id.replace('google/', '') === modelId);
-    return model ? model.badge : 'Gemini 3 Flash';
+    return model ? model.badge : 'Gemini 3.8 Flash';
   };
 
   const handleOrganizar = async () => {

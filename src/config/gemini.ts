@@ -83,20 +83,20 @@ export interface AIModel {
 
 export const AI_MODELS: AIModel[] = [
   {
-    id: 'google/gemini-3.5-flash-lite',
-    label: 'Gemini 3.5 Flash Lite ⚡',
-    badge: 'Gemini 3.5 Flash Lite',
-    provider: 'gemini',
-    note: 'Padrão — o mais rápido e barato do Google, ótimo custo-benefício (via proxy seguro)',
-    timeoutMs: 60_000,
-  },
-  {
     id: 'google/gemini-3.8-flash',
     label: 'Gemini 3.8 Flash 🧠',
     badge: 'Gemini 3.8 Flash',
     provider: 'gemini',
-    note: 'Flash mais recente do Google — equilibra velocidade e raciocínio (via proxy seguro)',
+    note: 'Padrão — Flash mais recente do Google, equilibra velocidade e raciocínio (via proxy seguro)',
     timeoutMs: 90_000,
+  },
+  {
+    id: 'google/gemini-3.5-flash-lite',
+    label: 'Gemini 3.5 Flash Lite ⚡',
+    badge: 'Gemini 3.5 Flash Lite',
+    provider: 'gemini',
+    note: 'O mais rápido e barato do Google — para quando a velocidade importa mais (via proxy seguro)',
+    timeoutMs: 60_000,
   },
   {
     id: 'claude-sonnet-5-5',
@@ -164,22 +164,15 @@ export const AI_MODELS: AIModel[] = [
   },
 ];
 
-/** Modelos que saíram da lista → sucessor. Quem tinha escolhido o antigo continua na mesma família. */
-const MODELOS_SUBSTITUIDOS: Record<string, string> = {
-  'claude-sonnet-5': 'claude-sonnet-5-5',
-  'google/gemini-3.6-flash': 'google/gemini-3.8-flash',
-};
+/** Padrão do app. Ao trocar, subir STORAGE_VERSION em src/lib/storageCleanup.ts para resetar escolhas salvas. */
+export const MODELO_PADRAO = 'google/gemini-3.8-flash';
 
 export function getDefaultModelId(): string {
-  let saved = localStorage.getItem('arcanjo_selected_model');
-  if (saved && MODELOS_SUBSTITUIDOS[saved]) {
-    saved = MODELOS_SUBSTITUIDOS[saved];
-    localStorage.setItem('arcanjo_selected_model', saved);
-  }
+  const saved = localStorage.getItem('arcanjo_selected_model');
   if (saved && AI_MODELS.some(m => m.id === saved)) {
     return saved;
   }
-  return 'google/gemini-3.5-flash-lite';
+  return MODELO_PADRAO;
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────

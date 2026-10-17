@@ -8,7 +8,7 @@
 // arcanjo-lab-documento-draft e os campos clínicos do pedido.
 
 const STORAGE_VERSION_KEY = 'arcanjo_storage_version';
-const STORAGE_VERSION = '5'; // incrementar a cada nova limpeza
+const STORAGE_VERSION = '6'; // incrementar a cada nova limpeza (6: padrão passa a Gemini 3.8 Flash)
 
 export function runStorageCleanup(): void {
   try {
