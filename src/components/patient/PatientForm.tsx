@@ -1,10 +1,22 @@
-import { Building2, Mars, Venus, History } from 'lucide-react';
+import type { ClipboardEvent } from 'react';
+import { Building2, Mars, Venus, History, ClipboardPaste } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { formatCpf } from '../../lib/formatters';
+import { toast } from '../../lib/toast';
 import { OPERADORAS } from '../../data/operadoras';
 import type { Convenio, Genero } from '../../types';
 import { useRecentPatientsStore, type PacienteRecente } from '../../store/useRecentPatientsStore';
-import { savePatientToHistory } from '../../store/patientSync';
+import { publishPatientSync, savePatientToHistory } from '../../store/patientSync';
+import { lerCabecalhoPaciente, type DadosColados } from '../../utils/lerCabecalhoPaciente';
+// Carrega o store de Documentos já aqui: ele só escuta a sincronização depois de
+// importado, e o nascimento colado no Prontuário precisa chegar até ele.
+import '../../store/useDocumentStore';
+
+/** "28/10/1990" → "1990-10-28" (formato que os Documentos usam para calcular a idade). */
+const dataIso = (ddmmaaaa?: string) => {
+  const m = ddmmaaaa?.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : '';
+};
 
 export default function PatientForm() {
   // Seletores por campo: este formulário é digitado o tempo todo e divide o
@@ -61,6 +73,56 @@ export default function PatientForm() {
     }
   };
 
+  // Cabeçalho colado do sistema do convênio = paciente novo: o que não veio no
+  // bloco é limpo, para nada do paciente anterior ficar grudado.
+  const aplicarColagem = (d: DadosColados) => {
+    const convenioFinal = d.convenio ?? convenio;
+    setPaciente({
+      pacienteNome: d.nome,
+      pacienteIdade: d.idade ?? '',
+      pacienteCpf: d.cpf ?? '',
+      ...(d.genero ? { genero: d.genero } : {}),
+      convenio: convenioFinal,
+      numeroBeneficiario: d.numeroBeneficiario ?? '',
+    });
+    // Endereço e nascimento não moram neste formulário: vão para Receituário e Documentos.
+    publishPatientSync('colagem', {
+      pacienteEndereco: d.endereco ?? '',
+      pacienteCidade: d.cidade ?? '',
+      pacienteUf: d.uf ?? '',
+      pacienteCep: d.cep ?? '',
+      pacienteTelefone: d.telefone ?? '',
+      pacienteDataNascimento: dataIso(d.nascimento),
+    });
+    savePatientToHistory({
+      nome: d.nome,
+      cpf: d.cpf ?? '',
+      idade: d.idade ?? '',
+      genero: d.genero ?? genero,
+      convenio: convenioFinal,
+      numeroBeneficiario: d.numeroBeneficiario ?? '',
+    });
+    toast.success(`Preenchido: ${d.lidos.join(', ')}`);
+  };
+
+  /** Ctrl+V no nome: se for o cabeçalho do sistema, preenche tudo; senão, cola normal. */
+  const handleColarNoNome = (e: ClipboardEvent<HTMLInputElement>) => {
+    const dados = lerCabecalhoPaciente(e.clipboardData.getData('text/plain'));
+    if (!dados) return;
+    e.preventDefault();
+    aplicarColagem(dados);
+  };
+
+  const colarDoSistema = async () => {
+    try {
+      const dados = lerCabecalhoPaciente(await navigator.clipboard.readText());
+      if (dados) return aplicarColagem(dados);
+    } catch {
+      // Navegador negou acesso à área de transferência: cai no aviso abaixo.
+    }
+    toast.info('Copie o cabeçalho do paciente no sistema e cole no campo do nome (Ctrl+V).');
+  };
+
   const handleSelectRecent = (p: PacienteRecente) => {
     setPaciente({
       pacienteNome: p.nome,
@@ -85,9 +147,10 @@ export default function PatientForm() {
             value={pacienteNome}
             onChange={(e) => setPaciente({ pacienteNome: e.target.value })}
             onBlur={handleBlur}
+            onPaste={handleColarNoNome}
             autoFocus
             autoComplete="name"
-            placeholder="Nome do paciente *"
+            placeholder="Nome do paciente * (ou cole o cabeçalho do sistema)"
             className="w-full text-sm font-semibold text-neutral-text placeholder:font-normal placeholder:text-neutral-text-muted bg-transparent border-b border-neutral-border focus:border-accent-indigo focus:outline-none py-1.5 transition-colors"
           />
         </div>
@@ -212,26 +275,35 @@ export default function PatientForm() {
 
       </div>
 
-      {/* Seção Pacientes Recentes */}
-      {pacientesRecentes.length > 0 && (
-        <div className="mt-4.5 pt-4 border-t border-neutral-border flex flex-wrap items-center gap-2.5 animate-in fade-in duration-300">
+      {/* Pacientes recentes + colar do sistema (opcional) */}
+      <div className="mt-4.5 pt-4 border-t border-neutral-border flex flex-wrap items-center gap-2.5 animate-in fade-in duration-300">
+        <button
+          type="button"
+          onClick={colarDoSistema}
+          title="Copie o cabeçalho do paciente no sistema do convênio (Ctrl+C) e clique aqui — ou cole direto no campo do nome"
+          className="order-last ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-dashed border-neutral-border text-neutral-text-muted hover:border-accent-indigo/40 hover:text-accent-indigo cursor-pointer transition-all"
+        >
+          <ClipboardPaste size={12} />
+          Colar do sistema
+        </button>
+        {pacientesRecentes.length > 0 && (
           <span className="text-[10px] text-neutral-text-muted font-extrabold uppercase tracking-wider flex items-center gap-1 mr-1">
             <History size={12} className="text-neutral-text-muted" />
             Recentes:
           </span>
-          {pacientesRecentes.map((p) => (
-            <button
-              key={p.nome}
-              type="button"
-              onClick={() => handleSelectRecent(p)}
-              title={`CPF: ${p.cpf || 'Não informado'} | Convênio: ${p.convenio || 'Particular'}`}
-              className="px-3 py-1.5 bg-neutral-bg hover:bg-accent-indigo/5 border border-neutral-border hover:border-accent-indigo/35 rounded-full text-xs font-semibold text-neutral-text-muted hover:text-accent-indigo cursor-pointer transition-all"
-            >
-              {p.nome}
-            </button>
-          ))}
-        </div>
-      )}
+        )}
+        {pacientesRecentes.map((p) => (
+          <button
+            key={p.nome}
+            type="button"
+            onClick={() => handleSelectRecent(p)}
+            title={`CPF: ${p.cpf || 'Não informado'} | Convênio: ${p.convenio || 'Particular'}`}
+            className="px-3 py-1.5 bg-neutral-bg hover:bg-accent-indigo/5 border border-neutral-border hover:border-accent-indigo/35 rounded-full text-xs font-semibold text-neutral-text-muted hover:text-accent-indigo cursor-pointer transition-all"
+          >
+            {p.nome}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
