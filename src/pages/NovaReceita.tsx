@@ -451,32 +451,40 @@ export default function NovaReceita() {
                   )}
                 </div>
 
-                <div className="flex gap-3">
-                  <div style={{ width: '110px' }}>
-                    <label className={labelCls}>Idade{obrig(precisaIdadeSexo)}{faltaIdade && <span className="ml-1 normal-case font-semibold text-red-500">obrigatório</span>}</label>
-                    <input type="text" inputMode="numeric" value={pacienteIdade} onChange={(e) => setPacienteReceita({ pacienteIdade: e.target.value.replace(/[^\d]/g, '').slice(0, 3) })} placeholder="anos" className={`${inputCls} ${faltaIdade ? '!border-red-400 !bg-red-50/40' : ''}`} aria-invalid={faltaIdade} />
-                  </div>
-                  <div className="flex-1">
-                    <label className={labelCls}>Sexo{obrig(precisaIdadeSexo)}{faltaSexo && <span className="ml-1 normal-case font-semibold text-red-500">obrigatório</span>}</label>
-                    <div className="flex gap-2">
-                      {(['F', 'M'] as const).map((sx) => (
-                        <button
-                          key={sx}
-                          type="button"
-                          onClick={() => setPacienteReceita({ pacienteSexo: pacienteSexo === sx ? '' : sx })}
-                          className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
-                            pacienteSexo === sx
-                              ? 'border-indigo-600 bg-indigo-50 text-indigo-800'
-                              : faltaSexo
-                              ? 'border-red-400 bg-red-50/40 text-gray-600 hover:border-red-500'
-                              : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                          }`}
-                        >
-                          {sx === 'F' ? 'Feminino' : 'Masculino'}
-                        </button>
-                      ))}
+                <div>
+                  <div className="flex gap-3">
+                    <div className="shrink-0" style={{ width: '88px' }}>
+                      <label className={labelCls}>Idade{obrig(precisaIdadeSexo)}</label>
+                      <input type="text" inputMode="numeric" value={pacienteIdade} onChange={(e) => setPacienteReceita({ pacienteIdade: e.target.value.replace(/[^\d]/g, '').slice(0, 3) })} placeholder="anos" className={`${inputCls} ${faltaIdade ? '!border-red-400 !bg-red-50/40' : ''}`} aria-invalid={faltaIdade} />
+                    </div>
+                    <div className="flex-1">
+                      <label className={labelCls}>Sexo{obrig(precisaIdadeSexo)}</label>
+                      <div className="flex gap-2">
+                        {(['F', 'M'] as const).map((sx) => (
+                          <button
+                            key={sx}
+                            type="button"
+                            onClick={() => setPacienteReceita({ pacienteSexo: pacienteSexo === sx ? '' : sx })}
+                            className={`flex-1 min-w-0 px-2 py-2.5 rounded-xl border text-sm font-semibold whitespace-nowrap transition-all ${
+                              pacienteSexo === sx
+                                ? 'border-indigo-600 bg-indigo-50 text-indigo-800'
+                                : faltaSexo
+                                ? 'border-red-400 bg-red-50/40 text-gray-600 hover:border-red-500'
+                                : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                            }`}
+                          >
+                            {sx === 'F' ? 'Feminino' : 'Masculino'}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                  {/* Aviso numa linha só, abaixo do par — na mesma altura do "Não possui CPF" ao lado. */}
+                  {(faltaIdade || faltaSexo) && (
+                    <p className="mt-1.5 text-xs text-red-500">
+                      {faltaIdade && faltaSexo ? 'Idade e sexo obrigatórios' : faltaIdade ? 'Idade obrigatória' : 'Sexo obrigatório'} (antimicrobiano)
+                    </p>
+                  )}
                 </div>
 
                 <div>
