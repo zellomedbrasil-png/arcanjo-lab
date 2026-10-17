@@ -28,6 +28,7 @@ export function useDocumentosReceita(): {
       pacienteIdade: st.pacienteIdade,
       pacienteSexo: st.pacienteSexo,
       pacienteEndereco: st.pacienteEndereco,
+      modoEmissao: st.modoEmissao,
     }))
   );
   const prescritor = usePrescritorStore((st) => st.prescritor);
@@ -39,12 +40,13 @@ export function useDocumentosReceita(): {
       ? texto.trim()
         ? [documentoTextoLivre(texto, s.tipoReceita)]
         : []
-      : agruparEmDocumentos(s.medicamentos);
+      : agruparEmDocumentos(s.medicamentos, s.modoEmissao);
     const pendencias = validarReceita(
       documentos,
       s,
       prescritor,
-      modoTexto && texto.trim() ? { texto, tipo: s.tipoReceita } : undefined
+      modoTexto && texto.trim() ? { texto, tipo: s.tipoReceita } : undefined,
+      s.modoEmissao
     );
     if (documentos.length === 0) {
       pendencias.push({ nivel: 'bloqueio', texto: modoTexto ? 'Escreva a prescrição.' : 'Adicione pelo menos um medicamento.' });

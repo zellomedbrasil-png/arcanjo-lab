@@ -12,6 +12,8 @@ export default function ImprimirReceita() {
   const { documentos, pendencias, bloqueios } = useDocumentosReceita();
   const guias = documentos.filter((d) => !REGRAS_MODELO[d.modelo].imprimeReceita);
   const avisos = pendencias.filter((p) => p.nivel === 'aviso');
+  const modoEmissao = useReceitaStore((s) => s.modoEmissao);
+  const setModoEmissao = useReceitaStore((s) => s.setModoEmissao);
 
   // Guarda a receita no histórico do paciente ("Repetir última receita") e imprime.
   const imprimir = () => {
@@ -48,6 +50,35 @@ export default function ImprimirReceita() {
             Imprimir {documentos.length} {documentos.length === 1 ? 'folha' : 'folhas'}
           </button>
         </div>
+
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <span className="text-xs font-bold uppercase tracking-wide text-gray-500">Assinatura</span>
+          <div className="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+            {([
+              ['FISICO', 'À caneta (impressa)'],
+              ['DIGITAL', 'Digital ICP-Brasil (PDF)'],
+            ] as const).map(([modo, rotulo]) => (
+              <button
+                key={modo}
+                type="button"
+                onClick={() => setModoEmissao(modo)}
+                className={`px-3 py-1 rounded-md text-xs font-semibold transition-colors ${
+                  modoEmissao === modo ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
+        </div>
+        {modoEmissao === 'DIGITAL' && (
+          <p className="text-xs text-indigo-900 bg-indigo-50 border border-indigo-100 rounded-lg p-2.5">
+            Salve como PDF ("Imprimir" → "Salvar como PDF") e assine com seu certificado ICP-Brasil (VIDaaS, BirdID ou
+            assinador.iti.gov.br), posicionando o selo no quadro tracejado. Receita de controle especial e de antimicrobiano
+            em PDF só valem com assinatura ICP-Brasil qualificada; sem ela, a farmácia recusa.
+            {guias.length > 0 && ' Notificações de receita (A, B, C2, C3) continuam só no talonário de papel.'}
+          </p>
+        )}
 
         <ol className="text-sm text-gray-700 list-decimal pl-5 space-y-0.5">
           {documentos.map((d) => (

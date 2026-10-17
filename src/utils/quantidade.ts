@@ -6,14 +6,14 @@ const NUMEROS: Record<string, number> = {
   meio: 0.5, meia: 0.5, '½': 0.5, um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4,
 };
 
-const UNIDADE_CONTAVEL = /(comprimidos?|c[aá]psulas?|cp|caps?|dr[aá]geas?|sach[eê]s?|envelopes?|pastilhas?|supositorios?|supositórios?|ampolas?)/i;
+const UNIDADE_CONTAVEL = /(comprimidos?|c[aá]psulas?|cp|caps?|dr[aá]geas?|sach[eê]s?|envelopes?|pastilhas?|supositorios?|supositórios?|ampolas?|adesivos?)/i;
 
 const norm = (t: string) => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 /** Quantas unidades por tomada ("1 comprimido", "meio comprimido", "2 cápsulas"). */
 export function dosePorTomada(posologia: string): number | null {
   const t = norm(posologia).replace(/\*\*/g, '');
-  const m = t.match(/(\d+(?:[.,]\d+)?|meio|meia|½|um|uma|dois|duas|tres|quatro)\s*\(?\w*\)?\s*(comprimidos?|capsulas?|cp|caps?|drageas?|saches?|envelopes?|pastilhas?|supositorios?|ampolas?)/);
+  const m = t.match(/(\d+(?:[.,]\d+)?|meio|meia|½|um|uma|dois|duas|tres|quatro)\s*\(?\w*\)?\s*(comprimidos?|capsulas?|cp|caps?|drageas?|saches?|envelopes?|pastilhas?|supositorios?|ampolas?|adesivos?)/);
   if (!m) return null;
   const n = NUMEROS[m[1]] ?? parseFloat(m[1].replace(',', '.'));
   return Number.isFinite(n) && n > 0 ? n : null;
@@ -25,6 +25,8 @@ export function tomadasPorDia(posologia: string): number | null {
   let m = t.match(/de\s*(\d+)\s*em\s*\d+\s*h/);
   if (m) return 24 / parseInt(m[1], 10);
   m = t.match(/(\d+)\s*\/\s*\1\s*h/);
+  if (m) return 24 / parseInt(m[1], 10);
+  m = t.match(/a cada\s*(\d+)\s*h/);
   if (m) return 24 / parseInt(m[1], 10);
   m = t.match(/(\d+)\s*(?:x|vezes)\s*(?:ao|por|\/)\s*dia/);
   if (m) return parseInt(m[1], 10);
@@ -46,6 +48,33 @@ export function diasDeTratamento(duracao: string): number | null {
   if (m[2].startsWith('dia')) return n;
   if (m[2].startsWith('semana')) return n * 7;
   return n * 30;
+}
+
+/**
+ * Quantos dias a quantidade prescrita cobre ("60 comprimidos" de 12/12h → 30).
+ * null quando a unidade não é contável ("1 caixa", "1 frasco") ou a posologia é ambígua.
+ */
+export function diasCobertos(posologia: string, quantidade: string): number | null {
+  const m = (quantidade || '').match(/^\s*(\d+)\s*(?:\([^)]*\))?\s*(.*)$/);
+  if (!m || !UNIDADE_CONTAVEL.test(m[2])) return null;
+  const dose = dosePorTomada(posologia);
+  const freq = tomadasPorDia(posologia);
+  if (dose === null || freq === null) return null;
+  const dias = Math.floor(parseInt(m[1], 10) / (dose * freq));
+  return dias >= 1 ? dias : null;
+}
+
+/** "uso contínuo", "Uso continuo" etc. */
+export const ehUsoContinuo = (duracao: string) => /cont[ií]nuo/i.test(duracao || '');
+
+/**
+ * Duração como sai nas receitas de 2 vias: "uso contínuo" ganha o período que a
+ * quantidade cobre, para o farmacêutico conferir o teto de 60 dias sem fazer conta.
+ */
+export function duracaoImpressa(m: { duracao: string; posologia: string; quantidade: string }): string {
+  if (!ehUsoContinuo(m.duracao)) return m.duracao;
+  const dias = diasCobertos(m.posologia, m.quantidade);
+  return dias ? `Uso contínuo — quantidade para ${dias} dias` : m.duracao;
 }
 
 /**

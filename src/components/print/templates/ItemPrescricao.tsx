@@ -1,6 +1,7 @@
 import type { MedicamentoReceita } from '../../../store/useReceitaStore';
 import { renderMarkdown } from '../../../utils/markdown';
 import { quantidadeComExtenso } from '../../../utils/porExtenso';
+import { duracaoImpressa } from '../../../utils/quantidade';
 
 /**
  * Um item nas receitas de 2 vias: DCB + concentração, forma, quantidade em
@@ -26,11 +27,12 @@ export default function ItemPrescricao({ med, numero }: { med: MedicamentoReceit
       <div style={{ paddingTop: '1px' }}>
         <span style={{ fontWeight: 700 }}>Posologia: </span>
         <span className="receita-md" dangerouslySetInnerHTML={{ __html: renderMarkdown(med.posologia) }} />
-        {med.duracao && <span> — {med.duracao}</span>}
+        {med.duracao && <span> — {duracaoImpressa(med)}</span>}
       </div>
+      {/* Linha própria, recuada e em itálico: titulação futura não se confunde com a quantidade dispensada. */}
       {med.observacoes && (
-        <div style={{ fontSize: '10.5px' }}>
-          <span style={{ fontWeight: 700 }}>Orientação: </span>
+        <div style={{ fontSize: '10px', fontStyle: 'italic', paddingLeft: '4mm', marginTop: '1px' }}>
+          <span style={{ fontWeight: 700 }}>Orientação ao paciente: </span>
           <span className="receita-md" dangerouslySetInnerHTML={{ __html: renderMarkdown(med.observacoes) }} />
         </div>
       )}

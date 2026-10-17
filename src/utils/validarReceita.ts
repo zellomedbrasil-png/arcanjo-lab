@@ -1,10 +1,11 @@
 // Checklist do que faz a farmácia devolver a receita. Roda antes de imprimir.
 // "bloqueio" impede a impressão; "aviso" só informa.
 
-import type { MedicamentoReceita, TipoReceita } from '../store/useReceitaStore';
-import { classificarTextoLivre, REGRAS_MODELO } from '../data/regrasReceita';
+import type { MedicamentoReceita, ModoEmissao, TipoReceita } from '../store/useReceitaStore';
+import { classificarTextoLivre, normalizar, REGRAS_MODELO } from '../data/regrasReceita';
 import { pendenciasPrescritor, type Prescritor } from '../config/prescritor';
 import { lerQuantidade } from './porExtenso';
+import { diasCobertos, ehUsoContinuo } from './quantidade';
 import { infoDoMedicamento, itemNaoCabeNaVia, type DocumentoReceita } from './agruparReceita';
 
 export interface Pendencia {
@@ -35,7 +36,7 @@ const nomeMed = (m: MedicamentoReceita) => (m.principioAtivo || m.nomeDigitado).
 const POSOLOGIA_VAGA = /conforme orienta|a crit[eé]rio|uso conforme|s\/n$|^se necess[aá]rio$/i;
 
 /** Regras por item que valem em receita de 2 vias (antimicrobiano e controle especial). */
-function validarItem(m: MedicamentoReceita, modelo: DocumentoReceita['modelo'], p: Pendencia[]) {
+function validarItem(m: MedicamentoReceita, modelo: DocumentoReceita['modelo'], p: Pendencia[], modo: ModoEmissao) {
   const nome = nomeMed(m);
   if (!lerQuantidade(m.quantidade)) {
     p.push({ nivel: 'bloqueio', texto: `${nome}: a quantidade precisa começar com número (ex.: "30 comprimidos").` });
@@ -43,36 +44,55 @@ function validarItem(m: MedicamentoReceita, modelo: DocumentoReceita['modelo'], 
   if (!m.posologia.trim() || POSOLOGIA_VAGA.test(m.posologia.trim())) {
     p.push({ nivel: 'bloqueio', texto: `${nome}: escreva a posologia completa. "Conforme orientação médica" é motivo de recusa.` });
   }
-  if (itemNaoCabeNaVia(m, modelo)) {
+  if (itemNaoCabeNaVia(m, modelo, modo)) {
     p.push({ nivel: 'bloqueio', texto: `${nome}: posologia e orientações longas demais para a meia folha — o texto seria cortado no papel. Encurte a orientação.` });
   }
   if (modelo !== 'RCE') return;
 
   const info = infoDoMedicamento(m);
   const limite = info.ate6Meses ? 180 : 60;
-  const dias = duracaoEmDias(m.duracao);
+  const teto = info.ate6Meses ? '6 meses' : '60 dias';
+  // O que a farmácia confere é a quantidade: vale o maior entre a duração escrita e o que a quantidade cobre.
+  const pelaDuracao = duracaoEmDias(m.duracao);
+  const pelaQuantidade = diasCobertos(m.posologia, m.quantidade);
+  const dias = Math.max(pelaDuracao ?? 0, pelaQuantidade ?? 0) || null;
   if (dias !== null && dias > limite && !m.justificativaLimite?.trim()) {
     p.push({
       nivel: 'bloqueio',
-      texto: `${nome}: ${dias} dias passa do limite de ${info.ate6Meses ? '6 meses' : '60 dias'} da Receita de Controle Especial. Preencha a justificativa com CID (Port. 344, art. 60) ou reduza a quantidade.`,
+      texto: `${nome}: ${pelaQuantidade === dias ? `a quantidade cobre ${dias} dias` : `${dias} dias`} e passa do limite de ${teto} da Receita de Controle Especial. Preencha a justificativa com CID (Port. 344, art. 60) ou reduza a quantidade.`,
     });
   }
-  if (/cont[ií]nuo/i.test(m.duracao) && !dias) {
+  if (ehUsoContinuo(m.duracao) && pelaQuantidade === null) {
     p.push({
       nivel: 'aviso',
-      texto: `${nome}: "uso contínuo" não define período. A receita vale 30 dias e cobre no máximo ${info.ate6Meses ? '6 meses' : '60 dias'} — confira se a quantidade respeita isso.`,
+      texto: `${nome}: "uso contínuo" com quantidade que não dá para converter em dias (caixa, frasco ou posologia ambígua). A receita cobre no máximo ${teto} — confira a quantidade ou escreva em comprimidos.`,
     });
   }
 }
+
+/** Nome sem acento, sem título ("Dr.", "Dra.") e sem espaços repetidos — para comparar pessoas. */
+const nomeComparavel = (nome: string) =>
+  normalizar(nome)
+    .replace(/\b(dr|dra|doutor|doutora)\b\.?/g, ' ')
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 export function validarReceita(
   documentos: DocumentoReceita[],
   paciente: DadosPaciente,
   prescritor: Prescritor,
-  modoTexto?: { texto: string; tipo: TipoReceita }
+  modoTexto?: { texto: string; tipo: TipoReceita },
+  modo: ModoEmissao = 'FISICO'
 ): Pendencia[] {
   const p: Pendencia[] = [];
   if (!paciente.pacienteNome.trim()) p.push({ nivel: 'bloqueio', texto: 'Informe o nome completo do paciente.' });
+  else if (nomeComparavel(paciente.pacienteNome) === nomeComparavel(prescritor.nome)) {
+    p.push({
+      nivel: 'aviso',
+      texto: 'Autoprescrição: o paciente tem o mesmo nome do médico emitente. Várias redes de farmácia recusam controlado (C1, B1) e antimicrobiano prescritos para o próprio médico.',
+    });
+  }
 
   const modelos = new Set(documentos.map((d) => d.modelo));
   const temRetencao = modelos.has('RETENCAO');
@@ -112,7 +132,7 @@ export function validarReceita(
 
   for (const doc of documentos) {
     if (doc.modelo === 'RETENCAO' || doc.modelo === 'RCE') {
-      doc.medicamentos.forEach((m) => validarItem(m, doc.modelo, p));
+      doc.medicamentos.forEach((m) => validarItem(m, doc.modelo, p, modo));
     }
     doc.medicamentos.forEach((m, i) => {
       const info = doc.infos[i];

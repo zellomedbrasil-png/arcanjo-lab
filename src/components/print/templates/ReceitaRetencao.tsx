@@ -3,6 +3,8 @@ import { REGRAS_MODELO } from '../../../data/regrasReceita';
 import FolhaDuasVias from './FolhaDuasVias';
 import BlocoEmitente from './BlocoEmitente';
 import ItemPrescricao from './ItemPrescricao';
+import RodapeAssinatura from './RodapeAssinatura';
+import SeloVia from './SeloVia';
 
 /**
  * Receita com retenção — antimicrobianos (RDC 471/2021) e agonistas GLP-1 (RDC 973/2025).
@@ -33,7 +35,7 @@ export default function ReceitaRetencao({
     <div style={{ padding: '7mm 10mm 6mm', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', fontSize: '11.5px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '5px' }}>
         <div style={{ fontSize: '15px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{titulo}</div>
-        <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' }}>{rotulo}</div>
+        <SeloVia rotulo={rotulo} />
       </div>
 
       <BlocoEmitente />
@@ -67,11 +69,7 @@ export default function ReceitaRetencao({
           <div>{local || 'Fortaleza-CE'}, {data || '____/____/______'}</div>
           <div style={{ fontSize: '10px' }}>Válida por {validade} dias a partir da emissão.</div>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ borderTop: '1px solid #000', width: '62mm', paddingTop: '2px', fontSize: '10px' }}>
-            Assinatura e carimbo do prescritor
-          </div>
-        </div>
+        <RodapeAssinatura rotulo="Assinatura e carimbo do prescritor" />
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import { REGRAS_MODELO } from '../../../data/regrasReceita';
 import FolhaDuasVias from './FolhaDuasVias';
 import BlocoEmitente from './BlocoEmitente';
 import ItemPrescricao from './ItemPrescricao';
+import RodapeAssinatura from './RodapeAssinatura';
+import SeloVia from './SeloVia';
 
 /**
  * Receita de Controle Especial — listas C1, C5 e adendo A2 (Portaria 344/98).
@@ -50,7 +52,7 @@ export default function ReceitaControleEspecial({
     <div style={{ padding: '6mm 10mm 5mm', height: '100%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', fontSize: '11.5px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
         <div style={{ fontSize: '15px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Receita de Controle Especial</div>
-        <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' }}>{rotulo}</div>
+        <SeloVia rotulo={rotulo} />
       </div>
 
       <BlocoEmitente />
@@ -85,9 +87,7 @@ export default function ReceitaControleEspecial({
         <div style={{ fontSize: '11px' }}>
           {local || 'Fortaleza-CE'}, {data || '____/____/______'}
         </div>
-        <div style={{ borderTop: '1px solid #000', width: '62mm', paddingTop: '2px', fontSize: '10px', textAlign: 'center' }}>
-          Assinatura do emitente
-        </div>
+        <RodapeAssinatura rotulo="Assinatura do emitente" />
       </div>
 
       <div style={{ display: 'flex', border: '1px solid #000', fontSize: '10px' }}>

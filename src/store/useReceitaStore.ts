@@ -10,6 +10,8 @@ import { publishPatientSync, subscribePatientSync } from './patientSync';
 export type TipoReceita = 'SIMPLES' | 'RETENCAO' | 'ESPECIAL';
 export type TipoRecomendado = 'SIMPLES' | 'ESPECIAL' | '';
 export type ModoEntrada = 'ESTRUTURADO' | 'TEXTO_LIVRE' | 'MANUAL';
+/** FISICO: assinatura à caneta. DIGITAL: espaço para o selo/QR da assinatura ICP-Brasil. */
+export type ModoEmissao = 'FISICO' | 'DIGITAL';
 
 export interface MedicamentoReceita {
   id: string;
@@ -60,6 +62,8 @@ interface ReceitaState {
   textoLivre: string;
   melhorarComIA: boolean;
   prescricaoManual: string;
+  /** Preferência do médico — não volta ao padrão ao começar receita nova. */
+  modoEmissao: ModoEmissao;
 
   setTipoReceita: (tipo: TipoReceita) => void;
   setPacienteReceita: (dados: Partial<ReceitaState>) => void;
@@ -76,6 +80,7 @@ interface ReceitaState {
   setTextoLivre: (texto: string) => void;
   setMelhorarComIA: (valor: boolean) => void;
   setPrescricaoManual: (texto: string) => void;
+  setModoEmissao: (modo: ModoEmissao) => void;
   resetReceita: () => void;
 }
 
@@ -120,6 +125,7 @@ const initialState = {
   textoLivre: '',
   melhorarComIA: false,
   prescricaoManual: '',
+  modoEmissao: 'FISICO' as ModoEmissao,
 };
 
 export const useReceitaStore = create<ReceitaState>()(
@@ -194,9 +200,10 @@ export const useReceitaStore = create<ReceitaState>()(
       setTextoLivre: (texto) => set({ textoLivre: texto, lastSavedAt: touch() }),
       setMelhorarComIA: (valor) => set({ melhorarComIA: valor, lastSavedAt: touch() }),
       setPrescricaoManual: (texto) => set({ prescricaoManual: texto, lastSavedAt: touch() }),
+      setModoEmissao: (modo) => set({ modoEmissao: modo }),
 
       resetReceita: () => {
-        set({ ...initialState, data: hoje(), medicamentos: [novoMedicamento()], alertas: [], modoEntrada: 'ESTRUTURADO', textoLivre: '', melhorarComIA: false, prescricaoManual: '' });
+        set((s) => ({ ...initialState, modoEmissao: s.modoEmissao, data: hoje(), medicamentos: [novoMedicamento()], alertas: [], modoEntrada: 'ESTRUTURADO', textoLivre: '', melhorarComIA: false, prescricaoManual: '' }));
         publishPatientSync('receita', {
           pacienteNome: '',
           pacienteCpf: '',
@@ -232,6 +239,7 @@ export const useReceitaStore = create<ReceitaState>()(
         })),
         alertas: state.alertas,
         lastSavedAt: state.lastSavedAt,
+        modoEmissao: state.modoEmissao,
         modoEntrada: state.modoEntrada,
         textoLivre: state.textoLivre,
         melhorarComIA: state.melhorarComIA,

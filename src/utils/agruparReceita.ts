@@ -2,8 +2,9 @@
 // Usado pela prévia (NovaReceita) e pela impressão (ImprimirReceita): o que
 // aparece na tela é exatamente o que sai no papel.
 
-import type { MedicamentoReceita, TipoReceita } from '../store/useReceitaStore';
+import type { MedicamentoReceita, ModoEmissao, TipoReceita } from '../store/useReceitaStore';
 import { classificar, REGRAS_MODELO, type InfoClasse, type ModeloReceita } from '../data/regrasReceita';
+import { duracaoImpressa } from './quantidade';
 
 export interface DocumentoReceita {
   chave: string;
@@ -50,6 +51,13 @@ export function infoDoMedicamento(m: MedicamentoReceita): InfoClasse {
  * comprador/fornecedor.
  */
 const ALTURA_UTIL: Partial<Record<ModeloReceita, number>> = { RETENCAO: 300, RCE: 190 };
+/** No modo digital o espaço do selo/QR (12 mm) toma o lugar da linha de assinatura. Medido: 37 px a menos na via. */
+const EXTRA_RODAPE_DIGITAL = 37;
+
+const alturaUtil = (modelo: ModeloReceita, modo: ModoEmissao) => {
+  const util = ALTURA_UTIL[modelo];
+  return util === undefined ? undefined : util - (modo === 'DIGITAL' ? EXTRA_RODAPE_DIGITAL : 0);
+};
 
 const linhas = (texto: string, porLinha: number) =>
   texto
@@ -62,21 +70,24 @@ const linhas = (texto: string, porLinha: number) =>
 export function alturaEstimadaItem(m: MedicamentoReceita): number {
   const cabecalho = `${m.principioAtivo || m.nomeDigitado} ${m.formaFarmaceutica} ${m.indicacao} Qtd.: ${m.quantidade} (por extenso)`;
   const linhasCabecalho = Math.max(1, Math.ceil(cabecalho.length / 95));
-  const linhasPosologia = Math.max(1, linhas(`Posologia: ${m.posologia} — ${m.duracao}`, 105));
-  const linhasExtras = linhas(m.observacoes ? `Orientação: ${m.observacoes}` : '', 115) + linhas(m.justificativaLimite ? `Justificativa: ${m.justificativaLimite}` : '', 115);
+  const linhasPosologia = Math.max(1, linhas(`Posologia: ${m.posologia} — ${duracaoImpressa(m)}`, 105));
+  // Orientação: 10px itálico com recuo de 4 mm (medido no navegador: ~125 caracteres por linha).
+  const linhasExtras =
+    linhas(m.observacoes ? `Orientação ao paciente: ${m.observacoes}` : '', 125) +
+    linhas(m.justificativaLimite ? `Justificativa (quantidade acima do limite): ${m.justificativaLimite}` : '', 115);
   return 8 + linhasCabecalho * 18 + linhasPosologia * 15.5 + linhasExtras * 14.5;
 }
 
 /** O item sozinho já passa da meia folha? (texto seria cortado no papel) */
-export function itemNaoCabeNaVia(m: MedicamentoReceita, modelo: ModeloReceita): boolean {
-  const util = ALTURA_UTIL[modelo];
+export function itemNaoCabeNaVia(m: MedicamentoReceita, modelo: ModeloReceita, modo: ModoEmissao = 'FISICO'): boolean {
+  const util = alturaUtil(modelo, modo);
   return util !== undefined && alturaEstimadaItem(m) > util;
 }
 
 /** Divide em folhas respeitando o máximo de itens e, nas vias A5, a altura disponível. */
-function emFolhas<T extends { m: MedicamentoReceita }>(itens: T[], modelo: ModeloReceita): T[][] {
+function emFolhas<T extends { m: MedicamentoReceita }>(itens: T[], modelo: ModeloReceita, modo: ModoEmissao): T[][] {
   const max = ITENS_POR_FOLHA[modelo];
-  const util = ALTURA_UTIL[modelo] ?? Infinity;
+  const util = alturaUtil(modelo, modo) ?? Infinity;
   const folhas: T[][] = [];
   let atual: T[] = [];
   let altura = 0;
@@ -94,7 +105,7 @@ function emFolhas<T extends { m: MedicamentoReceita }>(itens: T[], modelo: Model
   return folhas;
 }
 
-export function agruparEmDocumentos(medicamentos: MedicamentoReceita[]): DocumentoReceita[] {
+export function agruparEmDocumentos(medicamentos: MedicamentoReceita[], modo: ModoEmissao = 'FISICO'): DocumentoReceita[] {
   const itens = medicamentos.filter(temConteudo).map((m) => ({ m, info: infoDoMedicamento(m) }));
 
   // Antimicrobiano e GLP-1 têm validades diferentes (10 x 90 dias): folhas separadas.
@@ -111,7 +122,7 @@ export function agruparEmDocumentos(medicamentos: MedicamentoReceita[]): Documen
   for (const chave of chaves) {
     const grupo = grupos.get(chave)!;
     const modelo = grupo[0].info.modelo;
-    const folhas = emFolhas(grupo, modelo);
+    const folhas = emFolhas(grupo, modelo, modo);
     folhas.forEach((folha, i) => {
       documentos.push({
         chave: `${chave}-${i}`,

@@ -18,6 +18,7 @@ export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { me
   const pacienteCpf = useReceitaStore((s) => s.pacienteCpf);
   const local = useReceitaStore((s) => s.local);
   const data = useReceitaStore((s) => s.data);
+  const modoEmissao = useReceitaStore((s) => s.modoEmissao);
   const medicamentosStore = useReceitaStore((s) =>
     medicamentosOverride ? undefined : s.medicamentos
   );
@@ -333,6 +334,14 @@ export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { me
             <p>{local || 'Fortaleza-CE'}, {dataFormatada}</p>
           </div>
           <div className="text-center">
+            {modoEmissao === 'DIGITAL' && (
+              <div className="mb-1 text-[8px] text-black leading-tight">
+                <div className="h-[14mm] border border-dashed border-black flex items-center justify-center">
+                  Espaço do selo e QR Code da assinatura digital
+                </div>
+                <p className="pt-0.5">ICP-Brasil · conferir em validar.iti.gov.br</p>
+              </div>
+            )}
             <div className={`border-t border-gray-800 ${count >= 7 ? 'pt-1.5 w-56' : 'pt-2 w-64'}`}>
               <p className={`${count >= 7 ? 'text-[10px]' : 'text-[11px]'} font-bold text-gray-900`}>{MEDICO.nome}</p>
               <p className={`${count >= 7 ? 'text-[8px]' : 'text-[9px]'} text-gray-500`}>{MEDICO.crm}</p>

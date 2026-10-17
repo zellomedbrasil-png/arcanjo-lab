@@ -153,6 +153,8 @@ export default function NovaReceita() {
   // Campos de paciente que os documentos gerados exigem
   const modelos = new Set(documentos.map((d) => d.modelo));
   const precisaIdadeSexo = modelos.has('RETENCAO') || (modoTexto && tipoReceita === 'RETENCAO');
+  const faltaIdade = precisaIdadeSexo && !pacienteIdade.trim();
+  const faltaSexo = precisaIdadeSexo && !pacienteSexo;
   const precisaEndereco =
     modelos.has('RCE') || documentos.some((d) => !REGRAS_MODELO[d.modelo].imprimeReceita) || (modoTexto && tipoReceita === 'ESPECIAL');
 
@@ -451,11 +453,11 @@ export default function NovaReceita() {
 
                 <div className="flex gap-3">
                   <div style={{ width: '110px' }}>
-                    <label className={labelCls}>Idade{obrig(precisaIdadeSexo)}</label>
-                    <input type="text" inputMode="numeric" value={pacienteIdade} onChange={(e) => setPacienteReceita({ pacienteIdade: e.target.value.replace(/[^\d]/g, '').slice(0, 3) })} placeholder="anos" className={inputCls} />
+                    <label className={labelCls}>Idade{obrig(precisaIdadeSexo)}{faltaIdade && <span className="ml-1 normal-case font-semibold text-red-500">obrigatório</span>}</label>
+                    <input type="text" inputMode="numeric" value={pacienteIdade} onChange={(e) => setPacienteReceita({ pacienteIdade: e.target.value.replace(/[^\d]/g, '').slice(0, 3) })} placeholder="anos" className={`${inputCls} ${faltaIdade ? '!border-red-400 !bg-red-50/40' : ''}`} aria-invalid={faltaIdade} />
                   </div>
                   <div className="flex-1">
-                    <label className={labelCls}>Sexo{obrig(precisaIdadeSexo)}</label>
+                    <label className={labelCls}>Sexo{obrig(precisaIdadeSexo)}{faltaSexo && <span className="ml-1 normal-case font-semibold text-red-500">obrigatório</span>}</label>
                     <div className="flex gap-2">
                       {(['F', 'M'] as const).map((sx) => (
                         <button
@@ -463,7 +465,11 @@ export default function NovaReceita() {
                           type="button"
                           onClick={() => setPacienteReceita({ pacienteSexo: pacienteSexo === sx ? '' : sx })}
                           className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-all ${
-                            pacienteSexo === sx ? 'border-indigo-600 bg-indigo-50 text-indigo-800' : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                            pacienteSexo === sx
+                              ? 'border-indigo-600 bg-indigo-50 text-indigo-800'
+                              : faltaSexo
+                              ? 'border-red-400 bg-red-50/40 text-gray-600 hover:border-red-500'
+                              : 'border-gray-200 text-gray-500 hover:border-gray-300'
                           }`}
                         >
                           {sx === 'F' ? 'Feminino' : 'Masculino'}

@@ -57,6 +57,23 @@ function ItemReceitaLinha({ id, index, onGerarIA }: { id: string; index: number;
   const escolherDuracao = (duracao: string) =>
     atualizar({ duracao, quantidade: quantidadeCalculada(med.posologia, duracao, med.quantidade) ?? med.quantidade });
 
+  // Atalhos de quantidade, sempre com valor fechado (faixa "28 a 30" é motivo de recusa):
+  // unidades para a duração atual, unidades para 4 semanas (blíster de 28) e caixas.
+  const unidadeAtual = (med.quantidade.match(/^\s*\d+\s*(?:\([^)]*\))?\s*(.*)$/)?.[1] ?? '').trim();
+  const baseUnidade = /c[aá]psula/i.test(unidadeAtual || med.posologia)
+    ? '0 cápsulas'
+    : /comprimido/i.test(unidadeAtual || med.posologia)
+    ? '0 comprimidos'
+    : '';
+  const opcoesQuantidade = [
+    ...(baseUnidade
+      ? [quantidadeCalculada(med.posologia, med.duracao || '30 dias', baseUnidade), quantidadeCalculada(med.posologia, '28 dias', baseUnidade)]
+      : []),
+    '1 caixa',
+    '2 caixas',
+  ].filter((q, i, todas): q is string => !!q && todas.indexOf(q) === i);
+  const abreviar = (q: string) => q.replace(/comprimidos?$/, 'comp.').replace(/c[aá]psulas?$/, 'cáps.');
+
   const selo =
     info.modelo === 'SIMPLES'
       ? info.naoConfirmada ? 'CONFERIR' : ''
@@ -182,6 +199,22 @@ function ItemReceitaLinha({ id, index, onGerarIA }: { id: string; index: number;
               aria-label="Quantidade"
               className={`${campoCls} !w-40`}
             />
+            {opcoesQuantidade.map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => atualizar({ quantidade: q })}
+                title={`Quantidade: ${q}`}
+                className={`px-2 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  med.quantidade.trim().toLowerCase() === q.toLowerCase()
+                    ? 'bg-indigo-50 border-indigo-400 text-indigo-800'
+                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-indigo-300'
+                }`}
+              >
+                {abreviar(q)}
+              </button>
+            ))}
+            <span className="w-px h-5 bg-gray-200 mx-0.5" aria-hidden />
             {DURACOES.map((d) => (
               <button
                 key={d}
