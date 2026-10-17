@@ -3,6 +3,8 @@
 //
 // Base normativa (conferida em out/2026):
 //   - Portaria SVS/MS 344/98 + Port. 06/99 + RDC 1.000/2025 (controlados, notificações, SNCR)
+//   - Anexo I da Portaria 344 na atualização nº 101 (RDC 1.036, de 09/07/2026) — listas conferidas
+//     item a item contra o catálogo em 17/10/2026
 //   - RDC 471/2021 alterada pela RDC 973/2025 + IN 360/2025 (antimicrobianos e GLP-1 com retenção)
 //   - RDC 873/2024 (validade nacional), Lei 5.991/73 art. 35 (requisitos gerais)
 //
@@ -136,7 +138,14 @@ const B1 = [
   'zolpidem', 'zopiclona', 'eszopiclona', // zolpidem: toda concentração desde 01/08/2024
   'fenobarbital', 'gardenal', 'barbital',
   'modafinila', 'armodafinila', // saíram da A3 para a B1 em 2022
+  'cetamina', 'escetamina', 'lemborexanto',
 ];
+
+/**
+ * Estão nas listas, mas o adendo libera a venda com prescrição SEM retenção:
+ * loperamida (C1, adendo 2) e carisoprodol (B1, adendo 16). Saem em receita simples.
+ */
+const SEM_RETENCAO = ['loperamida', 'carisoprodol'];
 
 const A1 = [
   'morfina', 'metadona', 'fentanil', 'oxicodona', 'tapentadol', 'buprenorfina',
@@ -160,12 +169,15 @@ const C5 = [
   'durateston', 'deposteron', 'trembolona', 'boldenona',
 ];
 
-const ANTIPARKINSONIANOS = ['biperideno', 'triexifenidil', 'selegilina'];
+const ANTIPARKINSONIANOS = [
+  'biperideno', 'triexifenidil', 'selegilina', 'rasagilina', 'pramipexol', 'ropinirol',
+  'amantadina',
+];
 
 const ANTICONVULSIVANTES = [
   'gabapentina', 'pregabalina', 'carbamazepina', 'oxcarbazepina', 'valproato', 'valproico',
   'divalproato', 'topiramato', 'lamotrigina', 'fenitoina', 'primidona', 'vigabatrina',
-  'levetiracetam', 'lacosamida', 'etossuximida',
+  'levetiracetam', 'lacosamida', 'etossuximida', 'cenobamato', 'estiripentol',
 ];
 
 const C1_OUTROS = [
@@ -178,8 +190,15 @@ const C1_OUTROS = [
   'risperidona', 'paliperidona', 'quetiapina', 'olanzapina', 'aripiprazol', 'haloperidol',
   'clorpromazina', 'levomepromazina', 'sulpirida', 'amissulprida', 'clozapina',
   'ziprasidona', 'lurasidona', 'pimozida', 'zuclopentixol', 'periciazina', 'tioridazina',
+  'brexpiprazol',
+  // Antidemência (anticolinesterásicos e memantina)
+  'donepezila', 'galantamina', 'rivastigmina', 'memantina',
+  // Coxibes (RDC 79/2008)
+  'celecoxibe', 'etoricoxibe', 'parecoxibe', 'lumiracoxibe',
   // Outros C1
   'litio', 'atomoxetina', 'naltrexona', 'tetrabenazina', 'canabidiol', 'cannabis sativa',
+  'buspirona', 'tianeptina', 'dissulfiram',
+  'misoprostol', // adendo 4: só em hospital cadastrado
 ];
 
 /** Agonistas GLP-1 — retenção de receita (RDC 973/2025, IN 360/2025). */
@@ -224,9 +243,9 @@ const COMUNS = [
   'naproxeno', 'loratadina', 'desloratadina', 'fexofenadina', 'cetirizina',
   'dexclorfeniramina', 'prednisona', 'prednisolona', 'dexametasona', 'budesonida',
   'fluticasona', 'montelucaste', 'levotiroxina', 'tiamazol', 'colecalciferol', 'vitamina',
-  'sulfato ferroso', 'acido folico', 'cobalamina', 'donepezila', 'galantamina',
-  'memantina', 'rivastigmina', 'pramipexol', 'albendazol', 'ivermectina', 'aciclovir',
-  'valaciclovir', 'oseltamivir', 'colchicina', 'tansulosina', 'betaistina', 'alendronato',
+  'sulfato ferroso', 'acido folico', 'cobalamina', 'levodopa', 'albendazol', 'ivermectina',
+  'aciclovir', 'valaciclovir', 'oseltamivir', 'colchicina', 'tansulosina', 'betaistina',
+  'alendronato',
 ];
 
 // ─── Classificação ────────────────────────────────────────────────────────
@@ -359,9 +378,12 @@ export function classificar(nome: string, uso = '', sugestaoIA?: { tipo?: string
   if (contem(t, A1)) return info('A1');
   if (contem(t, A3)) return info('A3');
   if (contem(t, B2)) return info('B2');
+  if (contem(t, SEM_RETENCAO)) return info('COMUM');
   if (contem(t, B1)) return info('B1');
   if (contem(t, C3)) return info('C3');
-  if (contem(t, ['isotretinoina', 'acitretina']) || (t.includes('tretinoina') && !ehTopico(uso))) return info('C2');
+  if (contem(t, ['isotretinoina', 'acitretina'])) return info('C2');
+  // C2, adendo 2: retinoide tópico vende com prescrição sem retenção.
+  if (contem(t, ['tretinoina', 'adapaleno'])) return ehTopico(uso) ? info('COMUM') : info('C2');
   if (contem(t, A2)) {
     const dose = doseMgDoTermo(t, A2);
     return dose !== null && dose > 100 ? info('A2') : info('A2_RCE');
