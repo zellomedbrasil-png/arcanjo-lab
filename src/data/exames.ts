@@ -2030,6 +2030,21 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
     ],
     "justificativa": ""
   },
+  // Rastreio de IST (PCDT-IST/MS) só com exames cobertos por ISSEC e IPM.
+  // PCR para clamídia/gonococo não entra: não há código no catálogo.
+  "IST — Rastreio": {
+    "nome": "IST — Rastreio",
+    "exames": [
+      "HIV 1 E 2",
+      "VDRL",
+      "FTA-ABS IGG",
+      "HBSAG - ANTIGENO AUSTRALIA",
+      "HEPATITE ANTI HBC IGG",
+      "ANTI HBS",
+      "HEPATITE C - ANTI HCV"
+    ],
+    "justificativa": "RASTREIO DE INFECÇÕES SEXUALMENTE TRANSMISSÍVEIS CONFORME PCDT-IST DO MINISTÉRIO DA SAÚDE. SOLICITO SOROLOGIA PARA HIV 1 E 2, SÍFILIS COM TESTE NÃO TREPONÊMICO (VDRL) E TREPONÊMICO (FTA-ABS IGG), HEPATITE B (HBSAG, ANTI-HBC IGG E ANTI-HBS PARA STATUS VACINAL) E HEPATITE C (ANTI-HCV). CID-10: Z11.3."
+  },
   "ISSEC - HOMEM": {
     "nome": "ISSEC - HOMEM",
     "exames": [
