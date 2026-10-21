@@ -136,19 +136,14 @@ export const useAppStore = create<AppState>()(
         if (selected.includes(proc)) {
           return { procedimentosSelecionados: selected.filter((item) => item !== proc), lastSavedAt: touch() };
         }
-        const total = selected.length + state.procedimentosPersonalizados.length;
-        if (total < 3) {
-          return { procedimentosSelecionados: [...selected, proc], lastSavedAt: touch() };
-        }
-        return state;
+        // Sem trava: ISSEC aceita até 3 e IPM até 5 por guia, a tela só avisa.
+        return { procedimentosSelecionados: [...selected, proc], lastSavedAt: touch() };
       }),
 
       addProcedimentoPersonalizado: (nome) => set((state) => {
         const nomeClean = nome.trim();
         if (!nomeClean) return state;
         if (state.procedimentosPersonalizados.includes(nomeClean)) return state;
-        const total = state.procedimentosSelecionados.length + state.procedimentosPersonalizados.length;
-        if (total >= 3) return state;
         return { procedimentosPersonalizados: [...state.procedimentosPersonalizados, nomeClean], lastSavedAt: touch() };
       }),
 
