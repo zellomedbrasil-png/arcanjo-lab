@@ -225,7 +225,10 @@ export default function GuiaIPM({ itemsOverride, justificativaOverride }: GuiaIP
 
               const getGuiaIPMLinhas = () => {
                 if (!isLab) {
-                  const lines = finalItems.slice(0, 3);
+                  // Um procedimento por linha; acima de 5, o excedente vai junto na última.
+                  const lines = finalItems.length > 5
+                    ? [...finalItems.slice(0, 4), finalItems.slice(4).join(', ')]
+                    : [...finalItems];
                   while (lines.length < 5) {
                     lines.push('');
                   }

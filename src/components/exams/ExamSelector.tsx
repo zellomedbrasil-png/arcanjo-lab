@@ -483,30 +483,10 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
       <div className="p-5.5">
         {!isLab ? (
           <div>
-            {/* Counter & info */}
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-sm text-neutral-text font-medium">
-                  Selecione até <strong>3 procedimentos</strong> por guia.
-                </p>
-                <p className="text-xs text-neutral-text-muted mt-0.5">
-                  Códigos de convênio cadastrados para <strong>ISSEC</strong> e <strong>IPM</strong>.
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {[0, 1, 2].map(i => (
-                  <div
-                    key={i}
-                    className={`w-8 h-2 rounded-full transition-all ${
-                      i < totalSelecionados ? 'bg-emerald-500' : 'bg-slate-200'
-                    }`}
-                  />
-                ))}
-                <span className="text-xs text-neutral-text-muted ml-1 font-semibold">
-                  {totalSelecionados}/3
-                </span>
-              </div>
-            </div>
+            {/* Aviso de limite por convênio (informativo, sem trava) */}
+            <p className="mb-4 text-xs text-neutral-text-muted">
+              Por guia: ISSEC até 3 procedimentos · IPM até 5.
+            </p>
 
             {/* Selected chips — both catalog and custom with coverage dots */}
             {totalSelecionados > 0 && (
@@ -677,23 +657,14 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                   value={customInput}
                   onChange={(e) => setCustomInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleAddCustom(); }}
-                  disabled={totalSelecionados >= 3}
-                  placeholder={
-                    totalSelecionados >= 3
-                      ? 'Limite de 3 procedimentos atingido'
-                      : 'Ex: Cintilografia de Perfusão Miocárdica, Videolaringoscopia...'
-                  }
-                  className={`flex-1 rounded-lg border px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all shadow-sm placeholder-gray-300 ${
-                    totalSelecionados >= 3
-                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                      : 'bg-white border-indigo-200'
-                  }`}
+                  placeholder="Ex: Cintilografia de Perfusão Miocárdica, Videolaringoscopia..."
+                  className="flex-1 rounded-lg border px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all shadow-sm placeholder-gray-300 bg-white border-indigo-200"
                 />
                 <button
                   onClick={handleAddCustom}
-                  disabled={!customInput.trim() || totalSelecionados >= 3}
+                  disabled={!customInput.trim()}
                   className={`flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                    !customInput.trim() || totalSelecionados >= 3
+                    !customInput.trim()
                       ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
                       : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm hover:shadow-md cursor-pointer'
                   }`}
@@ -796,7 +767,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                       <div className="p-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 bg-white">
                         {procsNoGrupo.map((proc) => {
                           const isSelected = procedimentosSelecionados.includes(proc.id);
-                          const isFull = totalSelecionados >= 3 && !isSelected;
                           const cob = getCobertura(proc);
                           const meta = COBERTURA_META[cob];
                           const fora = isForaDoConvenio(cob, convenio);
@@ -807,14 +777,11 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                               key={proc.id}
                               type="button"
                               onClick={() => toggleProcedimento(proc.id)}
-                              disabled={isFull}
                               title={`${proc.nomeCompleto}\n• ISSEC: ${proc.codIssec || 'Sem código'}\n• IPM: ${proc.codIpm || 'Sem código'}`}
                               className={`relative flex flex-col items-start text-left gap-1.5 p-3 rounded-xl border transition-all cursor-pointer ${
                                 isSelected
                                   ? `${proc.activeBg} ${proc.activeColor} border-transparent font-bold shadow-md ring-2 ring-emerald-400/50`
-                                  : isFull
-                                    ? 'border-neutral-border bg-slate-50 text-neutral-text-muted/40 cursor-not-allowed opacity-60'
-                                    : `border-neutral-border bg-white text-gray-800 hover:border-emerald-300 hover:bg-emerald-50/20 shadow-xs`
+                                  : `border-neutral-border bg-white text-gray-800 hover:border-emerald-300 hover:bg-emerald-50/20 shadow-xs`
                               }`}
                             >
                               {/* Header row inside card */}

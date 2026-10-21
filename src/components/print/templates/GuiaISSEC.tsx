@@ -63,6 +63,11 @@ export default function GuiaISSEC() {
   if (todosProcs.length === 0) {
     todosProcs.push(tipoGuia);
   }
+  const nomeProc = (p: string) => (/^[A-Z0-9_]+$/.test(p) ? getProcedimentoNome(p) : p);
+  // A guia tem 3 linhas; acima disso, o excedente vai junto na 3ª para não sumir.
+  const linhasProcs = todosProcs.length > 3
+    ? [nomeProc(todosProcs[0]), nomeProc(todosProcs[1]), todosProcs.slice(2).map(nomeProc).join(', ')]
+    : todosProcs.map(nomeProc);
 
   /* Quebra exames em até 3 linhas para o caso laboratorial */
   const getLinhas = () => {
@@ -420,11 +425,7 @@ export default function GuiaISSEC() {
             { h: '8.8mm', n: '02' },
             { h: '11mm',  n: '03' },
           ].map((row, idx) => {
-            const content = isLab
-              ? linhas[idx] || ''
-              : idx < todosProcs.length
-                ? (/^[A-Z0-9_]+$/.test(todosProcs[idx]) ? getProcedimentoNome(todosProcs[idx]) : todosProcs[idx])
-                : '';
+            const content = isLab ? linhas[idx] || '' : linhasProcs[idx] || '';
             return (
               <tr key={row.n} style={{ height: row.h }}>
                 <td
