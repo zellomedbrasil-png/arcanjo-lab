@@ -2,6 +2,7 @@ import { useManipuladosStore, type FormulaNaReceita } from '../../../store/useMa
 import { getAtivo } from '../../../data/ativosManipulados';
 import { FORMA_INFO } from '../../../data/formulasManipuladas';
 import { enderecoCompleto, registroConselho, usePrescritorStore } from '../../../config/prescritor';
+import FarmaciasReferencia from './FarmaciasReferencia';
 
 /** Uma fórmula impressa: composição em linhas, quantidade e posologia. */
 function BlocoFormula({
@@ -211,7 +212,7 @@ function ViaManipulado({
           </div>
         </div>
       ) : (
-        <div className="absolute left-10 right-10" style={{ bottom: '2.5cm' }}>
+        <div className="absolute left-10 right-10" style={{ bottom: '5.6cm' }}>
           <div className="flex items-end justify-between text-[10px]">
             <span>
               {local}, {dataFormatada}
@@ -222,6 +223,12 @@ function ViaManipulado({
               <p className="text-[8px] text-gray-700">{MEDICO.crm}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {!compacto && (
+        <div className="absolute left-10 right-10" style={{ bottom: '1cm' }}>
+          <FarmaciasReferencia />
         </div>
       )}
 
