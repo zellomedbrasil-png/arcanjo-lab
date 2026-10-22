@@ -46,21 +46,17 @@ export function infoDoMedicamento(m: MedicamentoReceita): InfoClasse {
 }
 
 /**
- * Altura útil da área de prescrição (px a 96 dpi, na escala de alturaEstimadaItem).
- * Vias A5 medidas com ItemPrescricao: RCE tem menos espaço por causa dos quadros
- * de comprador/fornecedor. SIMPLES é a A4 de ReceitaBranca com o rodapé das
- * farmácias; lá o item real sai ~15% maior que a estimativa, daí 530 e não 632.
+ * Altura útil da área de prescrição numa via A5 (px a 96 dpi). Medida no
+ * navegador com ItemPrescricao: RCE tem menos espaço por causa dos quadros de
+ * comprador/fornecedor.
  */
-const ALTURA_UTIL: Partial<Record<ModeloReceita, number>> = { RETENCAO: 300, RCE: 190, SIMPLES: 530 };
-/**
- * No modo digital o espaço do selo/QR toma o lugar da linha de assinatura.
- * Medido: 37 px a menos na via A5 (12 mm) e 69 px na A4 (14 mm + legenda).
- */
-const EXTRA_RODAPE_DIGITAL: Partial<Record<ModeloReceita, number>> = { SIMPLES: 69 };
+const ALTURA_UTIL: Partial<Record<ModeloReceita, number>> = { RETENCAO: 300, RCE: 190 };
+/** No modo digital o espaço do selo/QR (12 mm) toma o lugar da linha de assinatura. Medido: 37 px a menos na via. */
+const EXTRA_RODAPE_DIGITAL = 37;
 
 const alturaUtil = (modelo: ModeloReceita, modo: ModoEmissao) => {
   const util = ALTURA_UTIL[modelo];
-  return util === undefined ? undefined : util - (modo === 'DIGITAL' ? EXTRA_RODAPE_DIGITAL[modelo] ?? 37 : 0);
+  return util === undefined ? undefined : util - (modo === 'DIGITAL' ? EXTRA_RODAPE_DIGITAL : 0);
 };
 
 const linhas = (texto: string, porLinha: number) =>
@@ -88,7 +84,7 @@ export function itemNaoCabeNaVia(m: MedicamentoReceita, modelo: ModeloReceita, m
   return util !== undefined && alturaEstimadaItem(m) > util;
 }
 
-/** Divide em folhas respeitando o máximo de itens e a altura disponível. */
+/** Divide em folhas respeitando o máximo de itens e, nas vias A5, a altura disponível. */
 function emFolhas<T extends { m: MedicamentoReceita }>(itens: T[], modelo: ModeloReceita, modo: ModoEmissao): T[][] {
   const max = ITENS_POR_FOLHA[modelo];
   const util = alturaUtil(modelo, modo) ?? Infinity;

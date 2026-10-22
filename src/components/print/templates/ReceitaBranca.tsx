@@ -1,7 +1,6 @@
 import { useReceitaStore, type MedicamentoReceita } from '../../../store/useReceitaStore';
 import { renderMarkdown } from '../../../utils/markdown';
 import { enderecoCompleto, registroConselho, usePrescritorStore } from '../../../config/prescritor';
-import FarmaciasReferencia from './FarmaciasReferencia';
 
 export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { medicamentosOverride?: MedicamentoReceita[]; textoLivre?: string } = {}) {
   // Seletores por campo: na prévia A4 ao vivo, os medicamentos chegam por prop
@@ -349,7 +348,6 @@ export default function ReceitaBranca({ medicamentosOverride, textoLivre }: { me
             </div>
           </div>
         </div>
-        <FarmaciasReferencia qrMm={count >= 7 ? 24 : 27} />
       </div>
     </div>
   );
