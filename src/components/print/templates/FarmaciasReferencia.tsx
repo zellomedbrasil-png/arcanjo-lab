@@ -2,7 +2,9 @@ import qrLaSalute from '../../../assets/farmacias/la-salute.png';
 import qrMeicosFarma from '../../../assets/farmacias/meicos-farma.png';
 
 /**
- * Farmácias de referência no rodapé das receitas A4 (simples e manipulação de 1 via).
+ * Farmácias de manipulação no rodapé da receita manipulada de 1 via — SÓ nela.
+ * Não usar na receita simples nem nas de 2 vias: o paciente de remédio comum
+ * não deve ver farmácia de manipulação na folha.
  * Os QR Codes são os arquivos entregues pelas farmácias, só recortados ao redor:
  * nada de gerar de novo. Abaixo de ~24 mm o celular começa a errar a leitura.
  */
