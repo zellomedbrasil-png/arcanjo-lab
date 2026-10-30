@@ -82,8 +82,6 @@ export default function GuiaISSEC() {
     ];
   };
   const linhas = getLinhas();
-  // Protocolos de 35–50 exames, com código, empurram o rodapé para a borda da folha.
-  const fonteLinhas = isLab && examesSelecionados.length > 30 ? '8.5px' : '9.5px';
 
   return (
     <>
@@ -449,7 +447,7 @@ export default function GuiaISSEC() {
                   style={{
                     borderBottom: '1pt solid black',
                     padding: '1mm 2mm',
-                    fontSize: fonteLinhas,
+                    fontSize: '9.5px',
                     fontFamily: 'Arial, Helvetica, sans-serif',
                     fontWeight: 'normal',
                     textTransform: 'uppercase',
