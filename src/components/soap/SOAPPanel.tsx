@@ -12,8 +12,8 @@ import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio, ShieldAlert, Activity, HelpCircle, Send } from 'lucide-react';
 import type { ConsultaGravada } from '../../types';
-import { cleanSoapMarkdown } from '../../lib/formatters';
-import { buildPacienteContexto } from '../../lib/aiContext';
+import { cleanSoapMarkdown, juntarAlertasSOAP, separarAlertasSOAP } from '../../lib/formatters';
+import { buildMensagemSOAP, buildPacienteContexto, type ModalidadeConsulta } from '../../lib/aiContext';
 import { SYSTEM_PROMPT_JUSTIFICATIVA, SYSTEM_PROMPT_SOAP, SYSTEM_PROMPT_DUVIDAS } from './prompts';
 
 
@@ -34,7 +34,8 @@ export default function SOAPPanel() {
   const elapsedDuvida = useElapsedTimer(isLoadingDuvida);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(soap);
+    // Só a nota: os alertas são para o médico e não vão para o prontuário.
+    navigator.clipboard.writeText(separarAlertasSOAP(soap).nota.trim());
     setCopied(true);
     toast.success('Nota SOAP copiada!');
     setTimeout(() => setCopied(false), 2000);
@@ -52,6 +53,8 @@ export default function SOAPPanel() {
   const queixa = useAppStore((s) => s.queixa);
   const justificativa = useAppStore((s) => s.justificativa);
   const tipoGuia = useAppStore((s) => s.tipoGuia);
+  const convenio = useAppStore((s) => s.convenio);
+  const modalidadeConsulta = useAppStore((s) => s.modalidadeConsulta);
   const iaModel = useAppStore((s) => s.iaModel);
   const consultasGravadas = useAppStore((s) => s.consultasGravadas);
   const syncStatus = useAppStore((s) => s.syncStatus);
@@ -347,7 +350,10 @@ Queixa clínica: "${queixa}"`;
     try {
       const content = await callAI(
         {
-          prompt: buildContext(),
+          prompt: buildMensagemSOAP(
+            { pacienteIdade, genero, convenio, tipoGuia, examesSelecionados, procedimentosSelecionados, queixa },
+            modalidadeConsulta
+          ),
           systemInstruction: SYSTEM_PROMPT_SOAP,
           // Streaming: a nota aparece na tela conforme o texto chega
           onDelta: (textSoFar) => setSoap(cleanSoapMarkdown(textSoFar)),
@@ -403,9 +409,29 @@ Queixa clínica: "${queixa}"`;
       {/* Queixa / Contexto Clínico */}
       <div className="space-y-3">
         <div>
-          <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-            Queixa / Contexto Clínico
-          </label>
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              Queixa / Contexto Clínico
+            </label>
+            <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5" role="group" aria-label="Modalidade da consulta">
+              {([
+                ['PRESENCIAL', 'Presencial'],
+                ['TELEMEDICINA', 'Telemedicina'],
+              ] as [ModalidadeConsulta, string][]).map(([id, nome]) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={modalidadeConsulta === id}
+                  onClick={() => setPaciente({ modalidadeConsulta: id })}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors cursor-pointer ${
+                    modalidadeConsulta === id ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  {nome}
+                </button>
+              ))}
+            </div>
+          </div>
           <textarea
             value={queixa}
             onChange={(e) => setQueixa(e.target.value)}
@@ -682,9 +708,27 @@ Queixa clínica: "${queixa}"`;
                 </button>
               )}
             </div>
+            {(() => {
+              const { alertas } = separarAlertasSOAP(soap);
+              if (!alertas) return null;
+              const linhas = alertas.split(/\r?\n/).map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean);
+              return (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-800 mb-1.5">
+                    <ShieldAlert size={12} className="text-amber-600" />
+                    Alertas para o médico · não vão para o prontuário
+                  </p>
+                  <ul className="space-y-1 text-xs leading-relaxed text-amber-900">
+                    {linhas.map((l) => (
+                      <li key={l}>{l}</li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })()}
             <textarea
-              value={soap}
-              onChange={(e) => setSoap(e.target.value)}
+              value={separarAlertasSOAP(soap).nota}
+              onChange={(e) => setSoap(juntarAlertasSOAP(e.target.value, separarAlertasSOAP(soap).alertas))}
               placeholder="A nota SOAP (S/O/A/P) aparecerá aqui ao ser gerada pela IA ou digitada..."
               className="w-full border border-gray-200 rounded-xl text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50/30 resize-y font-sans leading-relaxed text-gray-800 placeholder:text-gray-400 focus:bg-white transition-all h-56 lg:h-96"
             />

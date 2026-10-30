@@ -73,6 +73,29 @@ export function cleanSoapMarkdown(text: string): string {
     .trim();
 }
 
+const MARCADOR_ALERTAS = /^=+\s*ALERTAS PARA O M[ÉE]DICO.*$/im;
+
+/**
+ * Divide a saída do SOAP no marcador "==== ALERTAS PARA O MÉDICO": a parte de
+ * cima é a nota que vai para o prontuário; a de baixo, só para o médico ler.
+ * Sem marcador (nota antiga ou digitada), tudo é nota.
+ */
+export function separarAlertasSOAP(texto: string): { nota: string; alertas: string } {
+  const m = MARCADOR_ALERTAS.exec(texto || '');
+  if (!m) return { nota: texto || '', alertas: '' };
+  return {
+    // Só o separador que juntarAlertasSOAP põe; aparar tudo engoliria a quebra
+    // de linha que o médico acabou de digitar no fim da nota.
+    nota: texto.slice(0, m.index).replace(/\n\n$/, ''),
+    alertas: texto.slice(m.index + m[0].length).trim(),
+  };
+}
+
+/** Recompõe o texto guardado a partir da nota editada e dos alertas. */
+export function juntarAlertasSOAP(nota: string, alertas: string): string {
+  return alertas ? `${nota}\n\n==== ALERTAS PARA O MÉDICO (não copiar para o prontuário) ====\n${alertas}` : nota;
+}
+
 /**
  * Extrai o bloco JSON de uma string de resposta da IA.
  * Trata casos onde o modelo envia tags como <think> (DeepSeek)

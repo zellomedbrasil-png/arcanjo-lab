@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Convenio, Genero, Medico, TipoGuia, ConsultaGravada } from '../types';
 import type { Especialidade, TipoConsulta } from '../data/protocolosExames';
+import type { ModalidadeConsulta } from '../lib/aiContext';
 import { publishPatientSync, subscribePatientSync } from './patientSync';
 import { useReceitaStore } from './useReceitaStore';
 
@@ -19,6 +20,8 @@ interface AppState {
   /** Área do protocolo de exames. Fica entre um paciente e outro (é do médico, não do paciente). */
   especialidade: Especialidade;
   tipoConsulta: TipoConsulta;
+  /** Presencial ou telemedicina: muda o campo O e o atestado da nota SOAP. */
+  modalidadeConsulta: ModalidadeConsulta;
   tipoGuia: TipoGuia;
   examesSelecionados: string[];
   procedimentosSelecionados: string[];
@@ -77,6 +80,7 @@ const initialState = {
   genero: 'M' as Genero,
   convenio: 'IPM' as Convenio,  // default
   tipoConsulta: 'PRIMEIRA' as TipoConsulta,
+  modalidadeConsulta: 'PRESENCIAL' as ModalidadeConsulta,
   tipoGuia: 'LABORATORIO' as TipoGuia,
   examesSelecionados: [],
   procedimentosSelecionados: [] as string[],
@@ -272,6 +276,7 @@ export const useAppStore = create<AppState>()(
         convenio: state.convenio,
         especialidade: state.especialidade,
         tipoConsulta: state.tipoConsulta,
+        modalidadeConsulta: state.modalidadeConsulta,
         tipoGuia: state.tipoGuia,
         examesSelecionados: state.examesSelecionados,
         procedimentosSelecionados: state.procedimentosSelecionados,

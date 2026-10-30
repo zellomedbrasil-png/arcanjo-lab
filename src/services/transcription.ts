@@ -102,17 +102,16 @@ const WHISPER_ATTEMPTS: Array<{ model: string; timeoutMs: number }> = [
 ];
 
 // Prompt de domínio clínico para o fallback client-side (em sincronia com o do
-// proxy api/groq-transcribe.ts). LIMITE DO GROQ: 896 BYTES UTF-8 (~882 aqui).
+// proxy api/groq-transcribe.ts). LIMITE DO GROQ: 896 BYTES UTF-8 (~783 aqui).
 const MEDICAL_PROMPT =
-  'Consulta de Gastroenterologia, Geriatria e Clínica Geral, português do Brasil. ' +
-  'Medicamentos: omeprazol, pantoprazol, domperidona, bromoprida, ondansetrona, mesalazina, azatioprina, ' +
-  'rifaximina, lactulose, metformina, dapagliflozina, empagliflozina, losartana, anlodipino, espironolactona, ' +
-  'furosemida, atorvastatina, rosuvastatina, clopidogrel, rivaroxabana, levotiroxina, donepezila, memantina, ' +
-  'quetiapina, sertralina, escitalopram, gabapentina, pregabalina, dipirona. Diagnósticos: refluxo ' +
-  'gastroesofágico, gastrite, úlcera péptica, Helicobacter pylori, síndrome do intestino irritável, doença de ' +
-  'Crohn, retocolite ulcerativa, esteatose hepática, cirrose, pancreatite, disfagia, pirose, melena, demência, ' +
-  'Alzheimer, Parkinson, fragilidade, delirium, polifarmácia, fibrilação atrial, DPOC. Exames: endoscopia, ' +
-  'colonoscopia, TSH, hemoglobina glicada, creatinina, CID-10.';
+  'Consulta médica de Gastroenterologia, Geriatria e Clínica Geral, português do Brasil. ' +
+  'Medicamentos: pantoprazol, dexlansoprazol, Dexilant, omeprazol, domperidona, bromoprida, macrogol, Selozok, ' +
+  'metoprolol, silimarina, Bifilac, mecobalamina, mirtazapina, fosfomicina, mirabegrona, dapagliflozina, ' +
+  'albendazol, secnidazol, ivermectina, Bacopa, Cognitus, Dozemast NP, losartana, anlodipino, metformina, ' +
+  'rifaximina, lactulose, levotiroxina, donepezila, quetiapina, sertralina, escitalopram, pregabalina, dipirona. ' +
+  'Diagnósticos: refluxo gastroesofágico, gastrite, Helicobacter pylori, síndrome do intestino irritável, ' +
+  'esteatose hepática, cirrose, disfagia, pirose, melena, demência, Parkinson, delirium. ' +
+  'Exames: EDA, endoscopia, colonoscopia, TSH, hemoglobina glicada, creatinina.';
 
 // ─── Whisper (Groq) via proxy, com fallback client-side ─────────────────────────
 

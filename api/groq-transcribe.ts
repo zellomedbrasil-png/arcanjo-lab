@@ -19,18 +19,17 @@ declare const process: { env: { [key: string]: string | undefined } };
 // Prompt de dominio clinico — enviesa o Whisper para o vocabulario medico das
 // especialidades do usuario (Gastroenterologia, Geriatria e Clinica Geral).
 // LIMITE DO GROQ: 896 BYTES (UTF-8). Acentos contam 2 bytes; este texto tem
-// ~882 bytes. Para ampliar, troque termos (nao apenas adicione) e mantenha <896;
+// ~783 bytes. Para ampliar, troque termos (nao apenas adicione) e mantenha <896;
 // o guard truncatePrompt() abaixo protege contra excesso acidental.
 const MEDICAL_PROMPT =
-  'Consulta de Gastroenterologia, Geriatria e Clínica Geral, português do Brasil. ' +
-  'Medicamentos: omeprazol, pantoprazol, domperidona, bromoprida, ondansetrona, mesalazina, azatioprina, ' +
-  'rifaximina, lactulose, metformina, dapagliflozina, empagliflozina, losartana, anlodipino, espironolactona, ' +
-  'furosemida, atorvastatina, rosuvastatina, clopidogrel, rivaroxabana, levotiroxina, donepezila, memantina, ' +
-  'quetiapina, sertralina, escitalopram, gabapentina, pregabalina, dipirona. Diagnósticos: refluxo ' +
-  'gastroesofágico, gastrite, úlcera péptica, Helicobacter pylori, síndrome do intestino irritável, doença de ' +
-  'Crohn, retocolite ulcerativa, esteatose hepática, cirrose, pancreatite, disfagia, pirose, melena, demência, ' +
-  'Alzheimer, Parkinson, fragilidade, delirium, polifarmácia, fibrilação atrial, DPOC. Exames: endoscopia, ' +
-  'colonoscopia, TSH, hemoglobina glicada, creatinina, CID-10.';
+  'Consulta médica de Gastroenterologia, Geriatria e Clínica Geral, português do Brasil. ' +
+  'Medicamentos: pantoprazol, dexlansoprazol, Dexilant, omeprazol, domperidona, bromoprida, macrogol, Selozok, ' +
+  'metoprolol, silimarina, Bifilac, mecobalamina, mirtazapina, fosfomicina, mirabegrona, dapagliflozina, ' +
+  'albendazol, secnidazol, ivermectina, Bacopa, Cognitus, Dozemast NP, losartana, anlodipino, metformina, ' +
+  'rifaximina, lactulose, levotiroxina, donepezila, quetiapina, sertralina, escitalopram, pregabalina, dipirona. ' +
+  'Diagnósticos: refluxo gastroesofágico, gastrite, Helicobacter pylori, síndrome do intestino irritável, ' +
+  'esteatose hepática, cirrose, disfagia, pirose, melena, demência, Parkinson, delirium. ' +
+  'Exames: EDA, endoscopia, colonoscopia, TSH, hemoglobina glicada, creatinina.';
 
 // Garante que o prompt nunca exceda o limite de 896 bytes do Groq (senao 400).
 function truncatePrompt(text: string, maxBytes = 896): string {

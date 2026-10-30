@@ -14,7 +14,7 @@ import { callAI, getLastUsedModel } from '../../config/gemini';
 import { SYSTEM_PROMPT_SOAP, SYSTEM_PROMPT_JUSTIFICATIVA } from '../soap/prompts';
 import { toast } from '../../lib/toast';
 import { cleanSoapMarkdown } from '../../lib/formatters';
-import { buildPacienteContexto } from '../../lib/aiContext';
+import { buildMensagemSOAP, buildPacienteContexto } from '../../lib/aiContext';
 
 
 export default function Layout({ children }: { children: ReactNode }) {
@@ -72,15 +72,8 @@ export default function Layout({ children }: { children: ReactNode }) {
     }
     toast.info('Gerando nota SOAP em segundo plano...');
     try {
-      const isLab = state.tipoGuia === 'LABORATORIO';
-      const examesStr = isLab
-        ? `Exames laboratoriais: ${state.examesSelecionados.join(', ') || 'nenhum'}`
-        : `Procedimento: ${state.procedimentosSelecionados.join(', ') || state.tipoGuia}`;
-      
-      const context = `${buildPacienteContexto(state)}\n${examesStr}\nQueixa clínica: "${state.queixa}"`;
-
       const content = await callAI({
-        prompt: context,
+        prompt: buildMensagemSOAP(state, state.modalidadeConsulta),
         systemInstruction: SYSTEM_PROMPT_SOAP,
       });
       state.setSoap(cleanSoapMarkdown(content));
