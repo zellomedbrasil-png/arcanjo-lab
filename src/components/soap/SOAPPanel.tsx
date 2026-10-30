@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useElapsedTimer } from '../../hooks/useElapsedTimer';
 import { useAppStore } from '../../store/useAppStore';
 import { callAI, getLastUsedModel, getDefaultModelId, AI_MODELS, cancelAIRequest } from '../../config/gemini';
@@ -10,40 +10,95 @@ import { SegmentedRecorder } from '../../services/segmentedRecorder';
 import { startLiveSpeech, isLiveSpeechSupported, type LiveSpeechController } from '../../services/liveSpeech';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
-import { Loader2, Wand2, ClipboardList, FileText, ChevronDown, ChevronUp, X, Check, Save, Trash2, Calendar, Mic, Square, Smartphone, Radio, ShieldAlert, Activity, HelpCircle, Send } from 'lucide-react';
-import type { ConsultaGravada } from '../../types';
+import { Loader2, Wand2, ClipboardList, Check, Mic, Square, Smartphone, Radio, ShieldAlert, Activity, HelpCircle, Settings2, ChevronDown } from 'lucide-react';
 import { cleanSoapMarkdown, juntarAlertasSOAP, separarAlertasSOAP } from '../../lib/formatters';
 import { buildMensagemSOAP, buildPacienteContexto, type ModalidadeConsulta } from '../../lib/aiContext';
-import { SYSTEM_PROMPT_JUSTIFICATIVA, SYSTEM_PROMPT_SOAP, SYSTEM_PROMPT_DUVIDAS } from './prompts';
+import { SYSTEM_PROMPT_JUSTIFICATIVA, SYSTEM_PROMPT_SOAP } from './prompts';
+import DuvidaClinicaPanel from './DuvidaClinicaPanel';
 
+type AbaProntuario = 'SOAP' | 'DUVIDA';
+const ABA_KEY = 'arcanjo-prontuario-aba';
+const AJUSTES_KEY = 'arcanjo-prontuario-ajustes';
+const ABAS_PRONTUARIO: { id: AbaProntuario; nome: string; Icon: typeof ClipboardList }[] = [
+  { id: 'SOAP', nome: 'Nota SOAP', Icon: ClipboardList },
+  { id: 'DUVIDA', nome: 'Dúvida clínica', Icon: HelpCircle },
+];
 
+const lerLocal = (chave: string): string | null => {
+  try {
+    return localStorage.getItem(chave);
+  } catch {
+    return null; // localStorage indisponível
+  }
+};
+const gravarLocal = (chave: string, valor: string) => {
+  try {
+    localStorage.setItem(chave, valor);
+  } catch {
+    // sem localStorage (aba anônima, bloqueio): só não lembra a escolha
+  }
+};
+const lerAba = (): AbaProntuario => (lerLocal(ABA_KEY) === 'DUVIDA' ? 'DUVIDA' : 'SOAP');
+
+/** Nome do motor de voz sem os emojis do rótulo. */
+const nomeMotor = (label: string) => label.replace(/\s*\p{Extended_Pictographic}️?/gu, '').trim();
+
+const ESCALAS = [
+  { nome: 'Bristol (Fezes)', keywords: ['bristol', 'cíbalos'] },
+  { nome: 'Roma IV (Gastroenterologia)', keywords: ['roma iv', 'roma 4', 'constipação funcional', 'dispepsia funcional', 'síndrome do intestino irritável'] },
+  { nome: 'Los Angeles (Esofagite)', keywords: ['los angeles', 'grau a', 'grau b', 'grau c', 'grau d'] },
+  { nome: 'Sydney/OLGA (Gastrite)', keywords: ['sydney', 'olga', 'olgis'] },
+  { nome: 'Forrest (HDA)', keywords: ['forrest'] },
+  { nome: 'FIB-4 (Fibrose Hepática)', keywords: ['fib-4', 'fib4'] },
+  { nome: 'Katz (Funcionalidade)', keywords: ['katz'] },
+  { nome: 'Lawton (Funcionalidade)', keywords: ['lawton'] },
+  { nome: 'FRAIL / Fried (Fragilidade)', keywords: ['frail', 'fried', 'fragilidade'] },
+];
+
+const DROGAS_BEERS = ['amitriptilina', 'clonazepam', 'diazepam', 'alprazolam', 'bromazepam', 'zolpidem', 'glimepirida', 'metoclopramida'];
+const AINES_IDOSO = ['diclofenaco', 'nimesulida', 'ibuprofeno'];
+
+// Análise clínica da nota SOAP: alerta Beers/STOPP, escalas citadas e CIDs.
+function analisarSOAP(texto: string) {
+  if (!texto) return { alertBeers: null as string | null, escalas: [] as string[], cids: [] as string[] };
+  const textLower = texto.toLowerCase();
+  const temBeers =
+    textLower.includes('beers') ||
+    textLower.includes('stopp') ||
+    DROGAS_BEERS.some((d) => textLower.includes(d)) ||
+    (textLower.includes('idoso') && AINES_IDOSO.some((d) => textLower.includes(d)));
+  const alertBeers = temBeers
+    ? 'Possível risco terapêutico/medicamento inapropriado detectado (Critérios de Beers 2023 / STOPP-START). Avalie desprescrição ou ajuste de dose.'
+    : null;
+  const escalas = ESCALAS.filter((e) => e.keywords.some((k) => textLower.includes(k))).map((e) => e.nome);
+  const cids = Array.from(new Set(texto.match(/\b[A-Z]\d{2}(?:\.\d)?\b/g) || []));
+  return { alertBeers, escalas, cids };
+}
 
 export default function SOAPPanel() {
   const [isLoadingJust, setIsLoadingJust] = useState(false);
   const [isLoadingSoap, setIsLoadingSoap] = useState(false);
-  const [isLoadingDuvida, setIsLoadingDuvida] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [soapExpanded, setSoapExpanded] = useState(true);
-  const [duvidasExpanded, setDuvidasExpanded] = useState(false);
+  const [aba, setAba] = useState<AbaProntuario>(lerAba);
+  const [ajustesAbertos, setAjustesAbertos] = useState(() => lerLocal(AJUSTES_KEY) === '1');
   const [copied, setCopied] = useState(false);
-  const [copiedDuvida, setCopiedDuvida] = useState(false);
-  const [perguntaDuvida, setPerguntaDuvida] = useState('');
-  const [respostaDuvida, setRespostaDuvida] = useState('');
   const elapsedJust = useElapsedTimer(isLoadingJust);
   const elapsedSoap = useElapsedTimer(isLoadingSoap);
-  const elapsedDuvida = useElapsedTimer(isLoadingDuvida);
 
-  const handleCopy = () => {
-    // Só a nota: os alertas são para o médico e não vão para o prontuário.
-    navigator.clipboard.writeText(separarAlertasSOAP(soap).nota.trim());
-    setCopied(true);
-    toast.success('Nota SOAP copiada!');
-    setTimeout(() => setCopied(false), 2000);
+  const trocarAba = (nova: AbaProntuario) => {
+    setAba(nova);
+    gravarLocal(ABA_KEY, nova);
+  };
+  const alternarAjustes = () => {
+    setAjustesAbertos((v) => {
+      gravarLocal(AJUSTES_KEY, v ? '0' : '1');
+      return !v;
+    });
   };
 
   // Seletores por campo — o painel é grande e reage a texto digitado (queixa,
-  // SOAP, justificativa). Assinando o store inteiro, cada tecla re-renderizava
-  // o painel inteiro por causa de campos que ele nem usa naquele momento.
+  // SOAP). Assinando o store inteiro, cada tecla re-renderizava o painel
+  // inteiro por causa de campos que ele nem usa naquele momento.
   const pacienteNome = useAppStore((s) => s.pacienteNome);
   const pacienteIdade = useAppStore((s) => s.pacienteIdade);
   const genero = useAppStore((s) => s.genero);
@@ -51,74 +106,35 @@ export default function SOAPPanel() {
   const procedimentosSelecionados = useAppStore((s) => s.procedimentosSelecionados);
   const soap = useAppStore((s) => s.soap);
   const queixa = useAppStore((s) => s.queixa);
-  const justificativa = useAppStore((s) => s.justificativa);
   const tipoGuia = useAppStore((s) => s.tipoGuia);
   const convenio = useAppStore((s) => s.convenio);
   const modalidadeConsulta = useAppStore((s) => s.modalidadeConsulta);
   const iaModel = useAppStore((s) => s.iaModel);
-  const consultasGravadas = useAppStore((s) => s.consultasGravadas);
   const syncStatus = useAppStore((s) => s.syncStatus);
   // Ações: referência estável, nunca disparam re-render.
   const setSoap = useAppStore((s) => s.setSoap);
   const setQueixa = useAppStore((s) => s.setQueixa);
   const setJustificativa = useAppStore((s) => s.setJustificativa);
   const setIaModel = useAppStore((s) => s.setIaModel);
-  const gravarConsulta = useAppStore((s) => s.gravarConsulta);
-  const removerConsultaGravada = useAppStore((s) => s.removerConsultaGravada);
   const adicionarConsultaAoHistorico = useAppStore((s) => s.adicionarConsultaAoHistorico);
-  const limparConsultasGravadas = useAppStore((s) => s.limparConsultasGravadas);
   const setPaciente = useAppStore((s) => s.setPaciente);
   const setIsPairingModalOpen = useAppStore((s) => s.setIsPairingModalOpen);
 
+  // Uma vez por mudança da nota, não a cada render.
+  const partesSoap = useMemo(() => separarAlertasSOAP(soap), [soap]);
+  const analise = useMemo(() => analisarSOAP(soap), [soap]);
+  const alertasMedico = useMemo(
+    () => (partesSoap.alertas || '').split(/\r?\n/).map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean),
+    [partesSoap.alertas]
+  );
+  const temAuditoria = !!soap.trim() && (!!analise.alertBeers || analise.escalas.length > 0 || analise.cids.length > 0);
 
-  // Análise clínica em tempo real da nota SOAP
-  const analisarSOAP = (texto: string) => {
-    if (!texto) return { alertBeers: null, escalas: [] as string[], cids: [] as string[] };
-
-    const textLower = texto.toLowerCase();
-    
-    // 1. Detecção de Alertas de Beers / STOPP
-    let alertBeers: string | null = null;
-    const hasBeersKeywords = textLower.includes('beers') || textLower.includes('stopp');
-    const hasCriticalDrugs = textLower.includes('amitriptilina') || 
-                             textLower.includes('clonazepam') || 
-                             textLower.includes('diazepam') || 
-                             textLower.includes('alprazolam') || 
-                             textLower.includes('bromazepam') || 
-                             textLower.includes('zolpidem') || 
-                             textLower.includes('glimepirida') || 
-                             textLower.includes('metoclopramida') || 
-                             (textLower.includes('diclofenaco') && textLower.includes('idoso')) || 
-                             (textLower.includes('nimesulida') && textLower.includes('idoso')) || 
-                             (textLower.includes('ibuprofeno') && textLower.includes('idoso'));
-                             
-    if (hasBeersKeywords || hasCriticalDrugs) {
-      alertBeers = "Possível risco terapêutico/medicamento inapropriado detectado (Critérios de Beers 2023 / STOPP-START). Avalie desprescrição ou ajuste de dose.";
-    }
-
-    // 2. Detecção de Escalas Clínicas
-    const escalasDisponiveis = [
-      { nome: 'Bristol (Fezes)', keywords: ['bristol', 'cíbalos'] },
-      { nome: 'Roma IV (Gastroenterologia)', keywords: ['roma iv', 'roma 4', 'constipação funcional', 'dispepsia funcional', 'síndrome do intestino irritável'] },
-      { nome: 'Los Angeles (Esofagite)', keywords: ['los angeles', 'grau a', 'grau b', 'grau c', 'grau d'] },
-      { nome: 'Sydney/OLGA (Gastrite)', keywords: ['sydney', 'olga', 'olgis'] },
-      { nome: 'Forrest (HDA)', keywords: ['forrest'] },
-      { nome: 'FIB-4 (Fibrose Hepática)', keywords: ['fib-4', 'fib4'] },
-      { nome: 'Katz (Funcionalidade)', keywords: ['katz'] },
-      { nome: 'Lawton (Funcionalidade)', keywords: ['lawton'] },
-      { nome: 'FRAIL / Fried (Fragilidade)', keywords: ['frail', 'fried', 'fragilidade'] }
-    ];
-
-    const escalas = escalasDisponiveis
-      .filter(e => e.keywords.some(k => textLower.includes(k)))
-      .map(e => e.nome);
-
-    // 3. Extração de CIDs
-    const regexCid = /\b[A-Z]\d{2}(?:\.\d)?\b/g;
-    const matches = texto.match(regexCid) || [];
-    const cids = Array.from(new Set(matches));
-
-    return { alertBeers, escalas, cids };
+  const handleCopy = () => {
+    // Só a nota: os alertas são para o médico e não vão para o prontuário.
+    navigator.clipboard.writeText(partesSoap.nota.trim());
+    setCopied(true);
+    toast.success('Nota SOAP copiada!');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   // Estados para Gravação de Áudio
@@ -291,21 +307,6 @@ export default function SOAPPanel() {
     }
   };
 
-  const handleGravarConsulta = () => {
-    const success = gravarConsulta();
-    if (success) {
-      toast.success('Consulta salva no histórico!');
-    } else {
-      toast.error('Preencha o nome do paciente e a queixa.');
-    }
-  };
-
-  const handleCarregarConsulta = (consulta: ConsultaGravada) => {
-    setPaciente({ pacienteNome: consulta.nome });
-    setQueixa(consulta.queixa);
-    toast.success(`Consulta de ${consulta.nome} carregada`);
-  };
-
   const buildContext = () => {
     const isLab = tipoGuia === 'LABORATORIO';
     const examesStr = isLab
@@ -346,7 +347,7 @@ Queixa clínica: "${queixa}"`;
     if (!queixa.trim()) { setError('Informe a queixa clínica.'); return; }
     setIsLoadingSoap(true);
     setError(null);
-    setSoapExpanded(true); // expande antes para o texto aparecer progressivamente
+    trocarAba('SOAP'); // abre a aba antes para o texto aparecer progressivamente
     try {
       const content = await callAI(
         {
@@ -372,512 +373,298 @@ Queixa clínica: "${queixa}"`;
     }
   };
 
-  const enviarDuvida = async () => {
-    if (!perguntaDuvida.trim()) return;
-    setIsLoadingDuvida(true);
-    setDuvidasExpanded(true);
-    setRespostaDuvida('');
-    try {
-      const content = await callAI(
-        {
-          prompt: perguntaDuvida,
-          systemInstruction: SYSTEM_PROMPT_DUVIDAS,
-          onDelta: (textSoFar) => setRespostaDuvida(cleanSoapMarkdown(textSoFar)),
-        },
-        selectedModelId
-      );
-      setRespostaDuvida(cleanSoapMarkdown(content));
-      toast.success('Resposta gerada');
-    } catch (err: unknown) {
-      const msg = getErrorMessage(err, 'Erro ao responder dúvida.');
-      toast.error(msg);
-    } finally {
-      setIsLoadingDuvida(false);
-    }
-  };
-
-  const handleCopyDuvida = () => {
-    navigator.clipboard.writeText(respostaDuvida);
-    setCopiedDuvida(true);
-    toast.success('Resposta copiada!');
-    setTimeout(() => setCopiedDuvida(false), 2000);
-  };
+  const modeloAtual = AI_MODELS.find((m) => m.id === selectedModelId);
+  const motorAtual = TRANSCRIPTION_ENGINES.find((e) => e.id === selectedEngine);
+  const ocupado = isRecording || isTranscribing;
+  const btn = 'flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer disabled:cursor-not-allowed';
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
-
-      {/* Queixa / Contexto Clínico */}
-      <div className="space-y-3">
-        <div>
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-              Queixa / Contexto Clínico
-            </label>
-            <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5" role="group" aria-label="Modalidade da consulta">
-              {([
-                ['PRESENCIAL', 'Presencial'],
-                ['TELEMEDICINA', 'Telemedicina'],
-              ] as [ModalidadeConsulta, string][]).map(([id, nome]) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={modalidadeConsulta === id}
-                  onClick={() => setPaciente({ modalidadeConsulta: id })}
-                  className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors cursor-pointer ${
-                    modalidadeConsulta === id ? 'bg-white shadow-sm text-indigo-700' : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  {nome}
-                </button>
-              ))}
-            </div>
+    <div className="space-y-5">
+      {/* Consulta: queixa + captura + geração */}
+      <section className="rounded-lg border border-neutral-border bg-white overflow-hidden">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-neutral-border bg-slate-50/60">
+          <h2 className="text-sm font-bold text-neutral-text">Queixa / contexto clínico</h2>
+          <div className="inline-flex rounded-md border border-neutral-border bg-white p-0.5" role="group" aria-label="Modalidade da consulta">
+            {([
+              ['PRESENCIAL', 'Presencial'],
+              ['TELEMEDICINA', 'Telemedicina'],
+            ] as [ModalidadeConsulta, string][]).map(([id, nome]) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={modalidadeConsulta === id}
+                onClick={() => setPaciente({ modalidadeConsulta: id })}
+                className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
+                  modalidadeConsulta === id ? 'bg-blue-50 text-blue-700' : 'text-neutral-text-muted hover:text-neutral-text'
+                }`}
+              >
+                {nome}
+              </button>
+            ))}
           </div>
+        </div>
+
+        <div className="p-4 space-y-3">
           <textarea
             value={queixa}
             onChange={(e) => setQueixa(e.target.value)}
             placeholder="Ex: Paciente 78a, astenia há 2 meses, perda de 4kg, HAS e DM2."
-            className="w-full border border-gray-200 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 resize-y placeholder:text-gray-400 bg-gray-50/10 focus:bg-white transition-all font-medium leading-relaxed h-20 lg:h-28"
+            className="w-full rounded-lg border border-neutral-border text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 resize-y placeholder:text-gray-400 leading-relaxed h-24 lg:h-28"
           />
-          {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
-        </div>
+          {error && <p className="text-xs text-red-500">{error}</p>}
 
-        {/* Botões do Prontuário */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 items-center">
-          <button
-            onClick={isLoadingJust ? cancelAIRequest : gerarJustificativa}
-            disabled={!isLoadingJust && (!queixa.trim() || isRecording || isTranscribing)}
-            title={isLoadingJust ? 'Parar a geração' : 'Gerar indicação clínica para a guia'}
-            className={`flex items-center justify-center gap-1.5 px-3 py-2 text-white text-xs font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full ${
-              isLoadingJust ? 'bg-red-500 hover:bg-red-600' : 'bg-indigo-600 hover:bg-indigo-700'
-            }`}
-          >
-            {isLoadingJust ? <Square size={12} fill="white" /> : <Wand2 size={13} />}
-            {isLoadingJust ? `Parar${elapsedJust ? ` ${elapsedJust}s` : ''}` : 'Justificativa'}
-          </button>
-          <button
-            onClick={isLoadingSoap ? cancelAIRequest : gerarSOAP}
-            disabled={!isLoadingSoap && (!queixa.trim() || isRecording || isTranscribing)}
-            title={isLoadingSoap ? 'Parar a geração' : 'Gerar nota SOAP para prontuário'}
-            className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full border ${
-              isLoadingSoap ? 'bg-red-500 hover:bg-red-600 text-white border-red-500' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            {isLoadingSoap ? <Square size={12} fill="white" /> : <ClipboardList size={13} />}
-            {isLoadingSoap ? `Parar${elapsedSoap ? ` ${elapsedSoap}s` : ''}` : 'SOAP'}
-          </button>
+          {/* Ações: captura à esquerda, geração à direita */}
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+            {isRecording ? (
+              <button type="button" onClick={stopRecording} title="Parar gravação de áudio" className={`${btn} bg-red-600 hover:bg-red-700 text-white animate-pulse`}>
+                <Square size={12} fill="white" />
+                {selectedEngine === 'google-live' ? 'Parar ditado' : 'Parar'} {formatTime(recordingTime)}
+              </button>
+            ) : isTranscribing ? (
+              <button type="button" disabled className={`${btn} bg-accent-emerald/70 text-white`}>
+                <Loader2 size={13} className="animate-spin" />
+                Transcrevendo…
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={startRecording}
+                disabled={isLoadingJust || isLoadingSoap}
+                title={selectedEngine === 'google-live' ? 'Ditar ao vivo pelo microfone do computador' : 'Gravar consulta pelo microfone do computador'}
+                className={`${btn} bg-accent-emerald text-white hover:bg-accent-emerald/90 disabled:opacity-40`}
+              >
+                <Mic size={13} />
+                {selectedEngine === 'google-live' ? 'Ditar' : 'Gravar'}
+              </button>
+            )}
 
-          {/* Botão de Conectar Celular para espelhar */}
-          {syncStatus === 'recording' ? (
-            <div className="col-span-2 sm:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2 bg-red-500 text-white text-xs font-semibold rounded-xl shadow-sm animate-pulse">
-              <Radio size={13} className="animate-ping" />
-              Celular Gravando...
-            </div>
-          ) : syncStatus === 'transcribing' ? (
-            <div className="col-span-2 sm:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2 bg-indigo-500 text-white text-xs font-semibold rounded-xl shadow-sm">
-              <Loader2 size={13} className="animate-spin" />
-              Celular Transcrevendo...
-            </div>
-          ) : (
+            {syncStatus === 'recording' ? (
+              <span className={`${btn} bg-red-500 text-white animate-pulse cursor-default`}>
+                <Radio size={13} />
+                Celular gravando
+              </span>
+            ) : syncStatus === 'transcribing' ? (
+              <span className={`${btn} bg-blue-500 text-white cursor-default`}>
+                <Loader2 size={13} className="animate-spin" />
+                Celular transcrevendo
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsPairingModalOpen(true)}
+                title="Espelhar e gravar áudio pelo celular"
+                className={`${btn} border ${
+                  syncStatus === 'connected'
+                    ? 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100'
+                    : 'border-neutral-border bg-white text-neutral-text hover:bg-slate-50'
+                }`}
+              >
+                <Smartphone size={13} />
+                {syncStatus === 'connected' ? 'Celular conectado' : 'Celular'}
+              </button>
+            )}
+
+            <span className="hidden sm:block flex-1" />
+
             <button
-              onClick={() => setIsPairingModalOpen(true)}
               type="button"
-              title="Espelhar e gravar áudio pelo celular"
-              className={`col-span-2 sm:col-span-auto flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl transition-all shadow-sm cursor-pointer hover:shadow ${
-                syncStatus === 'connected'
-                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100'
-                  : 'bg-slate-900 text-white hover:bg-slate-800'
+              onClick={isLoadingJust ? cancelAIRequest : gerarJustificativa}
+              disabled={!isLoadingJust && (!queixa.trim() || ocupado)}
+              title={isLoadingJust ? 'Parar a geração' : 'Gerar indicação clínica para a guia'}
+              className={`${btn} border disabled:opacity-40 ${
+                isLoadingJust ? 'border-red-500 bg-red-500 text-white hover:bg-red-600' : 'border-neutral-border bg-white text-neutral-text hover:bg-slate-50'
               }`}
             >
-              <Smartphone size={13} />
-              {syncStatus === 'connected' ? 'Celular Conectado' : 'Conectar Celular'}
+              {isLoadingJust ? <Square size={12} fill="white" /> : <Wand2 size={13} />}
+              {isLoadingJust ? `Parar${elapsedJust ? ` ${elapsedJust}s` : ''}` : 'Indicação'}
             </button>
-          )}
+            <button
+              type="button"
+              onClick={isLoadingSoap ? cancelAIRequest : gerarSOAP}
+              disabled={!isLoadingSoap && (!queixa.trim() || ocupado)}
+              title={isLoadingSoap ? 'Parar a geração' : 'Gerar nota SOAP para o prontuário'}
+              className={`${btn} text-white disabled:opacity-40 ${isLoadingSoap ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'}`}
+            >
+              {isLoadingSoap ? <Square size={12} fill="white" /> : <ClipboardList size={13} />}
+              {isLoadingSoap ? `Parar${elapsedSoap ? ` ${elapsedSoap}s` : ''}` : 'Nota SOAP'}
+            </button>
+          </div>
 
-          {/* Botão de Gravar Áudio (Consulta por voz local) */}
-          {isRecording ? (
-            <button
-              onClick={stopRecording}
-              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition-all shadow-sm whitespace-nowrap animate-pulse cursor-pointer hover:shadow max-sm:w-full"
-              title="Parar gravação de áudio"
-            >
-              <Square size={13} fill="white" />
-              {selectedEngine === 'google-live' ? 'Parar Ditado' : 'Parar'} ({formatTime(recordingTime)})
-            </button>
-          ) : isTranscribing ? (
-            <button
-              disabled
-              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent-emerald text-white text-xs font-semibold rounded-xl disabled:bg-accent-emerald/60 disabled:text-white/80 disabled:opacity-75 transition-all shadow-sm whitespace-nowrap max-sm:w-full"
-            >
-              <Loader2 size={13} className="animate-spin" />
-              Transcrevendo...
-            </button>
-          ) : (
-            <button
-              onClick={startRecording}
-              disabled={isLoadingJust || isLoadingSoap}
-              title={selectedEngine === 'google-live' ? 'Ditar ao vivo pelo microfone do computador' : 'Gravar consulta pelo microfone do computador'}
-              className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent-emerald text-white text-xs font-semibold rounded-xl hover:bg-accent-emerald/90 disabled:bg-accent-emerald/40 disabled:text-white/60 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full"
-            >
-              <Mic size={13} />
-              {selectedEngine === 'google-live' ? 'Ditar ao Vivo' : 'Gravar Computador'}
-            </button>
-          )}
-
-          {/* Botão de Salvamento Manual no Histórico */}
           <button
-            onClick={handleGravarConsulta}
-            disabled={!pacienteNome.trim() || !queixa.trim() || isRecording || isTranscribing}
-            title="Salvar consulta de texto no histórico"
-            className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-xs font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer hover:shadow max-sm:w-full"
+            type="button"
+            onClick={alternarAjustes}
+            aria-expanded={ajustesAbertos}
+            title="Modelo de IA e motor de voz"
+            className="flex items-center gap-1.5 text-[11px] text-neutral-text-muted hover:text-neutral-text transition-colors cursor-pointer"
           >
-            <Save size={13} />
-            Salvar Texto
+            <Settings2 size={12} />
+            {modeloAtual?.badge ?? selectedModelId} · {motorAtual ? nomeMotor(motorAtual.label) : selectedEngine}
+            <ChevronDown size={12} className={`transition-transform ${ajustesAbertos ? 'rotate-180' : ''}`} />
           </button>
 
-          {/* Seletor de Modelo de IA — direto, sem configuração */}
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 max-sm:w-full max-sm:col-span-2 shadow-sm">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider select-none shrink-0">IA:</label>
-            <select
-              value={selectedModelId}
-              onChange={(e) => {
-                const val = e.target.value;
-                setSelectedModelId(val);
-                localStorage.setItem('arcanjo_selected_model', val);
-                const m = AI_MODELS.find((m) => m.id === val);
-                toast.info(`Modelo: ${m?.label ?? val}`);
-              }}
-              className="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer border-none focus:ring-0 min-w-0 truncate"
-            >
-              {AI_MODELS.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.label}{m.note ? ` — ${m.note}` : ''}
-                </option>
-              ))}
-            </select>
-          </div>
+          {ajustesAbertos && (
+            <div className="grid gap-2 sm:grid-cols-2 rounded-lg border border-neutral-border bg-slate-50/60 p-2.5">
+              <label className="flex items-center gap-2 text-[11px] font-semibold text-neutral-text-muted">
+                IA
+                <select
+                  value={selectedModelId}
+                  title={modeloAtual?.note}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedModelId(val);
+                    gravarLocal('arcanjo_selected_model', val);
+                    const m = AI_MODELS.find((m) => m.id === val);
+                    toast.info(`Modelo: ${m?.badge ?? val}`);
+                  }}
+                  className="min-w-0 flex-1 rounded-md border border-neutral-border bg-white px-2 py-1 text-xs font-semibold text-neutral-text outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer"
+                >
+                  {AI_MODELS.map((m) => (
+                    <option key={m.id} value={m.id} title={m.note}>
+                      {m.badge}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-center gap-2 text-[11px] font-semibold text-neutral-text-muted">
+                Voz
+                <select
+                  value={selectedEngine}
+                  title={motorAtual?.note}
+                  disabled={ocupado}
+                  onChange={(e) => {
+                    const val = e.target.value as TranscriptionEngine;
+                    if (val === 'google-live' && !isLiveSpeechSupported()) {
+                      toast.error('Ditado ao vivo indisponível neste navegador (use Chrome/Edge).');
+                      return;
+                    }
+                    setSelectedEngine(val);
+                    setTranscriptionEngine(val);
+                    const eng = TRANSCRIPTION_ENGINES.find((x) => x.id === val);
+                    toast.info(`Transcrição: ${eng ? nomeMotor(eng.label) : val}`);
+                  }}
+                  className="min-w-0 flex-1 rounded-md border border-neutral-border bg-white px-2 py-1 text-xs font-semibold text-neutral-text outline-none focus:ring-2 focus:ring-blue-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {TRANSCRIPTION_ENGINES.map((eng) => (
+                    <option key={eng.id} value={eng.id} title={eng.note}>
+                      {nomeMotor(eng.label)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
 
-          {/* Seletor de Motor de Transcrição (voz → texto) */}
-          <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1.5 max-sm:w-full max-sm:col-span-2 shadow-sm">
-            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider select-none shrink-0">Voz:</label>
-            <select
-              value={selectedEngine}
-              disabled={isRecording || isTranscribing}
-              onChange={(e) => {
-                const val = e.target.value as TranscriptionEngine;
-                if (val === 'google-live' && !isLiveSpeechSupported()) {
-                  toast.error('Ditado ao vivo indisponível neste navegador (use Chrome/Edge).');
-                  return;
-                }
-                setSelectedEngine(val);
-                setTranscriptionEngine(val);
-                const eng = TRANSCRIPTION_ENGINES.find((x) => x.id === val);
-                toast.info(`Transcrição: ${eng?.label ?? val}`);
-              }}
-              className="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer border-none focus:ring-0 min-w-0 truncate disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {TRANSCRIPTION_ENGINES.map((eng) => (
-                <option key={eng.id} value={eng.id}>
-                  {eng.label} — {eng.note}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Texto do ditado ao vivo (parcial) — feedback em tempo real */}
+          {isRecording && selectedEngine === 'google-live' && (
+            <div className="flex items-start gap-2 rounded-lg border border-accent-emerald/30 bg-accent-emerald/5 px-3 py-2">
+              <Radio size={13} className="mt-0.5 shrink-0 animate-pulse text-accent-emerald" />
+              <p className="text-xs leading-relaxed text-gray-600">
+                <span className="font-semibold text-accent-emerald">Ouvindo… </span>
+                {interimText || 'fale que o texto aparece no campo de queixa em tempo real.'}
+              </p>
+            </div>
+          )}
         </div>
+      </section>
 
-        {/* Texto do ditado ao vivo (parcial) — feedback em tempo real */}
-        {isRecording && selectedEngine === 'google-live' && (
-          <div className="mt-2 flex items-start gap-2 rounded-xl border border-accent-emerald/30 bg-accent-emerald/5 px-3 py-2">
-            <Radio size={13} className="mt-0.5 shrink-0 animate-pulse text-accent-emerald" />
-            <p className="text-xs leading-relaxed text-gray-600">
-              <span className="font-semibold text-accent-emerald">Ouvindo… </span>
-              {interimText || 'fale que o texto aparece no campo de queixa em tempo real.'}
-            </p>
+      {/* Saídas: uma aba por vez */}
+      <section className="rounded-lg border border-neutral-border bg-white p-4">
+        <div className="mb-4 flex items-center gap-3">
+          <div role="tablist" aria-label="Nota e dúvidas" className="flex flex-1 gap-1 overflow-x-auto rounded-lg border border-neutral-border bg-slate-50 p-1 scrollbar-none">
+            {ABAS_PRONTUARIO.map(({ id, nome, Icon }) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={aba === id}
+                onClick={() => trocarAba(id)}
+                className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+                  aba === id ? 'bg-white text-blue-700 shadow-sm' : 'text-neutral-text-muted hover:text-neutral-text'
+                }`}
+              >
+                <Icon size={13} />
+                {nome}
+                {id === 'SOAP' && soap.trim() && <span className="h-1.5 w-1.5 rounded-full bg-green-500" />}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
-
-      {/* Indicação Clínica — sempre visível para edição manual */}
-      <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-1.5">
-            <FileText size={12} className="text-indigo-500" />
-            <label className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider">
-              Indicação Clínica
-              <span className="ml-1.5 font-normal text-gray-400 normal-case">(impressa na guia)</span>
-            </label>
-          </div>
-          {justificativa && (
-            <button onClick={() => setJustificativa('')} className="text-gray-300 hover:text-red-400 transition-colors" title="Limpar">
-              <X size={13} />
+          {aba === 'SOAP' && (
+            <button
+              type="button"
+              onClick={handleCopy}
+              disabled={!partesSoap.nota.trim()}
+              className={`flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400 ${
+                copied ? 'bg-green-600 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {copied ? <Check size={13} /> : <ClipboardList size={13} />}
+              {copied ? 'Copiado' : 'Copiar'}
             </button>
           )}
         </div>
-        <textarea
-          value={justificativa}
-          onChange={(e) => setJustificativa(e.target.value)}
-          rows={3}
-          placeholder="Gerada automaticamente ou escreva manualmente..."
-          className="w-full border-2 border-indigo-200 bg-indigo-50/30 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none placeholder:text-gray-400 font-medium"
-        />
-      </div>
 
-      {/* SOAP — colapsível discreto */}
-      <div className="border border-indigo-100/80 rounded-xl overflow-hidden shadow-sm">
-        <button
-          type="button"
-          onClick={() => setSoapExpanded(!soapExpanded)}
-          className="w-full flex items-center justify-between px-3 py-2 bg-indigo-50/40 hover:bg-indigo-50 transition-colors text-left"
-        >
-          <div className="flex items-center gap-2">
-            <ClipboardList size={12} className="text-indigo-500" />
-            <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider">
-              Nota SOAP — Prontuário Clínico (Fácil Cópia)
-            </span>
-            {soap && (
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Pronta</span>
-                {iaModel && (
-                  <span className="text-[9px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded font-mono font-medium">
-                    {iaModel}
-                  </span>
+        {aba === 'SOAP' && (
+          <div className="space-y-3">
+            {temAuditoria && (
+              <div className="space-y-2">
+                {analise.alertBeers && (
+                  <p className="flex items-start gap-2 rounded-lg border border-red-200/70 bg-red-50 px-3 py-2 text-[11px] leading-relaxed text-red-800">
+                    <ShieldAlert size={13} className="mt-px shrink-0 text-red-600" />
+                    <span>
+                      <strong>Beers / STOPP:</strong> {analise.alertBeers}
+                    </span>
+                  </p>
+                )}
+                {(analise.escalas.length > 0 || analise.cids.length > 0) && (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {analise.escalas.map((e) => (
+                      <span key={e} className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+                        <Activity size={10} />
+                        {e}
+                      </span>
+                    ))}
+                    {analise.cids.map((c) => (
+                      <span key={c} className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                        CID {c}
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
-          </div>
-          {soapExpanded ? <ChevronUp size={13} className="text-indigo-400" /> : <ChevronDown size={13} className="text-indigo-400" />}
-        </button>
-        {soapExpanded && (
-          <div className="p-3 bg-white space-y-3">
-            {/* Auditoria Clínica Ativa */}
-            {(() => {
-              const analise = analisarSOAP(soap);
-              if (!soap.trim() || (!analise.alertBeers && analise.escalas.length === 0 && analise.cids.length === 0)) return null;
-              
-              return (
-                <div className="bg-slate-50 rounded-xl p-3 border border-indigo-100/60 space-y-2.5">
-                  <div className="flex items-center gap-1.5 border-b border-indigo-100/30 pb-1.5">
-                    <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider">
-                      Auditoria Clínica Ativa (Segurança & Métricas)
-                    </span>
-                  </div>
-                  
-                  {/* Beers Alert */}
-                  {analise.alertBeers && (
-                    <div className="flex items-start gap-2 bg-red-50 border border-red-200/60 rounded-lg p-2 text-[11px] text-red-800">
-                      <ShieldAlert size={14} className="shrink-0 mt-0.5 text-red-600 animate-pulse" />
-                      <div className="leading-relaxed">
-                        <strong className="font-bold">⚠️ Alerta Beers / STOPP:</strong> {analise.alertBeers}
-                      </div>
-                    </div>
-                  )}
 
-                  {/* Escalas e Códigos */}
-                  <div className="flex flex-wrap gap-1.5 items-center">
-                    {analise.escalas.map(e => (
-                      <span key={e} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">
-                        <Activity size={10} />
-                        Escala: {e}
-                      </span>
-                    ))}
-                    {analise.cids.map(c => (
-                      <span key={c} className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                        CID-10: {c}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            <div className="flex justify-between items-center">
-              <span className="text-[10px] text-gray-400 font-medium">
-                Edite a nota abaixo e clique no botão para copiar com formatação limpa:
-              </span>
-              {soap.trim() && (
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
-                    copied
-                      ? 'bg-green-600 text-white shadow-green-100'
-                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100'
-                  }`}
-                >
-                  {copied ? <Check size={13} /> : <ClipboardList size={13} />}
-                  {copied ? 'Copiado!' : 'Copiar Nota SOAP'}
-                </button>
-              )}
-            </div>
-            {(() => {
-              const { alertas } = separarAlertasSOAP(soap);
-              if (!alertas) return null;
-              const linhas = alertas.split(/\r?\n/).map((l) => l.replace(/^-\s*/, '').trim()).filter(Boolean);
-              return (
-                <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3">
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-800 mb-1.5">
-                    <ShieldAlert size={12} className="text-amber-600" />
-                    Alertas para o médico · não vão para o prontuário
-                  </p>
-                  <ul className="space-y-1 text-xs leading-relaxed text-amber-900">
-                    {linhas.map((l) => (
-                      <li key={l}>{l}</li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })()}
-            <textarea
-              value={separarAlertasSOAP(soap).nota}
-              onChange={(e) => setSoap(juntarAlertasSOAP(e.target.value, separarAlertasSOAP(soap).alertas))}
-              placeholder="A nota SOAP (S/O/A/P) aparecerá aqui ao ser gerada pela IA ou digitada..."
-              className="w-full border border-gray-200 rounded-xl text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50/30 resize-y font-sans leading-relaxed text-gray-800 placeholder:text-gray-400 focus:bg-white transition-all h-56 lg:h-96"
-            />
-            <div className="flex justify-between items-center text-[10px] text-gray-400">
-              <span>Nota clínica no padrão S-O-A-P. Não é impressa na guia de exames.</span>
-              {soap.trim() && (
-                <span className="font-semibold text-indigo-500">Pronta para colar em outros sistemas</span>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Dúvidas Clínicas — fora do contexto da consulta */}
-      <div className="border border-amber-100/80 rounded-xl overflow-hidden shadow-sm">
-        <button
-          type="button"
-          onClick={() => setDuvidasExpanded(!duvidasExpanded)}
-          className="w-full flex items-center justify-between px-3 py-2 bg-amber-50/40 hover:bg-amber-50 transition-colors text-left"
-        >
-          <div className="flex items-center gap-2">
-            <HelpCircle size={12} className="text-amber-500" />
-            <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">
-              Duvidas Clinicas (Fora do Contexto)
-            </span>
-          </div>
-          {duvidasExpanded ? <ChevronUp size={13} className="text-amber-400" /> : <ChevronDown size={13} className="text-amber-400" />}
-        </button>
-        {duvidasExpanded && (
-          <div className="p-3 bg-white space-y-3">
-            <div className="flex gap-2">
-              <textarea
-                value={perguntaDuvida}
-                onChange={(e) => setPerguntaDuvida(e.target.value)}
-                placeholder="Ex: Qual a dose de ataque de colecalciferol para idoso com vit D < 10? Interacao entre clopidogrel e omeprazol?"
-                className="flex-1 border border-amber-200 rounded-xl text-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-400 resize-none placeholder:text-gray-400 bg-amber-50/20 focus:bg-white transition-all font-medium leading-relaxed h-16"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && !isLoadingDuvida) {
-                    e.preventDefault();
-                    enviarDuvida();
-                  }
-                }}
-              />
-              <button
-                onClick={isLoadingDuvida ? cancelAIRequest : enviarDuvida}
-                disabled={!isLoadingDuvida && !perguntaDuvida.trim()}
-                className={`self-end flex items-center justify-center gap-1.5 px-3 py-2.5 text-white text-xs font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm whitespace-nowrap cursor-pointer ${
-                  isLoadingDuvida ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-600 hover:bg-amber-700'
-                }`}
-              >
-                {isLoadingDuvida ? <Square size={12} fill="white" /> : <Send size={13} />}
-                {isLoadingDuvida ? `Parar${elapsedDuvida ? ` ${elapsedDuvida}s` : ''}` : 'Perguntar'}
-              </button>
-            </div>
-            {respostaDuvida && (
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">Resposta</span>
-                  <button
-                    type="button"
-                    onClick={handleCopyDuvida}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm ${
-                      copiedDuvida
-                        ? 'bg-green-600 text-white'
-                        : 'bg-amber-600 hover:bg-amber-700 text-white'
-                    }`}
-                  >
-                    {copiedDuvida ? <Check size={13} /> : <ClipboardList size={13} />}
-                    {copiedDuvida ? 'Copiado!' : 'Copiar'}
-                  </button>
-                </div>
-                <div className="bg-amber-50/30 border border-amber-100 rounded-xl p-3 text-sm text-gray-800 leading-relaxed whitespace-pre-wrap font-medium">
-                  {respostaDuvida}
-                </div>
+            {alertasMedico.length > 0 && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3">
+                <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-800">
+                  <ShieldAlert size={12} className="text-amber-600" />
+                  Alertas para o médico · não vão para o prontuário
+                </p>
+                <ul className="space-y-1 text-xs leading-relaxed text-amber-900">
+                  {alertasMedico.map((l) => (
+                    <li key={l}>{l}</li>
+                  ))}
+                </ul>
               </div>
             )}
+
+            <textarea
+              value={partesSoap.nota}
+              onChange={(e) => setSoap(juntarAlertasSOAP(e.target.value, partesSoap.alertas))}
+              placeholder="A nota S-O-A-P aparece aqui ao gerar, ou digite direto."
+              className="w-full rounded-lg border border-neutral-border text-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 resize-y leading-relaxed text-gray-800 placeholder:text-gray-400 h-72 lg:h-[28rem]"
+            />
+            <p className="flex justify-between gap-2 text-[11px] text-neutral-text-muted">
+              <span>Não vai para a guia de exames.</span>
+              {soap.trim() && iaModel && <span className="font-mono">{iaModel}</span>}
+            </p>
           </div>
         )}
-      </div>
 
-      {/* Consultas Gravadas (Histórico das últimas 10) */}
-      {consultasGravadas && consultasGravadas.length > 0 && (
-        <div className="border border-gray-100 rounded-xl overflow-hidden shadow-sm bg-gray-50/50 p-3.5 space-y-2 animate-fadeIn">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-1.5 mb-1.5">
-            <div className="flex items-center gap-1.5">
-              <Save size={12} className="text-emerald-500" />
-              <h4 className="text-[10px] font-bold text-gray-700 uppercase tracking-wider">
-                Últimas Consultas Gravadas ({consultasGravadas.length})
-              </h4>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (confirm('Tem certeza que deseja apagar todo o histórico de consultas gravadas?')) {
-                  limparConsultasGravadas();
-                  toast.success('Histórico apagado com sucesso');
-                }
-              }}
-              className="text-[10px] text-gray-400 hover:text-red-500 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
-              title="Apagar todo o histórico"
-            >
-              <Trash2 size={10} />
-              Limpar Histórico
-            </button>
-          </div>
-          <div className="grid gap-2">
-            {consultasGravadas.map((c, i) => (
-              <div
-                key={`${c.nome}-${c.data}`}
-                className="group flex items-center justify-between gap-3 p-2 bg-white rounded-lg border border-gray-100 hover:border-indigo-200 hover:shadow-sm transition-all cursor-pointer"
-                onClick={() => handleCarregarConsulta(c)}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-semibold text-xs text-gray-800 truncate">
-                      {c.nome}
-                    </span>
-                    <span className="text-[9px] text-gray-400 font-medium whitespace-nowrap flex items-center gap-0.5">
-                      <Calendar size={10} />
-                      {new Date(c.data).toLocaleDateString('pt-BR', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 truncate group-hover:text-gray-700" title={c.queixa}>
-                    {c.queixa}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removerConsultaGravada(i);
-                    toast.success('Registro removido');
-                  }}
-                  className="text-gray-300 hover:text-red-500 p-1.5 rounded-md hover:bg-gray-50 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                  title="Remover do histórico"
-                >
-                  <Trash2 size={12} />
-                </button>
-              </div>
-            ))}
-          </div>
+        {/* Fica montada escondida: trocar de aba não apaga a resposta. */}
+        <div hidden={aba !== 'DUVIDA'}>
+          <DuvidaClinicaPanel modelId={selectedModelId} />
         </div>
-      )}
-
+      </section>
     </div>
   );
 }
