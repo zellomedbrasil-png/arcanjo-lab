@@ -166,7 +166,6 @@ export default function GravadorMobile() {
       if (watchdogRef.current) { clearTimeout(watchdogRef.current); watchdogRef.current = null; }
       releaseWakeLock();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId]);
 
   // O navegador solta o wake lock quando o app vai para segundo plano; ao voltar
@@ -179,7 +178,6 @@ export default function GravadorMobile() {
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecording, isTranscribing]);
 
   // Anúncio de pareamento ao desktop, com BACKOFF — para de assim que conecta.
