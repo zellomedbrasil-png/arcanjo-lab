@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Convenio, Genero, Medico, TipoGuia, ConsultaGravada } from '../types';
+import type { Especialidade, TipoConsulta } from '../data/protocolosExames';
 import { publishPatientSync, subscribePatientSync } from './patientSync';
 import { useReceitaStore } from './useReceitaStore';
 
@@ -15,6 +16,9 @@ interface AppState {
   sadtRegistroAns: string;
   genero: Genero;
   convenio: Convenio;
+  /** Área do protocolo de exames. Fica entre um paciente e outro (é do médico, não do paciente). */
+  especialidade: Especialidade;
+  tipoConsulta: TipoConsulta;
   tipoGuia: TipoGuia;
   examesSelecionados: string[];
   procedimentosSelecionados: string[];
@@ -72,6 +76,7 @@ const initialState = {
   sadtRegistroAns: '',
   genero: 'M' as Genero,
   convenio: 'IPM' as Convenio,  // default
+  tipoConsulta: 'PRIMEIRA' as TipoConsulta,
   tipoGuia: 'LABORATORIO' as TipoGuia,
   examesSelecionados: [],
   procedimentosSelecionados: [] as string[],
@@ -98,6 +103,7 @@ export const useAppStore = create<AppState>()(
     (set, get) => ({
       medico: null,
       ...initialState,
+      especialidade: 'CLINICA' as Especialidade,
       consultasGravadas: [] as ConsultaGravada[],
 
       setMedico: (medico) => set({ medico }),
@@ -264,6 +270,8 @@ export const useAppStore = create<AppState>()(
         sadtRegistroAns: state.sadtRegistroAns,
         genero: state.genero,
         convenio: state.convenio,
+        especialidade: state.especialidade,
+        tipoConsulta: state.tipoConsulta,
         tipoGuia: state.tipoGuia,
         examesSelecionados: state.examesSelecionados,
         procedimentosSelecionados: state.procedimentosSelecionados,

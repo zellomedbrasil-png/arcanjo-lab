@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "conferir:catalogo": "npx -y tsx scripts/conferirCatalogo.ts"
+    "conferir:catalogo": "npx -y tsx scripts/conferirCatalogo.ts",
+    "conferir:exames": "npx -y tsx scripts/conferirExames.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

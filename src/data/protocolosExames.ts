@@ -1,0 +1,504 @@
+// src/data/protocolosExames.ts
+// Protocolos de exames laboratoriais por área, consulta, sexo e convênio.
+//
+// Em vez de 24 guias fixas, blocos com condição: a guia de um atendimento é a
+// soma dos blocos (e itens) cujo `quando` bate com o contexto. Critério ausente
+// = vale para todos. Os blocos abaixo reproduzem exatamente as 24 guias do doc
+// "Guias de Exames — Clínica Médica ISSEC e IPM"; quem garante isso é
+// `npm run conferir:exames` (scripts/conferirExames.ts), que compara as 24.
+//
+// Nomes de exame = nome canônico de CATEGORIAS_EXAMES (src/data/exames.ts).
+
+export type Especialidade = 'CLINICA' | 'GERIATRIA' | 'GASTRO';
+export type TipoConsulta = 'PRIMEIRA' | 'RETORNO';
+export type ConvenioProtocolo = 'ISSEC' | 'IPM';
+export type SexoProtocolo = 'M' | 'F';
+
+export interface QuandoProtocolo {
+  area?: Especialidade[];
+  consulta?: TipoConsulta[];
+  sexo?: SexoProtocolo[];
+  convenio?: ConvenioProtocolo[];
+}
+
+export interface ItemProtocoloExame {
+  exame: string;
+  /** Restringe além do `quando` do bloco. */
+  quando?: QuandoProtocolo;
+}
+
+export interface BlocoProtocoloExame {
+  id: string;
+  titulo: string;
+  quando: QuandoProtocolo;
+  itens: ItemProtocoloExame[];
+}
+
+/**
+ * Critério clínico mostrado ao lado do exame na prévia. O exame continua
+ * MARCADO (decisão do Dr. Roberto: a guia sai igual à do protocolo); o texto
+ * lembra quando ele se justifica. `idade` só destaca o aviso quando a idade do
+ * paciente está fora da faixa.
+ */
+export interface CriterioExame {
+  exame: string;
+  area?: Especialidade[];
+  sexo?: SexoProtocolo[];
+  condicional?: string;
+  nota?: string;
+  idade?: { min?: number; max?: number };
+}
+
+/**
+ * Pedido sem código no convênio escolhido → o equivalente da tabela. Os blocos
+ * já trazem cada convênio certo; isto vale para protocolo novo escrito sem
+ * pensar no convênio. `usar` vazio = fora da tabela (sai desmarcado, com aviso).
+ */
+export interface EquivalenciaConvenio {
+  exame: string;
+  convenio: ConvenioProtocolo;
+  usar: string[];
+  nota: string;
+}
+
+export const ESPECIALIDADES: { id: Especialidade; nome: string }[] = [
+  { id: 'CLINICA', nome: 'Clínica Médica' },
+  { id: 'GERIATRIA', nome: 'Geriatria' },
+  { id: 'GASTRO', nome: 'Gastroenterologia' },
+];
+
+/** Ordem de exibição dos grupos (a do doc). */
+export const ORDEM_GRUPOS: string[] = [
+  'Hematologia e ferro',
+  'Metabolismo',
+  'Rim, urina e eletrólitos',
+  'Osso e cálcio',
+  'Proteínas e imunoglobulinas',
+  'Fígado e vias biliares',
+  'Músculo e coração',
+  'Tireoide e adrenal',
+  'Hormônios sexuais e próstata',
+  'Sorologias',
+  'Coagulação e tipagem',
+  'Micronutrientes',
+  'Pâncreas',
+  'Autoimunidade e celíaca',
+  'Estômago e intestino',
+  'Fezes',
+];
+
+export const GRUPO_DO_EXAME: Record<string, string> = {
+  'HEMOGRAMA COMPLETO': 'Hematologia e ferro',
+  'VHS - HEMOSSEDIMENTACAO': 'Hematologia e ferro',
+  'PCR (ULTRA-SENSIVEL)': 'Hematologia e ferro',
+  'FERRITINA': 'Hematologia e ferro',
+  'FERRO SERICO': 'Hematologia e ferro',
+  'INDICE DE SATURACAO DA TRANSFERRINA': 'Hematologia e ferro',
+  'VITAMINA B12': 'Hematologia e ferro',
+  'ACIDO FOLICO': 'Hematologia e ferro',
+  'GLICOSE': 'Metabolismo',
+  'Hemoglobina glicada (HbA1c)': 'Metabolismo',
+  'INSULINA': 'Metabolismo',
+  'LIPIDOGRAMA': 'Metabolismo',
+  'APOLIPOPROTEINA B': 'Metabolismo',
+  'ACIDO URICO': 'Metabolismo',
+  'UREIA': 'Rim, urina e eletrólitos',
+  'CREATININA': 'Rim, urina e eletrólitos',
+  'SUMARIO DE URINA': 'Rim, urina e eletrólitos',
+  'RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)': 'Rim, urina e eletrólitos',
+  'SODIO': 'Rim, urina e eletrólitos',
+  'POTASSIO': 'Rim, urina e eletrólitos',
+  'MAGNESIO': 'Rim, urina e eletrólitos',
+  'CALCIO': 'Osso e cálcio',
+  'PARATORMONIO - PTH': 'Osso e cálcio',
+  'ALBUMINA': 'Proteínas e imunoglobulinas',
+  'TGO - TRANSAMINASE ASPARTICA': 'Fígado e vias biliares',
+  'TGP - TRANSAMINASE ALANINA': 'Fígado e vias biliares',
+  'GAMA GLUTAMIL TRANSFERASE - GGT': 'Fígado e vias biliares',
+  'FOSFATASE ALCALINA': 'Fígado e vias biliares',
+  'BILIRRUBINAS': 'Fígado e vias biliares',
+  'CPK - CREATINOFOSFOQUINASE': 'Músculo e coração',
+  'BNP / PROBNP - PEPTIDEO NATRIURETICO': 'Músculo e coração',
+  'TSH': 'Tireoide e adrenal',
+  'T4 LIVRE - TIROXINA LIVRE': 'Tireoide e adrenal',
+  'T3 LIVRE': 'Tireoide e adrenal',
+  'ANTI-MICROSSOMAL - ANTI TPO': 'Tireoide e adrenal',
+  'ANTI TIREOGLOBULINA': 'Tireoide e adrenal',
+  'CORTISOL': 'Tireoide e adrenal',
+  'S-DHEA (DHEA-S)': 'Tireoide e adrenal',
+  'TESTOSTERONA TOTAL': 'Hormônios sexuais e próstata',
+  'TESTOSTERONA LIVRE': 'Hormônios sexuais e próstata',
+  'ESTRADIOL E2': 'Hormônios sexuais e próstata',
+  'LH - HORMONIO LUTEINIZANTE': 'Hormônios sexuais e próstata',
+  'PROLACTINA': 'Hormônios sexuais e próstata',
+  'PSA TOTAL': 'Hormônios sexuais e próstata',
+  'HIV 1 E 2': 'Sorologias',
+  'HEPATITE C - ANTI HCV': 'Sorologias',
+  'HBSAG - ANTIGENO AUSTRALIA': 'Sorologias',
+  'ANTI HBS': 'Sorologias',
+  'HEPATITE ANTI HBC IGG': 'Sorologias',
+  'VDRL': 'Sorologias',
+  'FSH - H. FOLICULO ESTIMULANTE': 'Hormônios sexuais e próstata',
+  'PROGESTERONA': 'Hormônios sexuais e próstata',
+  'Vitamina D, 25-hidroxi (25-OH-D)': 'Osso e cálcio',
+  'SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS': 'Hormônios sexuais e próstata',
+  'RETICULOCITOS - CONTAGEM': 'Hematologia e ferro',
+  'TRANSFERRINA': 'Hematologia e ferro',
+  'CAPACIDADE DE LIGACAO DO FERRO': 'Hematologia e ferro',
+  'ELETROFORESE DE HEMOGLOBINA': 'Hematologia e ferro',
+  'DESIDROGENASE LATICA - LDH': 'Hematologia e ferro',
+  'TEMPO DE PROTROMBINA - TAP': 'Coagulação e tipagem',
+  'TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA': 'Coagulação e tipagem',
+  'FIBRINOGENIO': 'Coagulação e tipagem',
+  'GRUPO SANGUINEO': 'Coagulação e tipagem',
+  'FATOR RH': 'Coagulação e tipagem',
+  'PEPTIDEO C': 'Metabolismo',
+  'APOLIPOPROTEINA A': 'Metabolismo',
+  'SOMATOMEDINA C - IGF-1': 'Metabolismo',
+  'TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)': 'Metabolismo',
+  'CLORO': 'Rim, urina e eletrólitos',
+  'RELACAO PROTEINA/CREATININA URINARIA': 'Rim, urina e eletrólitos',
+  'FOSFORO': 'Osso e cálcio',
+  'CALCIO IONICO': 'Osso e cálcio',
+  'ELETROFORESE DE PROTEINAS': 'Proteínas e imunoglobulinas',
+  'ZINCO SERICO': 'Micronutrientes',
+  'COBRE SERICO': 'Micronutrientes',
+  'AMILASE': 'Pâncreas',
+  'LIPASE': 'Pâncreas',
+  'ALDOSTERONA': 'Tireoide e adrenal',
+  'RENINA': 'Tireoide e adrenal',
+  'FAN - FATOR ANTINUCLEAR': 'Autoimunidade e celíaca',
+  'LATEX - FATOR REUMATOIDE': 'Autoimunidade e celíaca',
+  'HEPATITE A IGG': 'Sorologias',
+  'FTA-ABS IGG': 'Sorologias',
+  'HTLV 1/2': 'Sorologias',
+  'CHAGAS - ANTICORPOS IGG': 'Sorologias',
+  'Helicobacter pylori, anticorpos - IgG': 'Estômago e intestino',
+  'Parasitológico de fezes': 'Fezes',
+  'Sangue oculto, pesquisa nas fezes': 'Fezes',
+  'ANDROSTENEDIONA': 'Hormônios sexuais e próstata',
+  'RUBEOLA IGG': 'Sorologias',
+  'TOXOPLASMOSE IGG': 'Sorologias',
+  'IGA': 'Proteínas e imunoglobulinas',
+  'HOMOCISTEINA': 'Micronutrientes',
+  'VITAMINA A': 'Micronutrientes',
+  'VITAMINA E': 'Micronutrientes',
+  'VITAMINA C': 'Micronutrientes',
+  'SELENIO': 'Micronutrientes',
+  'PSA LIVRE': 'Hormônios sexuais e próstata',
+  'Anticorpos antiendomísio - IgG, IgM, IgA': 'Autoimunidade e celíaca',
+  'CALCIURIA': 'Osso e cálcio',
+  'FRUTOSAMINA': 'Metabolismo',
+  'CLEARANCE DE CREATININA': 'Rim, urina e eletrólitos',
+  'SODIO URINARIO': 'Rim, urina e eletrólitos',
+  'PROTEINA DE BENCE JONES (URINA)': 'Rim, urina e eletrólitos',
+  'CALCIO URINARIO (AMOSTRA ISOLADA)': 'Osso e cálcio',
+  'IGG': 'Proteínas e imunoglobulinas',
+  'IGM': 'Proteínas e imunoglobulinas',
+  'Anticorpos antigliadina - IgA': 'Autoimunidade e celíaca',
+  'COOMBS DIRETO': 'Hematologia e ferro',
+  'CERULOPLASMINA': 'Fígado e vias biliares',
+  'ALFA 1 ANTITRIPSINA - SORO': 'Fígado e vias biliares',
+  'FOSFATASE ALCALINA TERMOESTAVEL': 'Fígado e vias biliares',
+  'ANTI MUSCULO LISO': 'Autoimunidade e celíaca',
+  'ANTI MITOCONDRIA': 'Autoimunidade e celíaca',
+  'GASTRINA': 'Estômago e intestino',
+  'Lactose, teste de tolerância': 'Estômago e intestino',
+  'Leucócitos fecais, pesquisa': 'Fezes',
+  'Gordura fecal, pesquisa': 'Fezes',
+  'pH fecal': 'Fezes',
+  'Substâncias redutoras nas fezes': 'Fezes',
+  'Parasitológico de fezes - MIF': 'Fezes',
+  'Giardia lamblia, pesquisa nas fezes': 'Fezes',
+  'ANTI LKM1': 'Autoimunidade e celíaca',
+};
+
+const AUTOIMUNE_HEPATICO = 'Com TGO, TGP, fosfatase alcalina ou GGT alteradas (hepatite autoimune, colangite biliar primária).';
+const MICRONUTRIENTE = 'Com motivo: bariátrica, má absorção, doença inflamatória intestinal, etilismo, desnutrição ou sarcopenia, e CID que justifique.';
+
+export const CRITERIOS_EXAMES: CriterioExame[] = [
+  { exame: 'ALDOSTERONA', condicional: 'Paciente hipertenso: rastreio de hiperaldosteronismo primário.' },
+  { exame: 'RENINA', condicional: 'Paciente hipertenso: rastreio de hiperaldosteronismo primário.' },
+  { exame: 'PSA TOTAL', condicional: 'A partir de 50 anos (45 com história familiar ou pele negra), com decisão compartilhada. Acima de 75, em geral não se rastreia.', idade: { min: 45, max: 75 } },
+  { exame: 'PSA LIVRE', condicional: 'Só se o PSA total vier entre 4 e 10 ng/mL.' },
+  { exame: 'RUBEOLA IGG', condicional: 'Idade fértil.', idade: { max: 49 } },
+  { exame: 'TOXOPLASMOSE IGG', condicional: 'Idade fértil.', idade: { max: 49 } },
+  { exame: 'Helicobacter pylori, anticorpos - IgG', condicional: 'Só em quem nunca tratou. Não serve para controle de erradicação.' },
+  { exame: 'VITAMINA A', condicional: MICRONUTRIENTE },
+  { exame: 'VITAMINA E', condicional: MICRONUTRIENTE },
+  { exame: 'VITAMINA C', condicional: MICRONUTRIENTE },
+  { exame: 'SELENIO', condicional: MICRONUTRIENTE },
+  { exame: 'SOMATOMEDINA C - IGF-1', condicional: 'Sem sintoma rende pouco e a auditoria pode questionar: justifique com CID.' },
+  { exame: 'BNP / PROBNP - PEPTIDEO NATRIURETICO', condicional: 'Sem sintoma, coloque CID que justifique.' },
+  { exame: 'TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)', condicional: 'Pré-diabetes, resistência insulínica ou esteatose.' },
+  { exame: 'CHAGAS - ANTICORPOS IGG', condicional: 'Conforme a história epidemiológica.' },
+  { exame: 'TESTOSTERONA TOTAL', area: ['CLINICA'], sexo: ['F'], condicional: 'Na mulher, com suspeita de hiperandrogenismo.' },
+  { exame: 'CERULOPLASMINA', condicional: 'Doença de Wilson: abaixo de 40 anos.', idade: { max: 40 } },
+  { exame: 'GASTRINA', condicional: 'Suspeita de gastrinoma ou gastrite atrófica.', nota: 'Suspender o IBP 1 a 2 semanas antes da coleta, se for seguro.' },
+  { exame: 'FAN - FATOR ANTINUCLEAR', area: ['GASTRO'], condicional: AUTOIMUNE_HEPATICO },
+  { exame: 'ANTI MUSCULO LISO', area: ['GASTRO'], condicional: AUTOIMUNE_HEPATICO },
+  { exame: 'ANTI MITOCONDRIA', area: ['GASTRO'], condicional: AUTOIMUNE_HEPATICO },
+  { exame: 'ANTI LKM1', area: ['GASTRO'], condicional: AUTOIMUNE_HEPATICO },
+  { exame: 'Anticorpos antigliadina - IgA', nota: 'Superada: positivo precisa de confirmação por biópsia ou antiendomísio. Pedir com IgA total.' },
+  { exame: 'Parasitológico de fezes', nota: 'O ideal são 3 amostras em dias diferentes.' },
+  { exame: 'CLEARANCE DE CREATININA', nota: 'Orientar a coleta de urina de 24 h.' },
+  { exame: 'SODIO URINARIO', nota: 'Orientar a coleta de urina de 24 h.' },
+  { exame: 'Sangue oculto, pesquisa nas fezes', nota: 'Rastreio colorretal: o padrão é o imunoquímico (FIT) e nenhum substitui a colonoscopia.', idade: { min: 45, max: 75 } },
+  { exame: 'PROGESTERONA', nota: 'Leitura útil só na fase lútea (21º a 23º dia) ou na pós-menopausa.' },
+];
+
+export const EQUIVALENCIAS_CONVENIO: EquivalenciaConvenio[] = [
+  { exame: 'TESTOSTERONA TOTAL', convenio: 'IPM', usar: ['TESTOSTERONA LIVRE', 'SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS'], nota: 'IPM não tem testosterona total: entram testosterona livre e SHBG.' },
+  { exame: 'Anticorpos antigliadina - IgA', convenio: 'IPM', usar: ['Anticorpos antiendomísio - IgG, IgM, IgA', 'IGA'], nota: 'No IPM o rastreio celíaco é antiendomísio IgA com IgA total.' },
+  { exame: 'Anticorpos antiendomísio - IgG, IgM, IgA', convenio: 'ISSEC', usar: ['Anticorpos antigliadina - IgA', 'IGA'], nota: 'A ISSEC só tem antigliadina: o positivo pede confirmação.' },
+  { exame: 'FATOR RH', convenio: 'IPM', usar: ['GRUPO SANGUINEO'], nota: 'No IPM o código do grupo sanguíneo já inclui o fator Rh.' },
+  { exame: 'Vitamina D, 25-hidroxi (25-OH-D)', convenio: 'ISSEC', usar: [], nota: 'Vitamina D não consta na tabela ISSEC: PTH, cálcio e fósforo fazem a triagem.' },
+  { exame: 'HOMOCISTEINA', convenio: 'ISSEC', usar: [], nota: 'Homocisteína não consta na tabela ISSEC (a "homocistina" de urina não substitui).' },
+];
+
+/**
+ * Códigos que o catálogo dá a mais de um exame. Ficam como estão até alguém
+ * conferir na tabela oficial; a prévia mostra o aviso ao lado do exame.
+ */
+export const CODIGOS_A_CONFERIR: { exames: string[]; convenio?: ConvenioProtocolo; mensagem: string }[] = [
+  { exames: ['BNP / PROBNP - PEPTIDEO NATRIURETICO', 'PEPTIDEO C'], convenio: 'ISSEC', mensagem: 'BNP e peptídeo C têm o mesmo código ISSEC (28011686): um dos dois está errado.' },
+  { exames: ['APOLIPOPROTEINA A', 'APOLIPOPROTEINA B'], convenio: 'ISSEC', mensagem: 'Apo A e Apo B têm o mesmo código ISSEC (28011678).' },
+  { exames: ['TRANSFERRINA', 'INDICE DE SATURACAO DA TRANSFERRINA'], mensagem: 'Transferrina e saturação da transferrina têm o mesmo código: no retorno pode cobrar de novo o exame da 1ª consulta.' },
+  { exames: ['CALCIURIA', 'RELACAO PROTEINA/CREATININA URINARIA'], mensagem: 'Usa o código da proteinúria (28130316 / 40311180): provável troca de código.' },
+  { exames: ['CALCIO URINARIO (AMOSTRA ISOLADA)', 'SODIO URINARIO'], mensagem: 'Mesmo código da dosagem no sangue: confirmar se a tabela cobra por analito.' },
+  { exames: ['pH fecal'], convenio: 'ISSEC', mensagem: 'Código ISSEC 28030010 é o mesmo da coprocultura no catálogo.' },
+  { exames: ['IGG'], convenio: 'ISSEC', mensagem: 'IgG e IgD têm o mesmo código ISSEC (28060610).' },
+];
+
+export const BLOCOS_PROTOCOLO_EXAMES: BlocoProtocoloExame[] = [
+  {
+    id: 'nucleo-primeira',
+    titulo: 'Núcleo comum — 1ª consulta',
+    quando: { consulta: ['PRIMEIRA'] },
+    itens: [
+      { exame: 'HEMOGRAMA COMPLETO' },
+      { exame: 'VHS - HEMOSSEDIMENTACAO' },
+      { exame: 'PCR (ULTRA-SENSIVEL)' },
+      { exame: 'FERRITINA' },
+      { exame: 'FERRO SERICO' },
+      { exame: 'INDICE DE SATURACAO DA TRANSFERRINA' },
+      { exame: 'VITAMINA B12' },
+      { exame: 'ACIDO FOLICO' },
+      { exame: 'GLICOSE' },
+      { exame: 'Hemoglobina glicada (HbA1c)' },
+      { exame: 'INSULINA', quando: { area: ['CLINICA', 'GASTRO'] } },
+      { exame: 'LIPIDOGRAMA' },
+      { exame: 'APOLIPOPROTEINA B' },
+      { exame: 'ACIDO URICO' },
+      { exame: 'UREIA' },
+      { exame: 'CREATININA' },
+      { exame: 'SUMARIO DE URINA' },
+      { exame: 'RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)' },
+      { exame: 'SODIO' },
+      { exame: 'POTASSIO' },
+      { exame: 'MAGNESIO' },
+      { exame: 'CALCIO' },
+      { exame: 'PARATORMONIO - PTH' },
+      { exame: 'ALBUMINA' },
+      { exame: 'TGO - TRANSAMINASE ASPARTICA' },
+      { exame: 'TGP - TRANSAMINASE ALANINA' },
+      { exame: 'GAMA GLUTAMIL TRANSFERASE - GGT' },
+      { exame: 'FOSFATASE ALCALINA' },
+      { exame: 'BILIRRUBINAS' },
+      { exame: 'CPK - CREATINOFOSFOQUINASE', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'BNP / PROBNP - PEPTIDEO NATRIURETICO', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'TSH' },
+      { exame: 'T4 LIVRE - TIROXINA LIVRE' },
+      { exame: 'ANTI-MICROSSOMAL - ANTI TPO', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'TESTOSTERONA TOTAL', quando: { area: ['CLINICA', 'GERIATRIA'], convenio: ['ISSEC'] } },
+      { exame: 'PSA TOTAL', quando: { sexo: ['M'] } },
+      { exame: 'HIV 1 E 2' },
+      { exame: 'HEPATITE C - ANTI HCV' },
+      { exame: 'HBSAG - ANTIGENO AUSTRALIA' },
+      { exame: 'ANTI HBS' },
+      { exame: 'HEPATITE ANTI HBC IGG' },
+      { exame: 'VDRL', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'Vitamina D, 25-hidroxi (25-OH-D)', quando: { convenio: ['IPM'] } },
+      { exame: 'FOSFORO', quando: { area: ['GERIATRIA', 'GASTRO'] } },
+      { exame: 'ELETROFORESE DE PROTEINAS', quando: { area: ['GERIATRIA', 'GASTRO'] } },
+      { exame: 'ZINCO SERICO', quando: { area: ['GERIATRIA', 'GASTRO'] } },
+      { exame: 'Sangue oculto, pesquisa nas fezes', quando: { area: ['GERIATRIA', 'GASTRO'] } },
+    ],
+  },
+  {
+    id: 'clinica-primeira',
+    titulo: 'Clínica Médica — 1ª consulta',
+    quando: { area: ['CLINICA'], consulta: ['PRIMEIRA'] },
+    itens: [
+      { exame: 'T3 LIVRE' },
+      { exame: 'ANTI TIREOGLOBULINA', quando: { sexo: ['M'], convenio: ['ISSEC'] } },
+      { exame: 'ANTI TIREOGLOBULINA', quando: { sexo: ['F'] } },
+      { exame: 'CORTISOL' },
+      { exame: 'S-DHEA (DHEA-S)' },
+      { exame: 'TESTOSTERONA LIVRE', quando: { sexo: ['M'] } },
+      { exame: 'ESTRADIOL E2' },
+      { exame: 'LH - HORMONIO LUTEINIZANTE' },
+      { exame: 'PROLACTINA' },
+      { exame: 'FSH - H. FOLICULO ESTIMULANTE', quando: { sexo: ['F'] } },
+      { exame: 'PROGESTERONA', quando: { sexo: ['F'] } },
+      { exame: 'SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS', quando: { sexo: ['M'], convenio: ['IPM'] } },
+    ],
+  },
+  {
+    id: 'geriatria-primeira',
+    titulo: 'Geriatria — 1ª consulta',
+    quando: { area: ['GERIATRIA'], consulta: ['PRIMEIRA'] },
+    itens: [
+      { exame: 'CORTISOL', quando: { sexo: ['M'], convenio: ['ISSEC'] } },
+      { exame: 'CORTISOL', quando: { sexo: ['F'] } },
+      { exame: 'S-DHEA (DHEA-S)', quando: { sexo: ['F'] } },
+      { exame: 'TESTOSTERONA LIVRE' },
+      { exame: 'ESTRADIOL E2', quando: { sexo: ['M'], convenio: ['ISSEC'] } },
+      { exame: 'LH - HORMONIO LUTEINIZANTE', quando: { sexo: ['M'] } },
+      { exame: 'PROLACTINA', quando: { sexo: ['M'] } },
+      { exame: 'SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS', quando: { convenio: ['IPM'] } },
+      { exame: 'RETICULOCITOS - CONTAGEM', quando: { sexo: ['F'], convenio: ['ISSEC'] } },
+      { exame: 'CALCIO IONICO', quando: { sexo: ['F'], convenio: ['ISSEC'] } },
+      { exame: 'HOMOCISTEINA', quando: { convenio: ['IPM'] } },
+      { exame: 'CALCIURIA', quando: { sexo: ['F'] } },
+    ],
+  },
+  {
+    id: 'gastro-primeira',
+    titulo: 'Gastroenterologia — 1ª consulta',
+    quando: { area: ['GASTRO'], consulta: ['PRIMEIRA'] },
+    itens: [
+      { exame: 'ANTI-MICROSSOMAL - ANTI TPO', quando: { sexo: ['F'] } },
+      { exame: 'RETICULOCITOS - CONTAGEM', quando: { convenio: ['ISSEC'] } },
+      { exame: 'TEMPO DE PROTROMBINA - TAP' },
+      { exame: 'AMILASE' },
+      { exame: 'LIPASE' },
+      { exame: 'HEPATITE A IGG' },
+      { exame: 'Helicobacter pylori, anticorpos - IgG' },
+      { exame: 'Parasitológico de fezes' },
+      { exame: 'IGA' },
+      { exame: 'Anticorpos antiendomísio - IgG, IgM, IgA', quando: { convenio: ['IPM'] } },
+      { exame: 'Anticorpos antigliadina - IgA', quando: { convenio: ['ISSEC'] } },
+    ],
+  },
+  {
+    id: 'nucleo-retorno',
+    titulo: 'Núcleo comum — Retorno',
+    quando: { consulta: ['RETORNO'] },
+    itens: [
+      { exame: 'PROLACTINA', quando: { area: ['GERIATRIA', 'GASTRO'], sexo: ['F'] } },
+      { exame: 'TRANSFERRINA' },
+      { exame: 'CAPACIDADE DE LIGACAO DO FERRO' },
+      { exame: 'ELETROFORESE DE HEMOGLOBINA', quando: { area: ['CLINICA', 'GASTRO'] } },
+      { exame: 'DESIDROGENASE LATICA - LDH' },
+      { exame: 'TEMPO DE PROTROMBINA - TAP', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA' },
+      { exame: 'FIBRINOGENIO' },
+      { exame: 'GRUPO SANGUINEO' },
+      { exame: 'FATOR RH', quando: { convenio: ['ISSEC'] } },
+      { exame: 'APOLIPOPROTEINA A', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'SOMATOMEDINA C - IGF-1', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)' },
+      { exame: 'CLORO' },
+      { exame: 'RELACAO PROTEINA/CREATININA URINARIA', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'CALCIO IONICO', quando: { area: ['CLINICA', 'GASTRO'] } },
+      { exame: 'COBRE SERICO' },
+      { exame: 'ALDOSTERONA', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'RENINA', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'FAN - FATOR ANTINUCLEAR', quando: { area: ['CLINICA', 'GASTRO'] } },
+      { exame: 'FTA-ABS IGG', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'HTLV 1/2' },
+      { exame: 'CHAGAS - ANTICORPOS IGG' },
+      { exame: 'Helicobacter pylori, anticorpos - IgG', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'Parasitológico de fezes', quando: { area: ['CLINICA', 'GERIATRIA'] } },
+      { exame: 'HOMOCISTEINA', quando: { area: ['CLINICA', 'GASTRO'], convenio: ['IPM'] } },
+      { exame: 'VITAMINA A', quando: { convenio: ['IPM'] } },
+      { exame: 'VITAMINA E', quando: { convenio: ['IPM'] } },
+      { exame: 'VITAMINA C', quando: { convenio: ['IPM'] } },
+      { exame: 'SELENIO', quando: { convenio: ['IPM'] } },
+      { exame: 'PSA LIVRE', quando: { area: ['CLINICA', 'GERIATRIA'], sexo: ['M'], convenio: ['IPM'] } },
+      { exame: 'IGG', quando: { area: ['GERIATRIA', 'GASTRO'] } },
+      { exame: 'IGM', quando: { area: ['GERIATRIA', 'GASTRO'] } },
+    ],
+  },
+  {
+    id: 'clinica-retorno',
+    titulo: 'Clínica Médica — Retorno',
+    quando: { area: ['CLINICA'], consulta: ['RETORNO'] },
+    itens: [
+      { exame: 'ANTI TIREOGLOBULINA', quando: { sexo: ['M'], convenio: ['IPM'] } },
+      { exame: 'TESTOSTERONA LIVRE', quando: { sexo: ['F'] } },
+      { exame: 'FSH - H. FOLICULO ESTIMULANTE', quando: { sexo: ['M'] } },
+      { exame: 'SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS', quando: { sexo: ['F'], convenio: ['IPM'] } },
+      { exame: 'RETICULOCITOS - CONTAGEM' },
+      { exame: 'PEPTIDEO C' },
+      { exame: 'FOSFORO' },
+      { exame: 'ELETROFORESE DE PROTEINAS' },
+      { exame: 'ZINCO SERICO' },
+      { exame: 'AMILASE' },
+      { exame: 'LIPASE' },
+      { exame: 'LATEX - FATOR REUMATOIDE' },
+      { exame: 'HEPATITE A IGG' },
+      { exame: 'Sangue oculto, pesquisa nas fezes' },
+      { exame: 'ANDROSTENEDIONA', quando: { sexo: ['F'] } },
+      { exame: 'RUBEOLA IGG', quando: { sexo: ['F'] } },
+      { exame: 'TOXOPLASMOSE IGG', quando: { sexo: ['F'] } },
+      { exame: 'IGA', quando: { convenio: ['IPM'] } },
+      { exame: 'Anticorpos antiendomísio - IgG, IgM, IgA', quando: { convenio: ['IPM'] } },
+    ],
+  },
+  {
+    id: 'geriatria-retorno',
+    titulo: 'Geriatria — Retorno',
+    quando: { area: ['GERIATRIA'], consulta: ['RETORNO'] },
+    itens: [
+      { exame: 'INSULINA' },
+      { exame: 'T3 LIVRE' },
+      { exame: 'ANTI TIREOGLOBULINA' },
+      { exame: 'CORTISOL', quando: { sexo: ['M'], convenio: ['IPM'] } },
+      { exame: 'S-DHEA (DHEA-S)', quando: { sexo: ['M'] } },
+      { exame: 'ESTRADIOL E2', quando: { sexo: ['M'], convenio: ['IPM'] } },
+      { exame: 'ESTRADIOL E2', quando: { sexo: ['F'] } },
+      { exame: 'LH - HORMONIO LUTEINIZANTE', quando: { sexo: ['F'] } },
+      { exame: 'FSH - H. FOLICULO ESTIMULANTE' },
+      { exame: 'RETICULOCITOS - CONTAGEM', quando: { sexo: ['M'] } },
+      { exame: 'RETICULOCITOS - CONTAGEM', quando: { sexo: ['F'], convenio: ['IPM'] } },
+      { exame: 'CALCIO IONICO', quando: { sexo: ['M'] } },
+      { exame: 'CALCIO IONICO', quando: { sexo: ['F'], convenio: ['IPM'] } },
+      { exame: 'IGA' },
+      { exame: 'FRUTOSAMINA' },
+      { exame: 'CLEARANCE DE CREATININA' },
+      { exame: 'SODIO URINARIO' },
+      { exame: 'PROTEINA DE BENCE JONES (URINA)' },
+      { exame: 'CALCIO URINARIO (AMOSTRA ISOLADA)', quando: { sexo: ['M'] } },
+    ],
+  },
+  {
+    id: 'gastro-retorno',
+    titulo: 'Gastroenterologia — Retorno',
+    quando: { area: ['GASTRO'], consulta: ['RETORNO'] },
+    itens: [
+      { exame: 'CPK - CREATINOFOSFOQUINASE' },
+      { exame: 'ANTI-MICROSSOMAL - ANTI TPO', quando: { sexo: ['M'] } },
+      { exame: 'TESTOSTERONA TOTAL', quando: { convenio: ['ISSEC'] } },
+      { exame: 'TESTOSTERONA LIVRE' },
+      { exame: 'SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS', quando: { convenio: ['IPM'] } },
+      { exame: 'RETICULOCITOS - CONTAGEM', quando: { convenio: ['IPM'] } },
+      { exame: 'COOMBS DIRETO' },
+      { exame: 'CERULOPLASMINA' },
+      { exame: 'ALFA 1 ANTITRIPSINA - SORO' },
+      { exame: 'FOSFATASE ALCALINA TERMOESTAVEL' },
+      { exame: 'ANTI MUSCULO LISO' },
+      { exame: 'ANTI MITOCONDRIA' },
+      { exame: 'GASTRINA' },
+      { exame: 'Lactose, teste de tolerância' },
+      { exame: 'Leucócitos fecais, pesquisa' },
+      { exame: 'Gordura fecal, pesquisa' },
+      { exame: 'pH fecal' },
+      { exame: 'Substâncias redutoras nas fezes' },
+      { exame: 'Parasitológico de fezes - MIF' },
+      { exame: 'Giardia lamblia, pesquisa nas fezes', quando: { convenio: ['ISSEC'] } },
+      { exame: 'ANTI LKM1', quando: { convenio: ['IPM'] } },
+    ],
+  },
+];

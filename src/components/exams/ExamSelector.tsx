@@ -3,6 +3,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
 import { formatExamNameForDisplay } from '../../lib/formatters';
 import { findExamPreciso } from '../../services/groqExames';
+import ProtocoloExamesCard from './ProtocoloExamesCard';
 import { PROCEDIMENTOS as PROCEDIMENTOS_BASE, GRUPOS_PROCEDIMENTOS, PROCEDIMENTOS_POR_GRUPO } from '../../data/procedimentos';
 import type { ProcedimentoGrupo } from '../../data/procedimentos';
 import {
@@ -867,6 +868,8 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
           </div>
         ) : (
           <div>
+            <ProtocoloExamesCard />
+
             {/* Quick panels */}
             <div className="mb-5.5 bg-blue-50/20 rounded-lg border border-blue-100 overflow-hidden">
               <button
@@ -912,7 +915,7 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                   {/* Painéis gerais e de convênio */}
                   <div>
                     <span className="block text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-2">
-                      Gerais / Convênio
+                      Gerais
                     </span>
                     <div className="flex flex-wrap gap-2.5 items-center">
                       {Object.entries(PAINEIS_MARKDOWN)

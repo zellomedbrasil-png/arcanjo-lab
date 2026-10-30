@@ -1,0 +1,7669 @@
+{
+ "fonte": "Doc 'Guias de Exames — Clínica Médica ISSEC e IPM' (claude.ai/artifact/9ZHt5dyWWgqXJSB7V3wSyJ), lido em 2026-10-30",
+ "guias": [
+  {
+   "area": "CLINICA",
+   "consulta": "PRIMEIRA",
+   "sexo": "M",
+   "convenio": "ISSEC",
+   "total": 954.52,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "28040481",
+     "valor": 8.4,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "28040490",
+     "valor": 2.8,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "28060865",
+     "valor": 18.76,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "28010795",
+     "valor": 35.0,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "28010809",
+     "valor": 5.04,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "28011449",
+     "valor": 23.8,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "28010060",
+     "valor": 23.8,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "28010973",
+     "valor": 3.92,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "28011023",
+     "valor": 12.6,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "28050355",
+     "valor": 15.4,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "28011104",
+     "valor": 19.6,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "28010175",
+     "valor": 3.92,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "28011414",
+     "valor": 3.92,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "28010540",
+     "valor": 3.92,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "28130367",
+     "valor": 5.6,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "28130456",
+     "valor": 28.0,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "28011279",
+     "valor": 3.92,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "28011210",
+     "valor": 3.92,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "28011120",
+     "valor": 4.48,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "28010329",
+     "valor": 3.92,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "28050754",
+     "valor": 56.0,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "28011600",
+     "valor": 3.92,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "28011368",
+     "valor": 3.92,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "28011376",
+     "valor": 3.92,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "28010957",
+     "valor": 5.6,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "28010850",
+     "valor": 5.04,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "28010299",
+     "valor": 4.2,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "28010558",
+     "valor": 14.0,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "BNP - Peptídeo natriurético",
+     "codigo": "28011686",
+     "valor": 35.0,
+     "catalogo": "BNP / PROBNP - PEPTIDEO NATRIURETICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "28050703",
+     "valor": 23.8,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "28050720",
+     "valor": 23.8,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T3 livre",
+     "codigo": "28050827",
+     "valor": 23.8,
+     "catalogo": "T3 LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "28060164",
+     "valor": 29.4,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-tireoglobulina",
+     "codigo": "28060156",
+     "valor": 29.4,
+     "catalogo": "ANTI TIREOGLOBULINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Cortisol",
+     "codigo": "28050142",
+     "valor": 21.0,
+     "catalogo": "CORTISOL"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "S-DHEA",
+     "codigo": "28050223",
+     "valor": 30.8,
+     "catalogo": "S-DHEA (DHEA-S)"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona total",
+     "codigo": "28050690",
+     "valor": 29.4,
+     "catalogo": "TESTOSTERONA TOTAL"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "28050770",
+     "valor": 42.0,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Estradiol (E2)",
+     "codigo": "28050240",
+     "valor": 28.0,
+     "catalogo": "ESTRADIOL E2"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "LH - Hormônio luteinizante",
+     "codigo": "28050380",
+     "valor": 18.2,
+     "catalogo": "LH - HORMONIO LUTEINIZANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "28050436",
+     "valor": 23.8,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "PSA total",
+     "codigo": "28061624",
+     "valor": 42.0,
+     "catalogo": "PSA TOTAL"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "28061691",
+     "valor": 56.0,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "28061659",
+     "valor": 56.0,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "28060210",
+     "valor": 19.6,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "28060083",
+     "valor": 22.4,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "28060067",
+     "valor": 28.0,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "VDRL",
+     "codigo": "28061004",
+     "valor": 5.6,
+     "catalogo": "VDRL"
+    }
+   ]
+  },
+  {
+   "area": "CLINICA",
+   "consulta": "PRIMEIRA",
+   "sexo": "F",
+   "convenio": "ISSEC",
+   "total": 918.12,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "28040481",
+     "valor": 8.4,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "28040490",
+     "valor": 2.8,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "28060865",
+     "valor": 18.76,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "28010795",
+     "valor": 35.0,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "28010809",
+     "valor": 5.04,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "28011449",
+     "valor": 23.8,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "28010060",
+     "valor": 23.8,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "28010973",
+     "valor": 3.92,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "28011023",
+     "valor": 12.6,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "28050355",
+     "valor": 15.4,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "28011104",
+     "valor": 19.6,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "28010175",
+     "valor": 3.92,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "28011414",
+     "valor": 3.92,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "28010540",
+     "valor": 3.92,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "28130367",
+     "valor": 5.6,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "28130456",
+     "valor": 28.0,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "28011279",
+     "valor": 3.92,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "28011210",
+     "valor": 3.92,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "28011120",
+     "valor": 4.48,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "28010329",
+     "valor": 3.92,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "28050754",
+     "valor": 56.0,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "28011600",
+     "valor": 3.92,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "28011368",
+     "valor": 3.92,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "28011376",
+     "valor": 3.92,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "28010957",
+     "valor": 5.6,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "28010850",
+     "valor": 5.04,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "28010299",
+     "valor": 4.2,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "28010558",
+     "valor": 14.0,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "BNP - Peptídeo natriurético",
+     "codigo": "28011686",
+     "valor": 35.0,
+     "catalogo": "BNP / PROBNP - PEPTIDEO NATRIURETICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "28050703",
+     "valor": 23.8,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "28050720",
+     "valor": 23.8,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T3 livre",
+     "codigo": "28050827",
+     "valor": 23.8,
+     "catalogo": "T3 LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "28060164",
+     "valor": 29.4,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-tireoglobulina",
+     "codigo": "28060156",
+     "valor": 29.4,
+     "catalogo": "ANTI TIREOGLOBULINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Cortisol",
+     "codigo": "28050142",
+     "valor": 21.0,
+     "catalogo": "CORTISOL"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "S-DHEA",
+     "codigo": "28050223",
+     "valor": 30.8,
+     "catalogo": "S-DHEA (DHEA-S)"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "FSH - Hormônio folículo-estimulante",
+     "codigo": "28050312",
+     "valor": 18.2,
+     "catalogo": "FSH - H. FOLICULO ESTIMULANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "LH - Hormônio luteinizante",
+     "codigo": "28050380",
+     "valor": 18.2,
+     "catalogo": "LH - HORMONIO LUTEINIZANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Estradiol (E2)",
+     "codigo": "28050240",
+     "valor": 28.0,
+     "catalogo": "ESTRADIOL E2"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Progesterona",
+     "codigo": "28050410",
+     "valor": 29.4,
+     "catalogo": "PROGESTERONA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "28050436",
+     "valor": 23.8,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona total",
+     "codigo": "28050690",
+     "valor": 29.4,
+     "catalogo": "TESTOSTERONA TOTAL"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "28061691",
+     "valor": 56.0,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "28061659",
+     "valor": 56.0,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "28060210",
+     "valor": 19.6,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "28060083",
+     "valor": 22.4,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "28060067",
+     "valor": 28.0,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "VDRL",
+     "codigo": "28061004",
+     "valor": 5.6,
+     "catalogo": "VDRL"
+    }
+   ]
+  },
+  {
+   "area": "CLINICA",
+   "consulta": "PRIMEIRA",
+   "sexo": "M",
+   "convenio": "IPM",
+   "total": 915.64,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "40304361",
+     "valor": 7.82,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "40304370",
+     "valor": 3.76,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "40308391",
+     "valor": 20.97,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "40316270",
+     "valor": 20.13,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "40301842",
+     "valor": 5.22,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "40316572",
+     "valor": 16.9,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "40301087",
+     "valor": 17.52,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "40302040",
+     "valor": 3.76,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "40302075",
+     "valor": 17.52,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "40316360",
+     "valor": 20.81,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "40302750",
+     "valor": 31.92,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "40301362",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "40301150",
+     "valor": 3.76,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "40302580",
+     "valor": 3.76,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "40301630",
+     "valor": 3.76,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "40311210",
+     "valor": 7.41,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "40311171",
+     "valor": 17.52,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "40302423",
+     "valor": 4.38,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "40302318",
+     "valor": 3.76,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "40302237",
+     "valor": 3.76,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "40301400",
+     "valor": 3.76,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "40316424",
+     "valor": 65.3,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "25-hidroxivitamina D",
+     "codigo": "40302830",
+     "valor": 15.65,
+     "catalogo": "Vitamina D, 25-hidroxi (25-OH-D)"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "40301222",
+     "valor": 3.76,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "40302504",
+     "valor": 6.99,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "40302512",
+     "valor": 6.99,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "40301990",
+     "valor": 6.99,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "40301885",
+     "valor": 6.99,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "40301397",
+     "valor": 3.76,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "40301648",
+     "valor": 10.33,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "BNP ou NT-proBNP (escolher um)",
+     "codigo": "40302776",
+     "valor": 78.02,
+     "catalogo": "BNP / PROBNP - PEPTIDEO NATRIURETICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "40316521",
+     "valor": 19.61,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "40316491",
+     "valor": 24.46,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T3 livre",
+     "codigo": "40316467",
+     "valor": 22.32,
+     "catalogo": "T3 LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "40306348",
+     "valor": 23.99,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Cortisol",
+     "codigo": "40316190",
+     "valor": 29.0,
+     "catalogo": "CORTISOL"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "S-DHEA",
+     "codigo": "40316459",
+     "valor": 28.95,
+     "catalogo": "S-DHEA (DHEA-S)"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "40316505",
+     "valor": 38.91,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "SHBG",
+     "codigo": "40316300",
+     "valor": 51.63,
+     "catalogo": "SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Estradiol (E2)",
+     "codigo": "40316246",
+     "valor": 29.0,
+     "catalogo": "ESTRADIOL E2"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "LH - Hormônio luteinizante",
+     "codigo": "40316335",
+     "valor": 20.81,
+     "catalogo": "LH - HORMONIO LUTEINIZANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "40316416",
+     "valor": 26.7,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "PSA total",
+     "codigo": "40316149",
+     "valor": 23.47,
+     "catalogo": "PSA TOTAL"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "40307182",
+     "valor": 32.13,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "40307026",
+     "valor": 23.99,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "40307018",
+     "valor": 25.14,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "40306992",
+     "valor": 17.47,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "40306950",
+     "valor": 17.47,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "VDRL",
+     "codigo": "40307760",
+     "valor": 7.15,
+     "catalogo": "VDRL"
+    }
+   ]
+  },
+  {
+   "area": "CLINICA",
+   "consulta": "PRIMEIRA",
+   "sexo": "F",
+   "convenio": "IPM",
+   "total": 882.31,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "40304361",
+     "valor": 7.82,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "40304370",
+     "valor": 3.76,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "40308391",
+     "valor": 20.97,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "40316270",
+     "valor": 20.13,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "40301842",
+     "valor": 5.22,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "40316572",
+     "valor": 16.9,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "40301087",
+     "valor": 17.52,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "40302040",
+     "valor": 3.76,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "40302075",
+     "valor": 17.52,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "40316360",
+     "valor": 20.81,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "40302750",
+     "valor": 31.92,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "40301362",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "40301150",
+     "valor": 3.76,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "40302580",
+     "valor": 3.76,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "40301630",
+     "valor": 3.76,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "40311210",
+     "valor": 7.41,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "40311171",
+     "valor": 17.52,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "40302423",
+     "valor": 4.38,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "40302318",
+     "valor": 3.76,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "40302237",
+     "valor": 3.76,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "40301400",
+     "valor": 3.76,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "40316424",
+     "valor": 65.3,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "25-hidroxivitamina D",
+     "codigo": "40302830",
+     "valor": 15.65,
+     "catalogo": "Vitamina D, 25-hidroxi (25-OH-D)"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "40301222",
+     "valor": 3.76,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "40302504",
+     "valor": 6.99,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "40302512",
+     "valor": 6.99,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "40301990",
+     "valor": 6.99,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "40301885",
+     "valor": 6.99,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "40301397",
+     "valor": 3.76,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "40301648",
+     "valor": 10.33,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "BNP ou NT-proBNP (escolher um)",
+     "codigo": "40302776",
+     "valor": 78.02,
+     "catalogo": "BNP / PROBNP - PEPTIDEO NATRIURETICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "40316521",
+     "valor": 19.61,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "40316491",
+     "valor": 24.46,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T3 livre",
+     "codigo": "40316467",
+     "valor": 22.32,
+     "catalogo": "T3 LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "40306348",
+     "valor": 23.99,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-tireoglobulina",
+     "codigo": "40316106",
+     "valor": 37.55,
+     "catalogo": "ANTI TIREOGLOBULINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Cortisol",
+     "codigo": "40316190",
+     "valor": 29.0,
+     "catalogo": "CORTISOL"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "S-DHEA",
+     "codigo": "40316459",
+     "valor": 28.95,
+     "catalogo": "S-DHEA (DHEA-S)"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "FSH - Hormônio folículo-estimulante",
+     "codigo": "40316289",
+     "valor": 20.81,
+     "catalogo": "FSH - H. FOLICULO ESTIMULANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "LH - Hormônio luteinizante",
+     "codigo": "40316335",
+     "valor": 20.81,
+     "catalogo": "LH - HORMONIO LUTEINIZANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Estradiol (E2)",
+     "codigo": "40316246",
+     "valor": 29.0,
+     "catalogo": "ESTRADIOL E2"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Progesterona",
+     "codigo": "40316408",
+     "valor": 22.32,
+     "catalogo": "PROGESTERONA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "40316416",
+     "valor": 26.7,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "40307182",
+     "valor": 32.13,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "40307026",
+     "valor": 23.99,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "40307018",
+     "valor": 25.14,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "40306992",
+     "valor": 17.47,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "40306950",
+     "valor": 17.47,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "VDRL",
+     "codigo": "40307760",
+     "valor": 7.15,
+     "catalogo": "VDRL"
+    }
+   ]
+  },
+  {
+   "area": "CLINICA",
+   "consulta": "RETORNO",
+   "sexo": "M",
+   "convenio": "ISSEC",
+   "total": 519.68,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "28040660",
+     "valor": 2.8,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "28010345",
+     "valor": 3.92,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Eletroforese de hemoglobina",
+     "codigo": "28040430",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE HEMOGLOBINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "28010655",
+     "valor": 8.4,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "28040732",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "28040791",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "28040333",
+     "valor": 5.6,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo",
+     "codigo": "28040350",
+     "valor": 4.2,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fator Rh",
+     "codigo": "28040317",
+     "valor": 4.2,
+     "catalogo": "FATOR RH"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Peptídeo C",
+     "codigo": "28011686",
+     "valor": 35.0,
+     "catalogo": "PEPTIDEO C"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína A",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA A"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Somatomedina C (IGF-1)",
+     "codigo": "28050797",
+     "valor": 56.0,
+     "catalogo": "SOMATOMEDINA C - IGF-1"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "28011562",
+     "valor": 8.4,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "28010469",
+     "valor": 3.92,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Relação proteína/creatinina urinária",
+     "codigo": "28130316",
+     "valor": 2.8,
+     "catalogo": "RELACAO PROTEINA/CREATININA URINARIA"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "28010892",
+     "valor": 3.92,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "28010337",
+     "valor": 11.2,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "28010736",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "28150260",
+     "valor": 33.6,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "28010485",
+     "valor": 8.4,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Amilase",
+     "codigo": "28010256",
+     "valor": 3.92,
+     "catalogo": "AMILASE"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Lipase",
+     "codigo": "28011082",
+     "valor": 4.2,
+     "catalogo": "LIPASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Aldosterona",
+     "codigo": "28050037",
+     "valor": 35.0,
+     "catalogo": "ALDOSTERONA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Renina",
+     "codigo": "28050509",
+     "valor": 30.8,
+     "catalogo": "RENINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "FSH - Hormônio folículo-estimulante",
+     "codigo": "28050312",
+     "valor": 18.2,
+     "catalogo": "FSH - H. FOLICULO ESTIMULANTE"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "FAN - Fator antinuclear",
+     "codigo": "28060148",
+     "valor": 8.4,
+     "catalogo": "FAN - FATOR ANTINUCLEAR"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Látex - Fator reumatoide",
+     "codigo": "28060504",
+     "valor": 5.6,
+     "catalogo": "LATEX - FATOR REUMATOIDE"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite A IgG",
+     "codigo": "28060105",
+     "valor": 28.0,
+     "catalogo": "HEPATITE A IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "FTA-ABS IgG",
+     "codigo": "28060520",
+     "valor": 8.4,
+     "catalogo": "FTA-ABS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "28061535",
+     "valor": 56.0,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "28060318",
+     "valor": 8.4,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "28062183",
+     "valor": 42.0,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "28030141",
+     "valor": 5.6,
+     "catalogo": "Parasitológico de fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "28030176",
+     "valor": 2.8,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "CLINICA",
+   "consulta": "RETORNO",
+   "sexo": "F",
+   "convenio": "ISSEC",
+   "total": 627.48,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "28040660",
+     "valor": 2.8,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "28010345",
+     "valor": 3.92,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Eletroforese de hemoglobina",
+     "codigo": "28040430",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE HEMOGLOBINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "28010655",
+     "valor": 8.4,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "28040732",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "28040791",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "28040333",
+     "valor": 5.6,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo",
+     "codigo": "28040350",
+     "valor": 4.2,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fator Rh",
+     "codigo": "28040317",
+     "valor": 4.2,
+     "catalogo": "FATOR RH"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Peptídeo C",
+     "codigo": "28011686",
+     "valor": 35.0,
+     "catalogo": "PEPTIDEO C"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína A",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA A"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Somatomedina C (IGF-1)",
+     "codigo": "28050797",
+     "valor": 56.0,
+     "catalogo": "SOMATOMEDINA C - IGF-1"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "28011562",
+     "valor": 8.4,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "28010469",
+     "valor": 3.92,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Relação proteína/creatinina urinária",
+     "codigo": "28130316",
+     "valor": 2.8,
+     "catalogo": "RELACAO PROTEINA/CREATININA URINARIA"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "28010892",
+     "valor": 3.92,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "28010337",
+     "valor": 11.2,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "28010736",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "28150260",
+     "valor": 33.6,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "28010485",
+     "valor": 8.4,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Amilase",
+     "codigo": "28010256",
+     "valor": 3.92,
+     "catalogo": "AMILASE"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Lipase",
+     "codigo": "28011082",
+     "valor": 4.2,
+     "catalogo": "LIPASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Aldosterona",
+     "codigo": "28050037",
+     "valor": 35.0,
+     "catalogo": "ALDOSTERONA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Renina",
+     "codigo": "28050509",
+     "valor": 30.8,
+     "catalogo": "RENINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "28050770",
+     "valor": 42.0,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Androstenediona",
+     "codigo": "28050061",
+     "valor": 44.8,
+     "catalogo": "ANDROSTENEDIONA"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "FAN - Fator antinuclear",
+     "codigo": "28060148",
+     "valor": 8.4,
+     "catalogo": "FAN - FATOR ANTINUCLEAR"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Látex - Fator reumatoide",
+     "codigo": "28060504",
+     "valor": 5.6,
+     "catalogo": "LATEX - FATOR REUMATOIDE"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite A IgG",
+     "codigo": "28060105",
+     "valor": 28.0,
+     "catalogo": "HEPATITE A IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "FTA-ABS IgG",
+     "codigo": "28060520",
+     "valor": 8.4,
+     "catalogo": "FTA-ABS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "28061535",
+     "valor": 56.0,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "28060318",
+     "valor": 8.4,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Rubéola IgG",
+     "codigo": "28060911",
+     "valor": 16.8,
+     "catalogo": "RUBEOLA IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Toxoplasmose IgG",
+     "codigo": "28061497",
+     "valor": 22.4,
+     "catalogo": "TOXOPLASMOSE IGG"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "28062183",
+     "valor": 42.0,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "28030141",
+     "valor": 5.6,
+     "catalogo": "Parasitológico de fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "28030176",
+     "valor": 2.8,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "CLINICA",
+   "consulta": "RETORNO",
+   "sexo": "M",
+   "convenio": "IPM",
+   "total": 878.86,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "40304558",
+     "valor": 5.48,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "40301427",
+     "valor": 5.22,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Eletroforese de hemoglobina",
+     "codigo": "40304353",
+     "valor": 20.65,
+     "catalogo": "ELETROFORESE DE HEMOGLOBINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "40301729",
+     "valor": 6.99,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "40304590",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "40304639",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "40304264",
+     "valor": 5.48,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo + Fator Rh",
+     "codigo": "40304299",
+     "valor": 6.05,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Peptídeo C",
+     "codigo": "40316394",
+     "valor": 22.53,
+     "catalogo": "PEPTIDEO C"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína A",
+     "codigo": "40301354",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA A"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Somatomedina C (IGF-1)",
+     "codigo": "40316440",
+     "valor": 51.63,
+     "catalogo": "SOMATOMEDINA C - IGF-1"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "40302709",
+     "valor": 15.02,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "40301559",
+     "valor": 3.76,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Relação proteína/creatinina urinária",
+     "codigo": "40311180",
+     "valor": 4.59,
+     "catalogo": "RELACAO PROTEINA/CREATININA URINARIA"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "40301931",
+     "valor": 3.76,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "40301419",
+     "valor": 10.33,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "40301761",
+     "valor": 17.52,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "40307220",
+     "valor": 11.27,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "40313328",
+     "valor": 31.92,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "40301567",
+     "valor": 31.92,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Homocisteína",
+     "codigo": "40302113",
+     "valor": 31.92,
+     "catalogo": "HOMOCISTEINA"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina A",
+     "codigo": "40302601",
+     "valor": 64.36,
+     "catalogo": "VITAMINA A"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina E",
+     "codigo": "40302610",
+     "valor": 64.36,
+     "catalogo": "VITAMINA E"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina C",
+     "codigo": "40301060",
+     "valor": 21.2,
+     "catalogo": "VITAMINA C"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Selênio",
+     "codigo": "40313255",
+     "valor": 23.05,
+     "catalogo": "SELENIO"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Amilase",
+     "codigo": "40301281",
+     "valor": 6.99,
+     "catalogo": "AMILASE"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Lipase",
+     "codigo": "40302199",
+     "valor": 6.99,
+     "catalogo": "LIPASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Aldosterona",
+     "codigo": "40316050",
+     "valor": 37.55,
+     "catalogo": "ALDOSTERONA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Renina",
+     "codigo": "40316432",
+     "valor": 51.63,
+     "catalogo": "RENINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-tireoglobulina",
+     "codigo": "40316106",
+     "valor": 37.55,
+     "catalogo": "ANTI TIREOGLOBULINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "FSH - Hormônio folículo-estimulante",
+     "codigo": "40316289",
+     "valor": 20.81,
+     "catalogo": "FSH - H. FOLICULO ESTIMULANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "PSA livre",
+     "codigo": "40316130",
+     "valor": 30.46,
+     "catalogo": "PSA LIVRE"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "FAN - Fator antinuclear",
+     "codigo": "40306852",
+     "valor": 11.47,
+     "catalogo": "FAN - FATOR ANTINUCLEAR"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Látex - Fator reumatoide",
+     "codigo": "40308030",
+     "valor": 11.27,
+     "catalogo": "LATEX - FATOR REUMATOIDE"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-endomísio IgA",
+     "codigo": "40306259",
+     "valor": 32.13,
+     "catalogo": "Anticorpos antiendomísio - IgG, IgM, IgA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite A IgG",
+     "codigo": "40306933",
+     "valor": 17.47,
+     "catalogo": "HEPATITE A IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "FTA-ABS IgG",
+     "codigo": "40307735",
+     "valor": 11.27,
+     "catalogo": "FTA-ABS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "40307212",
+     "valor": 39.38,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "40306615",
+     "valor": 17.47,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "40306917",
+     "valor": 27.85,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "40303110",
+     "valor": 9.07,
+     "catalogo": "Parasitológico de fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "40303136",
+     "valor": 9.07,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "CLINICA",
+   "consulta": "RETORNO",
+   "sexo": "F",
+   "convenio": "IPM",
+   "total": 961.15,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "40304558",
+     "valor": 5.48,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "40301427",
+     "valor": 5.22,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Eletroforese de hemoglobina",
+     "codigo": "40304353",
+     "valor": 20.65,
+     "catalogo": "ELETROFORESE DE HEMOGLOBINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "40301729",
+     "valor": 6.99,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "40304590",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "40304639",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "40304264",
+     "valor": 5.48,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo + Fator Rh",
+     "codigo": "40304299",
+     "valor": 6.05,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Peptídeo C",
+     "codigo": "40316394",
+     "valor": 22.53,
+     "catalogo": "PEPTIDEO C"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína A",
+     "codigo": "40301354",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA A"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Somatomedina C (IGF-1)",
+     "codigo": "40316440",
+     "valor": 51.63,
+     "catalogo": "SOMATOMEDINA C - IGF-1"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "40302709",
+     "valor": 15.02,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "40301559",
+     "valor": 3.76,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Relação proteína/creatinina urinária",
+     "codigo": "40311180",
+     "valor": 4.59,
+     "catalogo": "RELACAO PROTEINA/CREATININA URINARIA"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "40301931",
+     "valor": 3.76,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "40301419",
+     "valor": 10.33,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "40301761",
+     "valor": 17.52,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "40307220",
+     "valor": 11.27,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "40313328",
+     "valor": 31.92,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "40301567",
+     "valor": 31.92,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Homocisteína",
+     "codigo": "40302113",
+     "valor": 31.92,
+     "catalogo": "HOMOCISTEINA"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina A",
+     "codigo": "40302601",
+     "valor": 64.36,
+     "catalogo": "VITAMINA A"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina E",
+     "codigo": "40302610",
+     "valor": 64.36,
+     "catalogo": "VITAMINA E"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina C",
+     "codigo": "40301060",
+     "valor": 21.2,
+     "catalogo": "VITAMINA C"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Selênio",
+     "codigo": "40313255",
+     "valor": 23.05,
+     "catalogo": "SELENIO"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Amilase",
+     "codigo": "40301281",
+     "valor": 6.99,
+     "catalogo": "AMILASE"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Lipase",
+     "codigo": "40302199",
+     "valor": 6.99,
+     "catalogo": "LIPASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Aldosterona",
+     "codigo": "40316050",
+     "valor": 37.55,
+     "catalogo": "ALDOSTERONA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Renina",
+     "codigo": "40316432",
+     "valor": 51.63,
+     "catalogo": "RENINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "SHBG",
+     "codigo": "40316300",
+     "valor": 51.63,
+     "catalogo": "SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "40316505",
+     "valor": 38.91,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Androstenediona",
+     "codigo": "40316076",
+     "valor": 46.05,
+     "catalogo": "ANDROSTENEDIONA"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "FAN - Fator antinuclear",
+     "codigo": "40306852",
+     "valor": 11.47,
+     "catalogo": "FAN - FATOR ANTINUCLEAR"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Látex - Fator reumatoide",
+     "codigo": "40308030",
+     "valor": 11.27,
+     "catalogo": "LATEX - FATOR REUMATOIDE"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-endomísio IgA",
+     "codigo": "40306259",
+     "valor": 32.13,
+     "catalogo": "Anticorpos antiendomísio - IgG, IgM, IgA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite A IgG",
+     "codigo": "40306933",
+     "valor": 17.47,
+     "catalogo": "HEPATITE A IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "FTA-ABS IgG",
+     "codigo": "40307735",
+     "valor": 11.27,
+     "catalogo": "FTA-ABS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "40307212",
+     "valor": 39.38,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "40306615",
+     "valor": 17.47,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Rubéola IgG",
+     "codigo": "40307697",
+     "valor": 17.26,
+     "catalogo": "RUBEOLA IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Toxoplasmose IgG",
+     "codigo": "40307824",
+     "valor": 17.26,
+     "catalogo": "TOXOPLASMOSE IGG"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "40306917",
+     "valor": 27.85,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "40303110",
+     "valor": 9.07,
+     "catalogo": "Parasitológico de fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "40303136",
+     "valor": 9.07,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GERIATRIA",
+   "consulta": "PRIMEIRA",
+   "sexo": "M",
+   "convenio": "ISSEC",
+   "total": 906.64,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "28040481",
+     "valor": 8.4,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "28040490",
+     "valor": 2.8,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "28060865",
+     "valor": 18.76,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "28010795",
+     "valor": 35.0,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "28010809",
+     "valor": 5.04,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "28011449",
+     "valor": 23.8,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "28010060",
+     "valor": 23.8,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "28010973",
+     "valor": 3.92,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "28011023",
+     "valor": 12.6,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "28011104",
+     "valor": 19.6,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "28010175",
+     "valor": 3.92,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "28011414",
+     "valor": 3.92,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "28010540",
+     "valor": 3.92,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "28130367",
+     "valor": 5.6,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "28130456",
+     "valor": 28.0,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "28011279",
+     "valor": 3.92,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "28011210",
+     "valor": 3.92,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "28011120",
+     "valor": 4.48,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "28010329",
+     "valor": 3.92,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "28010892",
+     "valor": 3.92,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "28050754",
+     "valor": 56.0,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "28011600",
+     "valor": 3.92,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "28010736",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "28150260",
+     "valor": 33.6,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "28011368",
+     "valor": 3.92,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "28011376",
+     "valor": 3.92,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "28010957",
+     "valor": 5.6,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "28010850",
+     "valor": 5.04,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "28010299",
+     "valor": 4.2,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "28010558",
+     "valor": 14.0,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "BNP - Peptídeo natriurético",
+     "codigo": "28011686",
+     "valor": 35.0,
+     "catalogo": "BNP / PROBNP - PEPTIDEO NATRIURETICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "28050703",
+     "valor": 23.8,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "28050720",
+     "valor": 23.8,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "28060164",
+     "valor": 29.4,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Cortisol",
+     "codigo": "28050142",
+     "valor": 21.0,
+     "catalogo": "CORTISOL"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona total",
+     "codigo": "28050690",
+     "valor": 29.4,
+     "catalogo": "TESTOSTERONA TOTAL"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "28050770",
+     "valor": 42.0,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "LH - Hormônio luteinizante",
+     "codigo": "28050380",
+     "valor": 18.2,
+     "catalogo": "LH - HORMONIO LUTEINIZANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "28050436",
+     "valor": 23.8,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Estradiol (E2)",
+     "codigo": "28050240",
+     "valor": 28.0,
+     "catalogo": "ESTRADIOL E2"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "PSA total",
+     "codigo": "28061624",
+     "valor": 42.0,
+     "catalogo": "PSA TOTAL"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "28061691",
+     "valor": 56.0,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "28061659",
+     "valor": 56.0,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "28060210",
+     "valor": 19.6,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "28060083",
+     "valor": 22.4,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "28060067",
+     "valor": 28.0,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "VDRL",
+     "codigo": "28061004",
+     "valor": 5.6,
+     "catalogo": "VDRL"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "28030176",
+     "valor": 2.8,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GERIATRIA",
+   "consulta": "PRIMEIRA",
+   "sexo": "F",
+   "convenio": "ISSEC",
+   "total": 842.24,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "28040481",
+     "valor": 8.4,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "28040490",
+     "valor": 2.8,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "28060865",
+     "valor": 18.76,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "28010795",
+     "valor": 35.0,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "28010809",
+     "valor": 5.04,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "28011449",
+     "valor": 23.8,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "28010060",
+     "valor": 23.8,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "28040660",
+     "valor": 2.8,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "28010973",
+     "valor": 3.92,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "28011023",
+     "valor": 12.6,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "28011104",
+     "valor": 19.6,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "28010175",
+     "valor": 3.92,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "28011414",
+     "valor": 3.92,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "28010540",
+     "valor": 3.92,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "28130367",
+     "valor": 5.6,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "28130456",
+     "valor": 28.0,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "28011279",
+     "valor": 3.92,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "28011210",
+     "valor": 3.92,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "28011120",
+     "valor": 4.48,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "28010329",
+     "valor": 3.92,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "28010892",
+     "valor": 3.92,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "28050754",
+     "valor": 56.0,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "28010337",
+     "valor": 11.2,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Calciúria",
+     "codigo": "28130316",
+     "valor": 2.8,
+     "catalogo": "CALCIURIA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "28011600",
+     "valor": 3.92,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "28010736",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "28150260",
+     "valor": 33.6,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "28011368",
+     "valor": 3.92,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "28011376",
+     "valor": 3.92,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "28010957",
+     "valor": 5.6,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "28010850",
+     "valor": 5.04,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "28010299",
+     "valor": 4.2,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "28010558",
+     "valor": 14.0,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "BNP - Peptídeo natriurético",
+     "codigo": "28011686",
+     "valor": 35.0,
+     "catalogo": "BNP / PROBNP - PEPTIDEO NATRIURETICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "28050703",
+     "valor": 23.8,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "28050720",
+     "valor": 23.8,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "28060164",
+     "valor": 29.4,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Cortisol",
+     "codigo": "28050142",
+     "valor": 21.0,
+     "catalogo": "CORTISOL"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "S-DHEA",
+     "codigo": "28050223",
+     "valor": 30.8,
+     "catalogo": "S-DHEA (DHEA-S)"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona total",
+     "codigo": "28050690",
+     "valor": 29.4,
+     "catalogo": "TESTOSTERONA TOTAL"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "28050770",
+     "valor": 42.0,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "28061691",
+     "valor": 56.0,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "28061659",
+     "valor": 56.0,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "28060210",
+     "valor": 19.6,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "28060083",
+     "valor": 22.4,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "28060067",
+     "valor": 28.0,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "VDRL",
+     "codigo": "28061004",
+     "valor": 5.6,
+     "catalogo": "VDRL"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "28030176",
+     "valor": 2.8,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GERIATRIA",
+   "consulta": "PRIMEIRA",
+   "sexo": "M",
+   "convenio": "IPM",
+   "total": 879.75,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "40304361",
+     "valor": 7.82,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "40304370",
+     "valor": 3.76,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "40308391",
+     "valor": 20.97,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "40316270",
+     "valor": 20.13,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "40301842",
+     "valor": 5.22,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "40316572",
+     "valor": 16.9,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "40301087",
+     "valor": 17.52,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "40302040",
+     "valor": 3.76,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "40302075",
+     "valor": 17.52,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "40302750",
+     "valor": 31.92,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "40301362",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "40301150",
+     "valor": 3.76,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "40302580",
+     "valor": 3.76,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "40301630",
+     "valor": 3.76,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "40311210",
+     "valor": 7.41,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "40311171",
+     "valor": 17.52,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "40302423",
+     "valor": 4.38,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "40302318",
+     "valor": 3.76,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "40302237",
+     "valor": 3.76,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "40301400",
+     "valor": 3.76,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "40301931",
+     "valor": 3.76,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "40316424",
+     "valor": 65.3,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "25-hidroxivitamina D",
+     "codigo": "40302830",
+     "valor": 15.65,
+     "catalogo": "Vitamina D, 25-hidroxi (25-OH-D)"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "40301222",
+     "valor": 3.76,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "40301761",
+     "valor": 17.52,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "40313328",
+     "valor": 31.92,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Homocisteína",
+     "codigo": "40302113",
+     "valor": 31.92,
+     "catalogo": "HOMOCISTEINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "40302504",
+     "valor": 6.99,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "40302512",
+     "valor": 6.99,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "40301990",
+     "valor": 6.99,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "40301885",
+     "valor": 6.99,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "40301397",
+     "valor": 3.76,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "40301648",
+     "valor": 10.33,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "BNP ou NT-proBNP (escolher um)",
+     "codigo": "40302776",
+     "valor": 78.02,
+     "catalogo": "BNP / PROBNP - PEPTIDEO NATRIURETICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "40316521",
+     "valor": 19.61,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "40316491",
+     "valor": 24.46,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "40306348",
+     "valor": 23.99,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "40316505",
+     "valor": 38.91,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "SHBG",
+     "codigo": "40316300",
+     "valor": 51.63,
+     "catalogo": "SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "LH - Hormônio luteinizante",
+     "codigo": "40316335",
+     "valor": 20.81,
+     "catalogo": "LH - HORMONIO LUTEINIZANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "40316416",
+     "valor": 26.7,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "PSA total",
+     "codigo": "40316149",
+     "valor": 23.47,
+     "catalogo": "PSA TOTAL"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "40307182",
+     "valor": 32.13,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "40307026",
+     "valor": 23.99,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "40307018",
+     "valor": 25.14,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "40306992",
+     "valor": 17.47,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "40306950",
+     "valor": 17.47,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "VDRL",
+     "codigo": "40307760",
+     "valor": 7.15,
+     "catalogo": "VDRL"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "40303136",
+     "valor": 9.07,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GERIATRIA",
+   "consulta": "PRIMEIRA",
+   "sexo": "F",
+   "convenio": "IPM",
+   "total": 871.31,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "40304361",
+     "valor": 7.82,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "40304370",
+     "valor": 3.76,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "40308391",
+     "valor": 20.97,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "40316270",
+     "valor": 20.13,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "40301842",
+     "valor": 5.22,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "40316572",
+     "valor": 16.9,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "40301087",
+     "valor": 17.52,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "40302040",
+     "valor": 3.76,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "40302075",
+     "valor": 17.52,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "40302750",
+     "valor": 31.92,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "40301362",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "40301150",
+     "valor": 3.76,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "40302580",
+     "valor": 3.76,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "40301630",
+     "valor": 3.76,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "40311210",
+     "valor": 7.41,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "40311171",
+     "valor": 17.52,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "40302423",
+     "valor": 4.38,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "40302318",
+     "valor": 3.76,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "40302237",
+     "valor": 3.76,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "40301400",
+     "valor": 3.76,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "40301931",
+     "valor": 3.76,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "40316424",
+     "valor": 65.3,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "25-hidroxivitamina D",
+     "codigo": "40302830",
+     "valor": 15.65,
+     "catalogo": "Vitamina D, 25-hidroxi (25-OH-D)"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Calciúria",
+     "codigo": "40311180",
+     "valor": 4.59,
+     "catalogo": "CALCIURIA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "40301222",
+     "valor": 3.76,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "40301761",
+     "valor": 17.52,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "40313328",
+     "valor": 31.92,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Homocisteína",
+     "codigo": "40302113",
+     "valor": 31.92,
+     "catalogo": "HOMOCISTEINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "40302504",
+     "valor": 6.99,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "40302512",
+     "valor": 6.99,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "40301990",
+     "valor": 6.99,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "40301885",
+     "valor": 6.99,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "40301397",
+     "valor": 3.76,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "40301648",
+     "valor": 10.33,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "BNP ou NT-proBNP (escolher um)",
+     "codigo": "40302776",
+     "valor": 78.02,
+     "catalogo": "BNP / PROBNP - PEPTIDEO NATRIURETICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "40316521",
+     "valor": 19.61,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "40316491",
+     "valor": 24.46,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "40306348",
+     "valor": 23.99,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Cortisol",
+     "codigo": "40316190",
+     "valor": 29.0,
+     "catalogo": "CORTISOL"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "S-DHEA",
+     "codigo": "40316459",
+     "valor": 28.95,
+     "catalogo": "S-DHEA (DHEA-S)"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "40316505",
+     "valor": 38.91,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "SHBG",
+     "codigo": "40316300",
+     "valor": 51.63,
+     "catalogo": "SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "40307182",
+     "valor": 32.13,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "40307026",
+     "valor": 23.99,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "40307018",
+     "valor": 25.14,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "40306992",
+     "valor": 17.47,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "40306950",
+     "valor": 17.47,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "VDRL",
+     "codigo": "40307760",
+     "valor": 7.15,
+     "catalogo": "VDRL"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "40303136",
+     "valor": 9.07,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GERIATRIA",
+   "consulta": "RETORNO",
+   "sexo": "M",
+   "convenio": "ISSEC",
+   "total": 546.28,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "28010345",
+     "valor": 3.92,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "28010655",
+     "valor": 8.4,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "28040660",
+     "valor": 2.8,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "28040732",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "28040791",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "28040333",
+     "valor": 5.6,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo",
+     "codigo": "28040350",
+     "valor": 4.2,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fator Rh",
+     "codigo": "28040317",
+     "valor": 4.2,
+     "catalogo": "FATOR RH"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Frutosamina",
+     "codigo": "28011554",
+     "valor": 12.6,
+     "catalogo": "FRUTOSAMINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "28011562",
+     "valor": 8.4,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "28050355",
+     "valor": 15.4,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína A",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA A"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Somatomedina C (IGF-1)",
+     "codigo": "28050797",
+     "valor": 56.0,
+     "catalogo": "SOMATOMEDINA C - IGF-1"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Relação proteína/creatinina urinária",
+     "codigo": "28130316",
+     "valor": 2.8,
+     "catalogo": "RELACAO PROTEINA/CREATININA URINARIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Clearance de creatinina (urina de 24 h)",
+     "codigo": "28010426",
+     "valor": 7.0,
+     "catalogo": "CLEARANCE DE CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio urinário",
+     "codigo": "28011279",
+     "valor": 3.92,
+     "catalogo": "SODIO URINARIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Proteína de Bence Jones (urina)",
+     "codigo": "28130332",
+     "valor": 5.6,
+     "catalogo": "PROTEINA DE BENCE JONES (URINA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "28010469",
+     "valor": 3.92,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "28010337",
+     "valor": 11.2,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio urinário (amostra isolada)",
+     "codigo": "28010329",
+     "valor": 3.92,
+     "catalogo": "CALCIO URINARIO (AMOSTRA ISOLADA)"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgG",
+     "codigo": "28060610",
+     "valor": 14.0,
+     "catalogo": "IGG"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "28060598",
+     "valor": 14.0,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgM",
+     "codigo": "28060628",
+     "valor": 14.0,
+     "catalogo": "IGM"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "28010485",
+     "valor": 8.4,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T3 livre",
+     "codigo": "28050827",
+     "valor": 23.8,
+     "catalogo": "T3 LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-tireoglobulina",
+     "codigo": "28060156",
+     "valor": 29.4,
+     "catalogo": "ANTI TIREOGLOBULINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Aldosterona",
+     "codigo": "28050037",
+     "valor": 35.0,
+     "catalogo": "ALDOSTERONA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Renina",
+     "codigo": "28050509",
+     "valor": 30.8,
+     "catalogo": "RENINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "S-DHEA",
+     "codigo": "28050223",
+     "valor": 30.8,
+     "catalogo": "S-DHEA (DHEA-S)"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "FSH - Hormônio folículo-estimulante",
+     "codigo": "28050312",
+     "valor": 18.2,
+     "catalogo": "FSH - H. FOLICULO ESTIMULANTE"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "28060318",
+     "valor": 8.4,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "FTA-ABS IgG",
+     "codigo": "28060520",
+     "valor": 8.4,
+     "catalogo": "FTA-ABS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "28061535",
+     "valor": 56.0,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "28062183",
+     "valor": 42.0,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "28030141",
+     "valor": 5.6,
+     "catalogo": "Parasitológico de fezes"
+    }
+   ]
+  },
+  {
+   "area": "GERIATRIA",
+   "consulta": "RETORNO",
+   "sexo": "F",
+   "convenio": "ISSEC",
+   "total": 567.56,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "28010345",
+     "valor": 3.92,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "28010655",
+     "valor": 8.4,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "28040732",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "28040791",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "28040333",
+     "valor": 5.6,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo",
+     "codigo": "28040350",
+     "valor": 4.2,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fator Rh",
+     "codigo": "28040317",
+     "valor": 4.2,
+     "catalogo": "FATOR RH"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Frutosamina",
+     "codigo": "28011554",
+     "valor": 12.6,
+     "catalogo": "FRUTOSAMINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "28011562",
+     "valor": 8.4,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "28050355",
+     "valor": 15.4,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína A",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA A"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Somatomedina C (IGF-1)",
+     "codigo": "28050797",
+     "valor": 56.0,
+     "catalogo": "SOMATOMEDINA C - IGF-1"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Relação proteína/creatinina urinária",
+     "codigo": "28130316",
+     "valor": 2.8,
+     "catalogo": "RELACAO PROTEINA/CREATININA URINARIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Clearance de creatinina (urina de 24 h)",
+     "codigo": "28010426",
+     "valor": 7.0,
+     "catalogo": "CLEARANCE DE CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio urinário",
+     "codigo": "28011279",
+     "valor": 3.92,
+     "catalogo": "SODIO URINARIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Proteína de Bence Jones (urina)",
+     "codigo": "28130332",
+     "valor": 5.6,
+     "catalogo": "PROTEINA DE BENCE JONES (URINA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "28010469",
+     "valor": 3.92,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgG",
+     "codigo": "28060610",
+     "valor": 14.0,
+     "catalogo": "IGG"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "28060598",
+     "valor": 14.0,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgM",
+     "codigo": "28060628",
+     "valor": 14.0,
+     "catalogo": "IGM"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "28010485",
+     "valor": 8.4,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T3 livre",
+     "codigo": "28050827",
+     "valor": 23.8,
+     "catalogo": "T3 LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-tireoglobulina",
+     "codigo": "28060156",
+     "valor": 29.4,
+     "catalogo": "ANTI TIREOGLOBULINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Aldosterona",
+     "codigo": "28050037",
+     "valor": 35.0,
+     "catalogo": "ALDOSTERONA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Renina",
+     "codigo": "28050509",
+     "valor": 30.8,
+     "catalogo": "RENINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "28050436",
+     "valor": 23.8,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Estradiol (E2)",
+     "codigo": "28050240",
+     "valor": 28.0,
+     "catalogo": "ESTRADIOL E2"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "FSH - Hormônio folículo-estimulante",
+     "codigo": "28050312",
+     "valor": 18.2,
+     "catalogo": "FSH - H. FOLICULO ESTIMULANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "LH - Hormônio luteinizante",
+     "codigo": "28050380",
+     "valor": 18.2,
+     "catalogo": "LH - HORMONIO LUTEINIZANTE"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "28060318",
+     "valor": 8.4,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "FTA-ABS IgG",
+     "codigo": "28060520",
+     "valor": 8.4,
+     "catalogo": "FTA-ABS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "28061535",
+     "valor": 56.0,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "28062183",
+     "valor": 42.0,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "28030141",
+     "valor": 5.6,
+     "catalogo": "Parasitológico de fezes"
+    }
+   ]
+  },
+  {
+   "area": "GERIATRIA",
+   "consulta": "RETORNO",
+   "sexo": "M",
+   "convenio": "IPM",
+   "total": 840.66,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "40301427",
+     "valor": 5.22,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "40301729",
+     "valor": 6.99,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "40304558",
+     "valor": 5.48,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "40304590",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "40304639",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "40304264",
+     "valor": 5.48,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo + Fator Rh",
+     "codigo": "40304299",
+     "valor": 6.05,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Frutosamina",
+     "codigo": "40301958",
+     "valor": 6.99,
+     "catalogo": "FRUTOSAMINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "40302709",
+     "valor": 15.02,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "40316360",
+     "valor": 20.81,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína A",
+     "codigo": "40301354",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA A"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Somatomedina C (IGF-1)",
+     "codigo": "40316440",
+     "valor": 51.63,
+     "catalogo": "SOMATOMEDINA C - IGF-1"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Relação proteína/creatinina urinária",
+     "codigo": "40311180",
+     "valor": 4.59,
+     "catalogo": "RELACAO PROTEINA/CREATININA URINARIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Clearance de creatinina (urina de 24 h)",
+     "codigo": "40301508",
+     "valor": 10.33,
+     "catalogo": "CLEARANCE DE CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio urinário",
+     "codigo": "40302423",
+     "valor": 4.38,
+     "catalogo": "SODIO URINARIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Proteína de Bence Jones (urina)",
+     "codigo": "40311201",
+     "valor": 7.41,
+     "catalogo": "PROTEINA DE BENCE JONES (URINA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "40301559",
+     "valor": 3.76,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "40301419",
+     "valor": 10.33,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio urinário (amostra isolada)",
+     "codigo": "40301400",
+     "valor": 3.76,
+     "catalogo": "CALCIO URINARIO (AMOSTRA ISOLADA)"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgG",
+     "codigo": "40307280",
+     "valor": 11.27,
+     "catalogo": "IGG"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "40307220",
+     "valor": 11.27,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgM",
+     "codigo": "40307301",
+     "valor": 11.27,
+     "catalogo": "IGM"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "40301567",
+     "valor": 31.92,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina A",
+     "codigo": "40302601",
+     "valor": 64.36,
+     "catalogo": "VITAMINA A"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina E",
+     "codigo": "40302610",
+     "valor": 64.36,
+     "catalogo": "VITAMINA E"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina C",
+     "codigo": "40301060",
+     "valor": 21.2,
+     "catalogo": "VITAMINA C"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Selênio",
+     "codigo": "40313255",
+     "valor": 23.05,
+     "catalogo": "SELENIO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T3 livre",
+     "codigo": "40316467",
+     "valor": 22.32,
+     "catalogo": "T3 LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-tireoglobulina",
+     "codigo": "40316106",
+     "valor": 37.55,
+     "catalogo": "ANTI TIREOGLOBULINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Aldosterona",
+     "codigo": "40316050",
+     "valor": 37.55,
+     "catalogo": "ALDOSTERONA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Renina",
+     "codigo": "40316432",
+     "valor": 51.63,
+     "catalogo": "RENINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "S-DHEA",
+     "codigo": "40316459",
+     "valor": 28.95,
+     "catalogo": "S-DHEA (DHEA-S)"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Cortisol",
+     "codigo": "40316190",
+     "valor": 29.0,
+     "catalogo": "CORTISOL"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Estradiol (E2)",
+     "codigo": "40316246",
+     "valor": 29.0,
+     "catalogo": "ESTRADIOL E2"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "FSH - Hormônio folículo-estimulante",
+     "codigo": "40316289",
+     "valor": 20.81,
+     "catalogo": "FSH - H. FOLICULO ESTIMULANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "PSA livre",
+     "codigo": "40316130",
+     "valor": 30.46,
+     "catalogo": "PSA LIVRE"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "40306615",
+     "valor": 17.47,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "FTA-ABS IgG",
+     "codigo": "40307735",
+     "valor": 11.27,
+     "catalogo": "FTA-ABS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "40307212",
+     "valor": 39.38,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "40306917",
+     "valor": 27.85,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "40303110",
+     "valor": 9.07,
+     "catalogo": "Parasitológico de fezes"
+    }
+   ]
+  },
+  {
+   "area": "GERIATRIA",
+   "consulta": "RETORNO",
+   "sexo": "F",
+   "convenio": "IPM",
+   "total": 796.0,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "40301427",
+     "valor": 5.22,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "40301729",
+     "valor": 6.99,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "40304558",
+     "valor": 5.48,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "40304590",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "40304639",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "40304264",
+     "valor": 5.48,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo + Fator Rh",
+     "codigo": "40304299",
+     "valor": 6.05,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Frutosamina",
+     "codigo": "40301958",
+     "valor": 6.99,
+     "catalogo": "FRUTOSAMINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "40302709",
+     "valor": 15.02,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "40316360",
+     "valor": 20.81,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína A",
+     "codigo": "40301354",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA A"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Somatomedina C (IGF-1)",
+     "codigo": "40316440",
+     "valor": 51.63,
+     "catalogo": "SOMATOMEDINA C - IGF-1"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Relação proteína/creatinina urinária",
+     "codigo": "40311180",
+     "valor": 4.59,
+     "catalogo": "RELACAO PROTEINA/CREATININA URINARIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Clearance de creatinina (urina de 24 h)",
+     "codigo": "40301508",
+     "valor": 10.33,
+     "catalogo": "CLEARANCE DE CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio urinário",
+     "codigo": "40302423",
+     "valor": 4.38,
+     "catalogo": "SODIO URINARIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Proteína de Bence Jones (urina)",
+     "codigo": "40311201",
+     "valor": 7.41,
+     "catalogo": "PROTEINA DE BENCE JONES (URINA)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "40301559",
+     "valor": 3.76,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "40301419",
+     "valor": 10.33,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgG",
+     "codigo": "40307280",
+     "valor": 11.27,
+     "catalogo": "IGG"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "40307220",
+     "valor": 11.27,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgM",
+     "codigo": "40307301",
+     "valor": 11.27,
+     "catalogo": "IGM"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "40301567",
+     "valor": 31.92,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina A",
+     "codigo": "40302601",
+     "valor": 64.36,
+     "catalogo": "VITAMINA A"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina E",
+     "codigo": "40302610",
+     "valor": 64.36,
+     "catalogo": "VITAMINA E"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina C",
+     "codigo": "40301060",
+     "valor": 21.2,
+     "catalogo": "VITAMINA C"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Selênio",
+     "codigo": "40313255",
+     "valor": 23.05,
+     "catalogo": "SELENIO"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T3 livre",
+     "codigo": "40316467",
+     "valor": 22.32,
+     "catalogo": "T3 LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-tireoglobulina",
+     "codigo": "40316106",
+     "valor": 37.55,
+     "catalogo": "ANTI TIREOGLOBULINA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Aldosterona",
+     "codigo": "40316050",
+     "valor": 37.55,
+     "catalogo": "ALDOSTERONA"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Renina",
+     "codigo": "40316432",
+     "valor": 51.63,
+     "catalogo": "RENINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "40316416",
+     "valor": 26.7,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Estradiol (E2)",
+     "codigo": "40316246",
+     "valor": 29.0,
+     "catalogo": "ESTRADIOL E2"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "FSH - Hormônio folículo-estimulante",
+     "codigo": "40316289",
+     "valor": 20.81,
+     "catalogo": "FSH - H. FOLICULO ESTIMULANTE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "LH - Hormônio luteinizante",
+     "codigo": "40316335",
+     "valor": 20.81,
+     "catalogo": "LH - HORMONIO LUTEINIZANTE"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "40306615",
+     "valor": 17.47,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "FTA-ABS IgG",
+     "codigo": "40307735",
+     "valor": 11.27,
+     "catalogo": "FTA-ABS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "40307212",
+     "valor": 39.38,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "40306917",
+     "valor": 27.85,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "40303110",
+     "valor": 9.07,
+     "catalogo": "Parasitológico de fezes"
+    }
+   ]
+  },
+  {
+   "area": "GASTRO",
+   "consulta": "PRIMEIRA",
+   "sexo": "M",
+   "convenio": "ISSEC",
+   "total": 811.16,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "28040481",
+     "valor": 8.4,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "28040490",
+     "valor": 2.8,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "28060865",
+     "valor": 18.76,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "28010795",
+     "valor": 35.0,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "28010809",
+     "valor": 5.04,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "28011449",
+     "valor": 23.8,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "28010060",
+     "valor": 23.8,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "28040660",
+     "valor": 2.8,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "28040732",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "28010973",
+     "valor": 3.92,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "28011023",
+     "valor": 12.6,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "28050355",
+     "valor": 15.4,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "28011104",
+     "valor": 19.6,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "28010175",
+     "valor": 3.92,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "28011414",
+     "valor": 3.92,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "28010540",
+     "valor": 3.92,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "28011279",
+     "valor": 3.92,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "28011210",
+     "valor": 3.92,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "28011120",
+     "valor": 4.48,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "28130367",
+     "valor": 5.6,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "28130456",
+     "valor": 28.0,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "28010329",
+     "valor": 3.92,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "28010892",
+     "valor": 3.92,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "28050754",
+     "valor": 56.0,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "28011600",
+     "valor": 3.92,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "28010736",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "28060598",
+     "valor": 14.0,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "28150260",
+     "valor": 33.6,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "28011368",
+     "valor": 3.92,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "28011376",
+     "valor": 3.92,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "28010957",
+     "valor": 5.6,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "28010850",
+     "valor": 5.04,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "28010299",
+     "valor": 4.2,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Amilase",
+     "codigo": "28010256",
+     "valor": 3.92,
+     "catalogo": "AMILASE"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Lipase",
+     "codigo": "28011082",
+     "valor": 4.2,
+     "catalogo": "LIPASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "28050703",
+     "valor": 23.8,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "28050720",
+     "valor": 23.8,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "PSA total",
+     "codigo": "28061624",
+     "valor": 42.0,
+     "catalogo": "PSA TOTAL"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Antigliadina IgA",
+     "codigo": "28061721",
+     "valor": 30.8,
+     "catalogo": "Anticorpos antigliadina - IgA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "28060210",
+     "valor": 19.6,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "28060083",
+     "valor": 22.4,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "28060067",
+     "valor": 28.0,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite A IgG",
+     "codigo": "28060105",
+     "valor": 28.0,
+     "catalogo": "HEPATITE A IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "28061659",
+     "valor": 56.0,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "28061691",
+     "valor": 56.0,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "28062183",
+     "valor": 42.0,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "28030141",
+     "valor": 5.6,
+     "catalogo": "Parasitológico de fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "28030176",
+     "valor": 2.8,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GASTRO",
+   "consulta": "PRIMEIRA",
+   "sexo": "F",
+   "convenio": "ISSEC",
+   "total": 798.56,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "28040481",
+     "valor": 8.4,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "28040490",
+     "valor": 2.8,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "28060865",
+     "valor": 18.76,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "28010795",
+     "valor": 35.0,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "28010809",
+     "valor": 5.04,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "28011449",
+     "valor": 23.8,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "28010060",
+     "valor": 23.8,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "28040660",
+     "valor": 2.8,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "28040732",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "28010973",
+     "valor": 3.92,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "28011023",
+     "valor": 12.6,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "28050355",
+     "valor": 15.4,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "28011104",
+     "valor": 19.6,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "28011678",
+     "valor": 22.4,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "28010175",
+     "valor": 3.92,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "28011414",
+     "valor": 3.92,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "28010540",
+     "valor": 3.92,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "28011279",
+     "valor": 3.92,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "28011210",
+     "valor": 3.92,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "28011120",
+     "valor": 4.48,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "28130367",
+     "valor": 5.6,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "28130456",
+     "valor": 28.0,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "28010329",
+     "valor": 3.92,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "28010892",
+     "valor": 3.92,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "28050754",
+     "valor": 56.0,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "28011600",
+     "valor": 3.92,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "28010736",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "28060598",
+     "valor": 14.0,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "28150260",
+     "valor": 33.6,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "28011368",
+     "valor": 3.92,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "28011376",
+     "valor": 3.92,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "28010957",
+     "valor": 5.6,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "28010850",
+     "valor": 5.04,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "28010299",
+     "valor": 4.2,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Amilase",
+     "codigo": "28010256",
+     "valor": 3.92,
+     "catalogo": "AMILASE"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Lipase",
+     "codigo": "28011082",
+     "valor": 4.2,
+     "catalogo": "LIPASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "28050703",
+     "valor": 23.8,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "28050720",
+     "valor": 23.8,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "28060164",
+     "valor": 29.4,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Antigliadina IgA",
+     "codigo": "28061721",
+     "valor": 30.8,
+     "catalogo": "Anticorpos antigliadina - IgA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "28060210",
+     "valor": 19.6,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "28060083",
+     "valor": 22.4,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "28060067",
+     "valor": 28.0,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite A IgG",
+     "codigo": "28060105",
+     "valor": 28.0,
+     "catalogo": "HEPATITE A IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "28061659",
+     "valor": 56.0,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "28061691",
+     "valor": 56.0,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "28062183",
+     "valor": 42.0,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "28030141",
+     "valor": 5.6,
+     "catalogo": "Parasitológico de fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "28030176",
+     "valor": 2.8,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GASTRO",
+   "consulta": "PRIMEIRA",
+   "sexo": "M",
+   "convenio": "IPM",
+   "total": 728.35,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "40304361",
+     "valor": 7.82,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "40304370",
+     "valor": 3.76,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "40308391",
+     "valor": 20.97,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "40316270",
+     "valor": 20.13,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "40301842",
+     "valor": 5.22,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "40316572",
+     "valor": 16.9,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "40301087",
+     "valor": 17.52,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "40304590",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "40302040",
+     "valor": 3.76,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "40302075",
+     "valor": 17.52,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "40316360",
+     "valor": 20.81,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "40302750",
+     "valor": 31.92,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "40301362",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "40301150",
+     "valor": 3.76,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "40302580",
+     "valor": 3.76,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "40301630",
+     "valor": 3.76,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "40302423",
+     "valor": 4.38,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "40302318",
+     "valor": 3.76,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "40302237",
+     "valor": 3.76,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "40311210",
+     "valor": 7.41,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "40311171",
+     "valor": 17.52,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "40301400",
+     "valor": 3.76,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "40301931",
+     "valor": 3.76,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "40316424",
+     "valor": 65.3,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "25-hidroxivitamina D",
+     "codigo": "40302830",
+     "valor": 15.65,
+     "catalogo": "Vitamina D, 25-hidroxi (25-OH-D)"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "40301222",
+     "valor": 3.76,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "40301761",
+     "valor": 17.52,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "40307220",
+     "valor": 11.27,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "40313328",
+     "valor": 31.92,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "40302504",
+     "valor": 6.99,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "40302512",
+     "valor": 6.99,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "40301990",
+     "valor": 6.99,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "40301885",
+     "valor": 6.99,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "40301397",
+     "valor": 3.76,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Amilase",
+     "codigo": "40301281",
+     "valor": 6.99,
+     "catalogo": "AMILASE"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Lipase",
+     "codigo": "40302199",
+     "valor": 6.99,
+     "catalogo": "LIPASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "40316521",
+     "valor": 19.61,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "40316491",
+     "valor": 24.46,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "PSA total",
+     "codigo": "40316149",
+     "valor": 23.47,
+     "catalogo": "PSA TOTAL"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-endomísio IgA",
+     "codigo": "40306259",
+     "valor": 32.13,
+     "catalogo": "Anticorpos antiendomísio - IgG, IgM, IgA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "40307018",
+     "valor": 25.14,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "40306992",
+     "valor": 17.47,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "40306950",
+     "valor": 17.47,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite A IgG",
+     "codigo": "40306933",
+     "valor": 17.47,
+     "catalogo": "HEPATITE A IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "40307026",
+     "valor": 23.99,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "40307182",
+     "valor": 32.13,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "40306917",
+     "valor": 27.85,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "40303110",
+     "valor": 9.07,
+     "catalogo": "Parasitológico de fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "40303136",
+     "valor": 9.07,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GASTRO",
+   "consulta": "PRIMEIRA",
+   "sexo": "F",
+   "convenio": "IPM",
+   "total": 728.87,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Hemograma completo",
+     "codigo": "40304361",
+     "valor": 7.82,
+     "catalogo": "HEMOGRAMA COMPLETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "VHS - Hemossedimentação",
+     "codigo": "40304370",
+     "valor": 3.76,
+     "catalogo": "VHS - HEMOSSEDIMENTACAO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "PCR ultrassensível",
+     "codigo": "40308391",
+     "valor": 20.97,
+     "catalogo": "PCR (ULTRA-SENSIVEL)"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferritina",
+     "codigo": "40316270",
+     "valor": 20.13,
+     "catalogo": "FERRITINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ferro sérico",
+     "codigo": "40301842",
+     "valor": 5.22,
+     "catalogo": "FERRO SERICO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Índice de saturação da transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "INDICE DE SATURACAO DA TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Vitamina B12",
+     "codigo": "40316572",
+     "valor": 16.9,
+     "catalogo": "VITAMINA B12"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Ácido fólico",
+     "codigo": "40301087",
+     "valor": 17.52,
+     "catalogo": "ACIDO FOLICO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de protrombina (TAP/INR)",
+     "codigo": "40304590",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE PROTROMBINA - TAP"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Glicose",
+     "codigo": "40302040",
+     "valor": 3.76,
+     "catalogo": "GLICOSE"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Hemoglobina glicada (HbA1c)",
+     "codigo": "40302075",
+     "valor": 17.52,
+     "catalogo": "Hemoglobina glicada (HbA1c)"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Insulina",
+     "codigo": "40316360",
+     "valor": 20.81,
+     "catalogo": "INSULINA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Lipidograma",
+     "codigo": "40302750",
+     "valor": 31.92,
+     "catalogo": "LIPIDOGRAMA"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Apolipoproteína B",
+     "codigo": "40301362",
+     "valor": 16.9,
+     "catalogo": "APOLIPOPROTEINA B"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Ácido úrico",
+     "codigo": "40301150",
+     "valor": 3.76,
+     "catalogo": "ACIDO URICO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Ureia",
+     "codigo": "40302580",
+     "valor": 3.76,
+     "catalogo": "UREIA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Creatinina",
+     "codigo": "40301630",
+     "valor": 3.76,
+     "catalogo": "CREATININA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sódio",
+     "codigo": "40302423",
+     "valor": 4.38,
+     "catalogo": "SODIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Potássio",
+     "codigo": "40302318",
+     "valor": 3.76,
+     "catalogo": "POTASSIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Magnésio",
+     "codigo": "40302237",
+     "valor": 3.76,
+     "catalogo": "MAGNESIO"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Sumário de urina",
+     "codigo": "40311210",
+     "valor": 7.41,
+     "catalogo": "SUMARIO DE URINA"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Microalbuminúria isolada (relação albumina/creatinina)",
+     "codigo": "40311171",
+     "valor": 17.52,
+     "catalogo": "RELAÇÃO ALBUMINA/CREATININA (MICROALBUMINÚRIA)"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio",
+     "codigo": "40301400",
+     "valor": 3.76,
+     "catalogo": "CALCIO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Fósforo",
+     "codigo": "40301931",
+     "valor": 3.76,
+     "catalogo": "FOSFORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Paratormônio - PTH",
+     "codigo": "40316424",
+     "valor": 65.3,
+     "catalogo": "PARATORMONIO - PTH"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "25-hidroxivitamina D",
+     "codigo": "40302830",
+     "valor": 15.65,
+     "catalogo": "Vitamina D, 25-hidroxi (25-OH-D)"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Albumina",
+     "codigo": "40301222",
+     "valor": 3.76,
+     "catalogo": "ALBUMINA"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "Eletroforese de proteínas",
+     "codigo": "40301761",
+     "valor": 17.52,
+     "catalogo": "ELETROFORESE DE PROTEINAS"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgA total",
+     "codigo": "40307220",
+     "valor": 11.27,
+     "catalogo": "IGA"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Zinco sérico",
+     "codigo": "40313328",
+     "valor": 31.92,
+     "catalogo": "ZINCO SERICO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGO - Transaminase aspártica",
+     "codigo": "40302504",
+     "valor": 6.99,
+     "catalogo": "TGO - TRANSAMINASE ASPARTICA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "TGP - Transaminase alanina",
+     "codigo": "40302512",
+     "valor": 6.99,
+     "catalogo": "TGP - TRANSAMINASE ALANINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Gama GT",
+     "codigo": "40301990",
+     "valor": 6.99,
+     "catalogo": "GAMA GLUTAMIL TRANSFERASE - GGT"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina",
+     "codigo": "40301885",
+     "valor": 6.99,
+     "catalogo": "FOSFATASE ALCALINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Bilirrubinas",
+     "codigo": "40301397",
+     "valor": 3.76,
+     "catalogo": "BILIRRUBINAS"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Amilase",
+     "codigo": "40301281",
+     "valor": 6.99,
+     "catalogo": "AMILASE"
+    },
+    {
+     "grupo": "Pâncreas",
+     "exame": "Lipase",
+     "codigo": "40302199",
+     "valor": 6.99,
+     "catalogo": "LIPASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "TSH",
+     "codigo": "40316521",
+     "valor": 19.61,
+     "catalogo": "TSH"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "T4 livre",
+     "codigo": "40316491",
+     "valor": 24.46,
+     "catalogo": "T4 LIVRE - TIROXINA LIVRE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "40306348",
+     "valor": 23.99,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-endomísio IgA",
+     "codigo": "40306259",
+     "valor": 32.13,
+     "catalogo": "Anticorpos antiendomísio - IgG, IgM, IgA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HBsAg",
+     "codigo": "40307018",
+     "valor": 25.14,
+     "catalogo": "HBSAG - ANTIGENO AUSTRALIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBs",
+     "codigo": "40306992",
+     "valor": 17.47,
+     "catalogo": "ANTI HBS"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Anti-HBc IgG",
+     "codigo": "40306950",
+     "valor": 17.47,
+     "catalogo": "HEPATITE ANTI HBC IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite A IgG",
+     "codigo": "40306933",
+     "valor": 17.47,
+     "catalogo": "HEPATITE A IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Hepatite C - Anti-HCV",
+     "codigo": "40307026",
+     "valor": 23.99,
+     "catalogo": "HEPATITE C - ANTI HCV"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HIV 1 e 2",
+     "codigo": "40307182",
+     "valor": 32.13,
+     "catalogo": "HIV 1 E 2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Helicobacter pylori IgG",
+     "codigo": "40306917",
+     "valor": 27.85,
+     "catalogo": "Helicobacter pylori, anticorpos - IgG"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes",
+     "codigo": "40303110",
+     "valor": 9.07,
+     "catalogo": "Parasitológico de fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Sangue oculto nas fezes",
+     "codigo": "40303136",
+     "valor": 9.07,
+     "catalogo": "Sangue oculto, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GASTRO",
+   "consulta": "RETORNO",
+   "sexo": "M",
+   "convenio": "ISSEC",
+   "total": 462.84,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "28010345",
+     "valor": 3.92,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Eletroforese de hemoglobina",
+     "codigo": "28040430",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE HEMOGLOBINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "28010655",
+     "valor": 8.4,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Coombs direto",
+     "codigo": "28040155",
+     "valor": 5.6,
+     "catalogo": "COOMBS DIRETO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "28040791",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "28040333",
+     "valor": 5.6,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo",
+     "codigo": "28040350",
+     "valor": 4.2,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fator Rh",
+     "codigo": "28040317",
+     "valor": 4.2,
+     "catalogo": "FATOR RH"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "28011562",
+     "valor": 8.4,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "28010469",
+     "valor": 3.92,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "28010337",
+     "valor": 11.2,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgG",
+     "codigo": "28060610",
+     "valor": 14.0,
+     "catalogo": "IGG"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgM",
+     "codigo": "28060628",
+     "valor": 14.0,
+     "catalogo": "IGM"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "28010485",
+     "valor": 8.4,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Ceruloplasmina",
+     "codigo": "28010370",
+     "valor": 11.2,
+     "catalogo": "CERULOPLASMINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Alfa-1 antitripsina",
+     "codigo": "28010221",
+     "valor": 11.2,
+     "catalogo": "ALFA 1 ANTITRIPSINA - SORO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina termoestável",
+     "codigo": "28010876",
+     "valor": 5.6,
+     "catalogo": "FOSFATASE ALCALINA TERMOESTAVEL"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "28010558",
+     "valor": 14.0,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "28060164",
+     "valor": 29.4,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona total",
+     "codigo": "28050690",
+     "valor": 29.4,
+     "catalogo": "TESTOSTERONA TOTAL"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "28050770",
+     "valor": 42.0,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "FAN - Fator antinuclear",
+     "codigo": "28060148",
+     "valor": 8.4,
+     "catalogo": "FAN - FATOR ANTINUCLEAR"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-músculo liso",
+     "codigo": "28060130",
+     "valor": 11.2,
+     "catalogo": "ANTI MUSCULO LISO"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-mitocôndria",
+     "codigo": "28060121",
+     "valor": 11.2,
+     "catalogo": "ANTI MITOCONDRIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "28060318",
+     "valor": 8.4,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "28061535",
+     "valor": 56.0,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Gastrina",
+     "codigo": "28050320",
+     "valor": 28.0,
+     "catalogo": "GASTRINA"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Teste de absorção da lactose",
+     "codigo": "28011570",
+     "valor": 22.4,
+     "catalogo": "Lactose, teste de tolerância"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Leucócitos fecais",
+     "codigo": "28030117",
+     "valor": 2.8,
+     "catalogo": "Leucócitos fecais, pesquisa"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Gordura fecal, pesquisa",
+     "codigo": "28030079",
+     "valor": 2.8,
+     "catalogo": "Gordura fecal, pesquisa"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "pH fecal",
+     "codigo": "28030010",
+     "valor": 14.0,
+     "catalogo": "pH fecal"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Substâncias redutoras nas fezes",
+     "codigo": "28030249",
+     "valor": 2.8,
+     "catalogo": "Substâncias redutoras nas fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes - MIF",
+     "codigo": "28030150",
+     "valor": 5.6,
+     "catalogo": "Parasitológico de fezes - MIF"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Pesquisa de Giardia",
+     "codigo": "28061772",
+     "valor": 22.4,
+     "catalogo": "Giardia lamblia, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GASTRO",
+   "consulta": "RETORNO",
+   "sexo": "F",
+   "convenio": "ISSEC",
+   "total": 457.24,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "28011384",
+     "valor": 16.8,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "28010345",
+     "valor": 3.92,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Eletroforese de hemoglobina",
+     "codigo": "28040430",
+     "valor": 11.2,
+     "catalogo": "ELETROFORESE DE HEMOGLOBINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "28010655",
+     "valor": 8.4,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Coombs direto",
+     "codigo": "28040155",
+     "valor": 5.6,
+     "catalogo": "COOMBS DIRETO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "28040791",
+     "valor": 4.2,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "28040333",
+     "valor": 5.6,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo",
+     "codigo": "28040350",
+     "valor": 4.2,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fator Rh",
+     "codigo": "28040317",
+     "valor": 4.2,
+     "catalogo": "FATOR RH"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "28011562",
+     "valor": 8.4,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "28010469",
+     "valor": 3.92,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "28010337",
+     "valor": 11.2,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgG",
+     "codigo": "28060610",
+     "valor": 14.0,
+     "catalogo": "IGG"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgM",
+     "codigo": "28060628",
+     "valor": 14.0,
+     "catalogo": "IGM"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "28010485",
+     "valor": 8.4,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Ceruloplasmina",
+     "codigo": "28010370",
+     "valor": 11.2,
+     "catalogo": "CERULOPLASMINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Alfa-1 antitripsina",
+     "codigo": "28010221",
+     "valor": 11.2,
+     "catalogo": "ALFA 1 ANTITRIPSINA - SORO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina termoestável",
+     "codigo": "28010876",
+     "valor": 5.6,
+     "catalogo": "FOSFATASE ALCALINA TERMOESTAVEL"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "28010558",
+     "valor": 14.0,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "28050436",
+     "valor": 23.8,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona total",
+     "codigo": "28050690",
+     "valor": 29.4,
+     "catalogo": "TESTOSTERONA TOTAL"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "28050770",
+     "valor": 42.0,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "FAN - Fator antinuclear",
+     "codigo": "28060148",
+     "valor": 8.4,
+     "catalogo": "FAN - FATOR ANTINUCLEAR"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-músculo liso",
+     "codigo": "28060130",
+     "valor": 11.2,
+     "catalogo": "ANTI MUSCULO LISO"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-mitocôndria",
+     "codigo": "28060121",
+     "valor": 11.2,
+     "catalogo": "ANTI MITOCONDRIA"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "28060318",
+     "valor": 8.4,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "28061535",
+     "valor": 56.0,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Gastrina",
+     "codigo": "28050320",
+     "valor": 28.0,
+     "catalogo": "GASTRINA"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Teste de absorção da lactose",
+     "codigo": "28011570",
+     "valor": 22.4,
+     "catalogo": "Lactose, teste de tolerância"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Leucócitos fecais",
+     "codigo": "28030117",
+     "valor": 2.8,
+     "catalogo": "Leucócitos fecais, pesquisa"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Gordura fecal, pesquisa",
+     "codigo": "28030079",
+     "valor": 2.8,
+     "catalogo": "Gordura fecal, pesquisa"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "pH fecal",
+     "codigo": "28030010",
+     "valor": 14.0,
+     "catalogo": "pH fecal"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Substâncias redutoras nas fezes",
+     "codigo": "28030249",
+     "valor": 2.8,
+     "catalogo": "Substâncias redutoras nas fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes - MIF",
+     "codigo": "28030150",
+     "valor": 5.6,
+     "catalogo": "Parasitológico de fezes - MIF"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Pesquisa de Giardia",
+     "codigo": "28061772",
+     "valor": 22.4,
+     "catalogo": "Giardia lamblia, pesquisa nas fezes"
+    }
+   ]
+  },
+  {
+   "area": "GASTRO",
+   "consulta": "RETORNO",
+   "sexo": "M",
+   "convenio": "IPM",
+   "total": 754.75,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "40301427",
+     "valor": 5.22,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Eletroforese de hemoglobina",
+     "codigo": "40304353",
+     "valor": 20.65,
+     "catalogo": "ELETROFORESE DE HEMOGLOBINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "40301729",
+     "valor": 6.99,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Coombs direto",
+     "codigo": "40304108",
+     "valor": 6.05,
+     "catalogo": "COOMBS DIRETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "40304558",
+     "valor": 5.48,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "40304639",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "40304264",
+     "valor": 5.48,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo + Fator Rh",
+     "codigo": "40304299",
+     "valor": 6.05,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "40302709",
+     "valor": 15.02,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "40301559",
+     "valor": 3.76,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "40301419",
+     "valor": 10.33,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgG",
+     "codigo": "40307280",
+     "valor": 11.27,
+     "catalogo": "IGG"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgM",
+     "codigo": "40307301",
+     "valor": 11.27,
+     "catalogo": "IGM"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "40301567",
+     "valor": 31.92,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina A",
+     "codigo": "40302601",
+     "valor": 64.36,
+     "catalogo": "VITAMINA A"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina E",
+     "codigo": "40302610",
+     "valor": 64.36,
+     "catalogo": "VITAMINA E"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina C",
+     "codigo": "40301060",
+     "valor": 21.2,
+     "catalogo": "VITAMINA C"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Selênio",
+     "codigo": "40313255",
+     "valor": 23.05,
+     "catalogo": "SELENIO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Homocisteína",
+     "codigo": "40302113",
+     "valor": 31.92,
+     "catalogo": "HOMOCISTEINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Ceruloplasmina",
+     "codigo": "40301478",
+     "valor": 11.27,
+     "catalogo": "CERULOPLASMINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Alfa-1 antitripsina",
+     "codigo": "40301249",
+     "valor": 11.27,
+     "catalogo": "ALFA 1 ANTITRIPSINA - SORO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina termoestável",
+     "codigo": "40301915",
+     "valor": 6.99,
+     "catalogo": "FOSFATASE ALCALINA TERMOESTAVEL"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "40301648",
+     "valor": 10.33,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Tireoide e adrenal",
+     "exame": "Anti-TPO (antimicrossomal)",
+     "codigo": "40306348",
+     "valor": 23.99,
+     "catalogo": "ANTI-MICROSSOMAL - ANTI TPO"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "40316505",
+     "valor": 38.91,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "SHBG",
+     "codigo": "40316300",
+     "valor": 51.63,
+     "catalogo": "SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "FAN - Fator antinuclear",
+     "codigo": "40306852",
+     "valor": 11.47,
+     "catalogo": "FAN - FATOR ANTINUCLEAR"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-músculo liso",
+     "codigo": "40306399",
+     "valor": 17.47,
+     "catalogo": "ANTI MUSCULO LISO"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-mitocôndria",
+     "codigo": "40306356",
+     "valor": 13.77,
+     "catalogo": "ANTI MITOCONDRIA"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-LKM1",
+     "codigo": "40306097",
+     "valor": 27.85,
+     "catalogo": "ANTI LKM1"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "40306615",
+     "valor": 17.47,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "40307212",
+     "valor": 39.38,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Gastrina",
+     "codigo": "40316297",
+     "valor": 37.55,
+     "catalogo": "GASTRINA"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Teste de absorção da lactose",
+     "codigo": "40302164",
+     "valor": 17.11,
+     "catalogo": "Lactose, teste de tolerância"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Leucócitos fecais",
+     "codigo": "40303098",
+     "valor": 4.28,
+     "catalogo": "Leucócitos fecais, pesquisa"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Gordura fecal, pesquisa",
+     "codigo": "40303055",
+     "valor": 21.8,
+     "catalogo": "Gordura fecal, pesquisa"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "pH fecal",
+     "codigo": "40303039",
+     "valor": 15.44,
+     "catalogo": "pH fecal"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Substâncias redutoras nas fezes",
+     "codigo": "40303152",
+     "valor": 4.28,
+     "catalogo": "Substâncias redutoras nas fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes - MIF",
+     "codigo": "40303128",
+     "valor": 9.07,
+     "catalogo": "Parasitológico de fezes - MIF"
+    }
+   ]
+  },
+  {
+   "area": "GASTRO",
+   "consulta": "RETORNO",
+   "sexo": "F",
+   "convenio": "IPM",
+   "total": 757.46,
+   "itens": [
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Transferrina",
+     "codigo": "40302520",
+     "valor": 13.56,
+     "catalogo": "TRANSFERRINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Capacidade de ligação do ferro (TIBC)",
+     "codigo": "40301427",
+     "valor": 5.22,
+     "catalogo": "CAPACIDADE DE LIGACAO DO FERRO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Eletroforese de hemoglobina",
+     "codigo": "40304353",
+     "valor": 20.65,
+     "catalogo": "ELETROFORESE DE HEMOGLOBINA"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Desidrogenase lática (LDH)",
+     "codigo": "40301729",
+     "valor": 6.99,
+     "catalogo": "DESIDROGENASE LATICA - LDH"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Coombs direto",
+     "codigo": "40304108",
+     "valor": 6.05,
+     "catalogo": "COOMBS DIRETO"
+    },
+    {
+     "grupo": "Hematologia e ferro",
+     "exame": "Reticulócitos, contagem de",
+     "codigo": "40304558",
+     "valor": 5.48,
+     "catalogo": "RETICULOCITOS - CONTAGEM"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Tempo de tromboplastina parcial ativado (TTPA)",
+     "codigo": "40304639",
+     "valor": 5.48,
+     "catalogo": "TEMPO DE TROMBOPLASTINA PARCIAL ATIVADO - TTPA"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Fibrinogênio",
+     "codigo": "40304264",
+     "valor": 5.48,
+     "catalogo": "FIBRINOGENIO"
+    },
+    {
+     "grupo": "Coagulação e tipagem",
+     "exame": "Grupo sanguíneo + Fator Rh",
+     "codigo": "40304299",
+     "valor": 6.05,
+     "catalogo": "GRUPO SANGUINEO"
+    },
+    {
+     "grupo": "Metabolismo",
+     "exame": "Teste de tolerância à glicose (TTGO 75 g)",
+     "codigo": "40302709",
+     "valor": 15.02,
+     "catalogo": "TESTE DE TOLERANCIA A GLICOSE (TTGO 75 G)"
+    },
+    {
+     "grupo": "Rim, urina e eletrólitos",
+     "exame": "Cloro",
+     "codigo": "40301559",
+     "valor": 3.76,
+     "catalogo": "CLORO"
+    },
+    {
+     "grupo": "Osso e cálcio",
+     "exame": "Cálcio iônico",
+     "codigo": "40301419",
+     "valor": 10.33,
+     "catalogo": "CALCIO IONICO"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgG",
+     "codigo": "40307280",
+     "valor": 11.27,
+     "catalogo": "IGG"
+    },
+    {
+     "grupo": "Proteínas e imunoglobulinas",
+     "exame": "IgM",
+     "codigo": "40307301",
+     "valor": 11.27,
+     "catalogo": "IGM"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Cobre sérico",
+     "codigo": "40301567",
+     "valor": 31.92,
+     "catalogo": "COBRE SERICO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina A",
+     "codigo": "40302601",
+     "valor": 64.36,
+     "catalogo": "VITAMINA A"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina E",
+     "codigo": "40302610",
+     "valor": 64.36,
+     "catalogo": "VITAMINA E"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Vitamina C",
+     "codigo": "40301060",
+     "valor": 21.2,
+     "catalogo": "VITAMINA C"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Selênio",
+     "codigo": "40313255",
+     "valor": 23.05,
+     "catalogo": "SELENIO"
+    },
+    {
+     "grupo": "Micronutrientes",
+     "exame": "Homocisteína",
+     "codigo": "40302113",
+     "valor": 31.92,
+     "catalogo": "HOMOCISTEINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Ceruloplasmina",
+     "codigo": "40301478",
+     "valor": 11.27,
+     "catalogo": "CERULOPLASMINA"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Alfa-1 antitripsina",
+     "codigo": "40301249",
+     "valor": 11.27,
+     "catalogo": "ALFA 1 ANTITRIPSINA - SORO"
+    },
+    {
+     "grupo": "Fígado e vias biliares",
+     "exame": "Fosfatase alcalina termoestável",
+     "codigo": "40301915",
+     "valor": 6.99,
+     "catalogo": "FOSFATASE ALCALINA TERMOESTAVEL"
+    },
+    {
+     "grupo": "Músculo e coração",
+     "exame": "CPK - Creatinofosfoquinase",
+     "codigo": "40301648",
+     "valor": 10.33,
+     "catalogo": "CPK - CREATINOFOSFOQUINASE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Prolactina",
+     "codigo": "40316416",
+     "valor": 26.7,
+     "catalogo": "PROLACTINA"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "Testosterona livre",
+     "codigo": "40316505",
+     "valor": 38.91,
+     "catalogo": "TESTOSTERONA LIVRE"
+    },
+    {
+     "grupo": "Hormônios sexuais e próstata",
+     "exame": "SHBG",
+     "codigo": "40316300",
+     "valor": 51.63,
+     "catalogo": "SHBG - GLOBULINA LIGADORA DE HORMONIOS SEXUAIS"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "FAN - Fator antinuclear",
+     "codigo": "40306852",
+     "valor": 11.47,
+     "catalogo": "FAN - FATOR ANTINUCLEAR"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-músculo liso",
+     "codigo": "40306399",
+     "valor": 17.47,
+     "catalogo": "ANTI MUSCULO LISO"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-mitocôndria",
+     "codigo": "40306356",
+     "valor": 13.77,
+     "catalogo": "ANTI MITOCONDRIA"
+    },
+    {
+     "grupo": "Autoimunidade e celíaca",
+     "exame": "Anti-LKM1",
+     "codigo": "40306097",
+     "valor": 27.85,
+     "catalogo": "ANTI LKM1"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "Chagas IgG",
+     "codigo": "40306615",
+     "valor": 17.47,
+     "catalogo": "CHAGAS - ANTICORPOS IGG"
+    },
+    {
+     "grupo": "Sorologias",
+     "exame": "HTLV I/II",
+     "codigo": "40307212",
+     "valor": 39.38,
+     "catalogo": "HTLV 1/2"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Gastrina",
+     "codigo": "40316297",
+     "valor": 37.55,
+     "catalogo": "GASTRINA"
+    },
+    {
+     "grupo": "Estômago e intestino",
+     "exame": "Teste de absorção da lactose",
+     "codigo": "40302164",
+     "valor": 17.11,
+     "catalogo": "Lactose, teste de tolerância"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Leucócitos fecais",
+     "codigo": "40303098",
+     "valor": 4.28,
+     "catalogo": "Leucócitos fecais, pesquisa"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Gordura fecal, pesquisa",
+     "codigo": "40303055",
+     "valor": 21.8,
+     "catalogo": "Gordura fecal, pesquisa"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "pH fecal",
+     "codigo": "40303039",
+     "valor": 15.44,
+     "catalogo": "pH fecal"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Substâncias redutoras nas fezes",
+     "codigo": "40303152",
+     "valor": 4.28,
+     "catalogo": "Substâncias redutoras nas fezes"
+    },
+    {
+     "grupo": "Fezes",
+     "exame": "Parasitológico de fezes - MIF",
+     "codigo": "40303128",
+     "valor": 9.07,
+     "catalogo": "Parasitológico de fezes - MIF"
+    }
+   ]
+  }
+ ]
+}
