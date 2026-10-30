@@ -1,7 +1,5 @@
 import { useAppStore } from '../../../store/useAppStore';
 import { getProcedimentoNome } from '../../../data/procedimentos';
-import { getExamCode } from '../../../utils/exames';
-import ExamesComCodigo, { type ExameImpresso } from './ExamesComCodigo';
 
 const MEDICO = {
   nome: 'ROBERTO ARCANJO',
@@ -106,13 +104,10 @@ export default function GuiaSADTPadrao({
           ...(procedimentosPersonalizados ?? []),
         ];
 
-  // Exames levam o código TUSS (tabela 22). Até 5 itens sai um por linha, com
-  // código nos campos 24/25; acima disso o código vai ao lado de cada nome.
-  const itens: ExameImpresso[] = todosItens.map(nome => ({ nome, codigo: isLab ? getExamCode(nome, 'TISS') : '' }));
   const N_ROWS = 5;
-  const porLinha = Math.ceil(itens.length / N_ROWS) || 1;
+  const porLinha = Math.ceil(todosItens.length / N_ROWS) || 1;
   const linhasProcedimentos = Array.from({ length: N_ROWS }, (_, i) =>
-    itens.slice(i * porLinha, (i + 1) * porLinha)
+    todosItens.slice(i * porLinha, (i + 1) * porLinha).join(', ')
   );
 
   const corSec = corHeader ?? '#d9d9d9';
@@ -221,10 +216,7 @@ export default function GuiaSADTPadrao({
           </div>
 
           {/* Linhas 1- a 5- */}
-          {[1,2,3,4,5].map((seq, idx) => {
-            const linha = linhasProcedimentos[idx];
-            const unico = linha.length === 1;
-            return (
+          {[1,2,3,4,5].map((seq, idx) => (
             <div key={seq} style={{
               display: 'flex',
               borderBottom: idx < 4 ? borda : undefined,
@@ -232,22 +224,17 @@ export default function GuiaSADTPadrao({
               fontSize: '7.5px',
             }}>
               <div style={{ width: '18px', padding: '1px 2px', borderRight: borda, textAlign: 'center', fontWeight: 700 }}>{seq}-</div>
-              <div style={{ width: '54px', padding: '1px 3px', borderRight: borda }}>
-                {linha.some(item => item.codigo) ? '22' : <>&nbsp;</>}
-              </div>
-              <div style={{ width: '160px', padding: '1px 3px', borderRight: borda, fontFamily: 'monospace' }}>
-                {unico && linha[0].codigo ? linha[0].codigo : <>&nbsp;</>}
-              </div>
+              <div style={{ width: '54px', padding: '1px 3px', borderRight: borda }}>&nbsp;</div>
+              <div style={{ width: '160px', padding: '1px 3px', borderRight: borda, fontFamily: 'monospace' }}>&nbsp;</div>
               <div style={{ flex: 1, padding: '1px 3px', borderRight: borda, textTransform: 'uppercase', fontWeight: 'normal' }}>
-                {unico ? linha[0].nome : <ExamesComCodigo itens={linha} />}
+                {linhasProcedimentos[idx]}
               </div>
               <div style={{ width: '58px', padding: '1px 3px', borderRight: borda, textAlign: 'center', fontWeight: 600 }}>
                 &nbsp;
               </div>
               <div style={{ width: '58px', padding: '1px 3px' }}>&nbsp;</div>
             </div>
-            );
-          })}
+          ))}
         </div>
 
         {/* ══ DADOS DO CONTRATADO EXECUTANTE ══ */}
