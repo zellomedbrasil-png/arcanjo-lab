@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle, ChevronDown, ChevronUp, ClipboardList, Plus, Search } from 'lucide-react';
+import { AlertTriangle, Plus, Search } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { CATEGORIAS_EXAMES } from '../../data/exames';
 import { PRECOS_EXAMES } from '../../data/precosExames';
@@ -236,7 +236,6 @@ export default function ProtocoloExamesCard() {
   const pacienteNome = useAppStore((s) => s.pacienteNome);
   const pacienteIdade = useAppStore((s) => s.pacienteIdade);
   const setPaciente = useAppStore((s) => s.setPaciente);
-  const [aberto, setAberto] = useState(true);
 
   const conv: ConvenioProtocolo | null = convenio === 'ISSEC' || convenio === 'IPM' ? convenio : null;
   const ctx = useMemo<ContextoGuia | null>(
@@ -246,72 +245,50 @@ export default function ProtocoloExamesCard() {
   const idade = lerIdade(pacienteIdade);
 
   return (
-    <section className="mb-5.5 rounded-lg border border-blue-100 bg-white overflow-hidden">
-      <button
-        type="button"
-        onClick={() => setAberto(!aberto)}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-blue-50/50 hover:bg-blue-50/80 transition-colors text-left cursor-pointer"
-      >
-        <span className="flex items-center gap-2">
-          <ClipboardList size={14} className="text-blue-600" />
-          <span className="text-[11px] font-bold text-blue-800 uppercase tracking-wider">Protocolo de exames</span>
-        </span>
-        {!aberto && ctx && (
-          <span className="text-[11px] text-neutral-text-muted truncate">
-            {ESPECIALIDADES.find((e) => e.id === especialidade)?.nome} · {tipoConsulta === 'PRIMEIRA' ? '1ª consulta' : 'Retorno'} ·{' '}
-            {genero === 'F' ? 'Feminino' : 'Masculino'} · {conv}
-          </span>
-        )}
-        {aberto ? <ChevronUp size={13} className="text-blue-500 shrink-0" /> : <ChevronDown size={13} className="text-blue-500 shrink-0" />}
-      </button>
+    <section className="rounded-lg border border-neutral-border bg-white overflow-hidden">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 px-4 py-3.5">
+        <Segmentado
+          rotulo="Área"
+          opcoes={ESPECIALIDADES.map((e) => ({ id: e.id, nome: e.nome === 'Gastroenterologia' ? 'Gastro' : e.nome === 'Clínica Médica' ? 'Clínica' : e.nome }))}
+          valor={especialidade}
+          onChange={(v) => setPaciente({ especialidade: v })}
+        />
+        <Segmentado<TipoConsulta>
+          rotulo="Consulta"
+          opcoes={[
+            { id: 'PRIMEIRA', nome: '1ª consulta' },
+            { id: 'RETORNO', nome: 'Retorno' },
+          ]}
+          valor={tipoConsulta}
+          onChange={(v) => setPaciente({ tipoConsulta: v })}
+        />
+        <Segmentado<'M' | 'F'>
+          rotulo="Sexo"
+          opcoes={[
+            { id: 'M', nome: 'Masculino' },
+            { id: 'F', nome: 'Feminino' },
+          ]}
+          valor={genero}
+          onChange={(v) => setPaciente({ genero: v })}
+          destaque={pacienteNome.trim() ? undefined : 'confirme'}
+        />
+        <Segmentado<ConvenioProtocolo>
+          rotulo="Convênio"
+          opcoes={[
+            { id: 'ISSEC', nome: 'ISSEC' },
+            { id: 'IPM', nome: 'IPM' },
+          ]}
+          valor={conv}
+          onChange={(v) => setPaciente({ convenio: v })}
+        />
+      </div>
 
-      {aberto && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 px-4 py-3.5">
-            <Segmentado
-              rotulo="Área"
-              opcoes={ESPECIALIDADES.map((e) => ({ id: e.id, nome: e.nome === 'Gastroenterologia' ? 'Gastro' : e.nome === 'Clínica Médica' ? 'Clínica' : e.nome }))}
-              valor={especialidade}
-              onChange={(v) => setPaciente({ especialidade: v })}
-            />
-            <Segmentado<TipoConsulta>
-              rotulo="Consulta"
-              opcoes={[
-                { id: 'PRIMEIRA', nome: '1ª consulta' },
-                { id: 'RETORNO', nome: 'Retorno' },
-              ]}
-              valor={tipoConsulta}
-              onChange={(v) => setPaciente({ tipoConsulta: v })}
-            />
-            <Segmentado<'M' | 'F'>
-              rotulo="Sexo"
-              opcoes={[
-                { id: 'M', nome: 'Masculino' },
-                { id: 'F', nome: 'Feminino' },
-              ]}
-              valor={genero}
-              onChange={(v) => setPaciente({ genero: v })}
-              destaque={pacienteNome.trim() ? undefined : 'confirme'}
-            />
-            <Segmentado<ConvenioProtocolo>
-              rotulo="Convênio"
-              opcoes={[
-                { id: 'ISSEC', nome: 'ISSEC' },
-                { id: 'IPM', nome: 'IPM' },
-              ]}
-              valor={conv}
-              onChange={(v) => setPaciente({ convenio: v })}
-            />
-          </div>
-
-          {ctx ? (
-            <PreviaGuia key={`${ctx.area}-${ctx.consulta}-${ctx.sexo}-${ctx.convenio}`} ctx={ctx} idade={idade} />
-          ) : (
-            <p className="px-4 pb-4 text-xs text-neutral-text-muted">
-              Os protocolos existem para ISSEC e IPM. Escolha um dos dois para montar a guia.
-            </p>
-          )}
-        </>
+      {ctx ? (
+        <PreviaGuia key={`${ctx.area}-${ctx.consulta}-${ctx.sexo}-${ctx.convenio}`} ctx={ctx} idade={idade} />
+      ) : (
+        <p className="px-4 pb-4 text-xs text-neutral-text-muted">
+          Os protocolos existem para ISSEC e IPM. Escolha um dos dois para montar a guia.
+        </p>
       )}
     </section>
   );

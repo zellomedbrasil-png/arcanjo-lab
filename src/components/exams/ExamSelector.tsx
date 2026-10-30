@@ -4,13 +4,18 @@ import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
 import { formatExamNameForDisplay } from '../../lib/formatters';
 import { findExamPreciso } from '../../services/groqExames';
 import ProtocoloExamesCard from './ProtocoloExamesCard';
+import ExamPastePanel from './ExamPastePanel';
+import {
+  CHIP_DOT, CHIP_META, COBERTURA_META, getCobertura, isForaDoConvenio, type CoberturaChip,
+} from './coberturaExames';
+import { formatCategoryName } from './categoriasExames';
 import { PROCEDIMENTOS as PROCEDIMENTOS_BASE, GRUPOS_PROCEDIMENTOS, PROCEDIMENTOS_POR_GRUPO } from '../../data/procedimentos';
 import type { ProcedimentoGrupo } from '../../data/procedimentos';
 import {
   Activity, Stethoscope, Beaker, HeartPulse, ScanFace, FileHeart, Search, Scan,
-  Bone, Disc, X, CheckCircle2, Moon, Ear, Wind, Brain, ChevronDown, ChevronUp,
+  Bone, Disc, X, CheckCircle2, Moon, Ear, Wind, Brain,
   Droplet, FlaskConical, Target, ShieldAlert, Dna, User, Layers, Apple, Flame,
-  Heart, TestTube, Baby, Microscope, Plus, Pencil, Zap, Filter
+  Heart, TestTube, Baby, Microscope, Plus, Pencil, Zap, Filter, ClipboardList, Sparkles
 } from 'lucide-react';
 import type { ElementType } from 'react';
 
@@ -32,30 +37,6 @@ const getCategoryIcon = (nome: string) => {
   if (n.includes('ANDROLOGIA')) return User;
   if (n.includes('INFLAMA')) return ShieldAlert;
   return Layers;
-};
-
-const formatCategoryName = (nome: string) => {
-  const mapping: Record<string, string> = {
-    'HEMATOLOGIA E COAGULAÇÃO': 'Hematologia e Coagulação',
-    'GLICEMIA E METABOLISMO GLICÍDICO': 'Glicemia e Metabolismo',
-    'PERFIL LIPÍDICO': 'Perfil Lipídico (Colesterol)',
-    'FUNÇÃO RENAL E URINA': 'Função Renal e Urina',
-    'FUNÇÃO HEPÁTICA E PANCREÁTICA': 'Função Hepática e Pâncreas',
-    'TIREOIDE': 'Tireoide',
-    'HORMÔNIOS E ENDOCRINOLOGIA': 'Hormônios e Endocrino',
-    'MINERAIS, VITAMINAS E OLIGOELEMENTOS': 'Vitaminas e Minerais',
-    'MARCADORES TUMORAIS': 'Marcadores Tumorais',
-    'SOROLOGIAS INFECCIOSAS': 'Sorologias e Infecções',
-    'AUTOIMUNIDADE E REUMATOLOGIA': 'Autoimunidade e Reuma',
-    'IMUNOGLOBULINAS': 'Imunoglobulinas',
-    'MARCADORES CARDÍACOS E MUSCULARES': 'Marcadores Cardíacos',
-    'PARASITOLOGIA E COPROLÓGICO': 'Parasitologia e Fezes',
-    'ANDROLOGIA': 'Andrologia',
-    'DOSAGENS URINÁRIAS ESPECIAIS': 'Dosagens Urinárias Esp.',
-    'INFLAMAÇÃO E MARCADORES GERAIS': 'Inflamação e Gerais',
-    'OUTROS EXAMES': 'Outros Exames'
-  };
-  return mapping[nome] ?? nome.toLowerCase().replace(/(^\w|\s\w)/g, m => m.toUpperCase());
 };
 
 const GRUPO_LABELS: Record<ProcedimentoGrupo, string> = {
@@ -233,65 +214,23 @@ const PROCEDIMENTOS: ProcDef[] = PROCEDIMENTOS_BASE.map((procedimento) => {
   };
 });
 
-type Cobertura = 'AMBOS' | 'SO_ISSEC' | 'SO_IPM' | 'SEM_CODIGO';
-type CoberturaChip = Cobertura | 'NAO_CATALOGADO';
-
-function getCobertura(exame: { codIssec: string; codIpm: string }): Cobertura {
-  const temIssec = !!exame.codIssec?.trim();
-  const temIpm = !!exame.codIpm?.trim();
-  if (temIssec && temIpm) return 'AMBOS';
-  if (temIssec) return 'SO_ISSEC';
-  if (temIpm) return 'SO_IPM';
-  return 'SEM_CODIGO';
-}
-
-const COBERTURA_META: Record<Cobertura, { label: string; cls: string; title: string }> = {
-  AMBOS: {
-    label: 'ISSEC+IPM',
-    cls: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    title: 'Coberto por ISSEC e IPM',
-  },
-  SO_ISSEC: {
-    label: 'Só ISSEC',
-    cls: 'bg-blue-50 text-blue-700 border-blue-200',
-    title: 'Consta apenas na tabela do ISSEC',
-  },
-  SO_IPM: {
-    label: 'Só IPM',
-    cls: 'bg-amber-50 text-amber-700 border-amber-200',
-    title: 'Consta apenas na tabela do IPM',
-  },
-  SEM_CODIGO: {
-    label: 'Sem cobertura',
-    cls: 'bg-slate-100 text-slate-600 border-slate-200',
-    title: 'Sem código cadastrado nas tabelas oficiais. Confirme com a operadora.',
-  },
+type AbaExames = 'PROTOCOLO' | 'PAINEIS' | 'CATALOGO' | 'COLAR';
+const ABA_KEY = 'arcanjo-exames-aba';
+const ABAS_EXAMES: { id: AbaExames; nome: string; Icon: ElementType }[] = [
+  { id: 'PROTOCOLO', nome: 'Protocolo', Icon: ClipboardList },
+  { id: 'PAINEIS', nome: 'Painéis', Icon: Layers },
+  { id: 'CATALOGO', nome: 'Catálogo', Icon: Search },
+  { id: 'COLAR', nome: 'Colar / IA', Icon: Sparkles },
+];
+const lerAba = (): AbaExames => {
+  try {
+    const v = localStorage.getItem(ABA_KEY);
+    if (ABAS_EXAMES.some((a) => a.id === v)) return v as AbaExames;
+  } catch {
+    // localStorage indisponível
+  }
+  return 'PROTOCOLO';
 };
-
-const CHIP_META: Record<CoberturaChip, { label: string; title: string }> = {
-  AMBOS: { label: COBERTURA_META.AMBOS.label, title: COBERTURA_META.AMBOS.title },
-  SO_ISSEC: { label: COBERTURA_META.SO_ISSEC.label, title: COBERTURA_META.SO_ISSEC.title },
-  SO_IPM: { label: COBERTURA_META.SO_IPM.label, title: COBERTURA_META.SO_IPM.title },
-  SEM_CODIGO: { label: COBERTURA_META.SEM_CODIGO.label, title: COBERTURA_META.SEM_CODIGO.title },
-  NAO_CATALOGADO: {
-    label: 'Não catalogado',
-    title: 'Item digitado manualmente — não consta no catálogo oficial do sistema.',
-  },
-};
-
-const CHIP_DOT: Record<CoberturaChip, string> = {
-  AMBOS: 'bg-emerald-500',
-  SO_ISSEC: 'bg-blue-500',
-  SO_IPM: 'bg-amber-500',
-  SEM_CODIGO: 'bg-slate-400',
-  NAO_CATALOGADO: 'bg-violet-400',
-};
-
-function isForaDoConvenio(cobertura: Cobertura, convenio: string): boolean {
-  if (convenio === 'ISSEC') return cobertura === 'SO_IPM' || cobertura === 'SEM_CODIGO';
-  if (convenio === 'IPM') return cobertura === 'SO_ISSEC' || cobertura === 'SEM_CODIGO';
-  return false;
-}
 
 interface ExamSelectorProps {
   mode?: 'exames' | 'procedimentos';
@@ -301,7 +240,15 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
   const [busca, setBusca] = useState('');
   const [buscaProc, setBuscaProc] = useState('');
   const [grupoProcFiltro, setGrupoProcFiltro] = useState<string>('TODOS');
-  const [paineisExpanded, setPaineisExpanded] = useState(false);
+  const [aba, setAba] = useState<AbaExames>(lerAba);
+  const trocarAba = (nova: AbaExames) => {
+    setAba(nova);
+    try {
+      localStorage.setItem(ABA_KEY, nova);
+    } catch {
+      // sem localStorage (aba anônima, bloqueio): só não lembra a aba
+    }
+  };
   const [activeCategory, setActiveCategory] = useState<string>('HEMATOLOGIA E COAGULAÇÃO');
   const [customInput, setCustomInput] = useState('');
   const customInputRef = useRef<HTMLInputElement>(null);
@@ -353,30 +300,7 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
     return categoriasFiltradas.reduce((acc, cat) => acc + cat.exames.length, 0);
   }, [categoriasFiltradas]);
 
-  const coberturaPorChip = useMemo(() => {
-    const map = new Map<string, CoberturaChip>();
-    for (const nome of examesSelecionados) {
-      const match = findExamPreciso(nome);
-      map.set(nome, match ? getCobertura(match) : 'NAO_CATALOGADO');
-    }
-    return map;
-  }, [examesSelecionados]);
-
   const outroConvenio = convenio === 'ISSEC' ? 'IPM' : 'ISSEC';
-  const { examesSemCobertura, examesNoOutroConvenio, examesOk } = useMemo(() => {
-    const semCob: string[] = [];
-    const noOutro: string[] = [];
-    const ok: string[] = [];
-    for (const nome of examesSelecionados) {
-      const cob = coberturaPorChip.get(nome) ?? 'NAO_CATALOGADO';
-      if (cob === 'NAO_CATALOGADO') { ok.push(nome); continue; }
-      if (cob === 'SEM_CODIGO') { semCob.push(nome); continue; }
-      if (isForaDoConvenio(cob, convenio)) { noOutro.push(nome); continue; }
-      ok.push(nome);
-    }
-    return { examesSemCobertura: semCob, examesNoOutroConvenio: noOutro, examesOk: ok };
-  }, [examesSelecionados, coberturaPorChip, convenio]);
-  const totalAlerta = examesSemCobertura.length + examesNoOutroConvenio.length;
 
   // ── Cobertura & Alertas para Procedimentos Eletivos ─────────────────────
   const { procsSemCobertura, procsNoOutroConvenio } = useMemo(() => {
@@ -868,313 +792,187 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
           </div>
         ) : (
           <div>
-            <ProtocoloExamesCard />
+            <div
+              role="tablist"
+              aria-label="Formas de escolher exames"
+              className="mb-5 flex gap-1 overflow-x-auto rounded-lg border border-neutral-border bg-slate-50 p-1 scrollbar-none"
+            >
+              {ABAS_EXAMES.map(({ id, nome, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="tab"
+                  aria-selected={aba === id}
+                  onClick={() => trocarAba(id)}
+                  className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer ${
+                    aba === id ? 'bg-white text-blue-700 shadow-sm' : 'text-neutral-text-muted hover:text-neutral-text'
+                  }`}
+                >
+                  <Icon size={13} />
+                  {nome}
+                </button>
+              ))}
+            </div>
 
-            {/* Quick panels */}
-            <div className="mb-5.5 bg-blue-50/20 rounded-lg border border-blue-100 overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setPaineisExpanded(!paineisExpanded)}
-                className="w-full flex items-center justify-between px-5 py-4 bg-blue-50/50 hover:bg-blue-50/80 transition-colors text-left cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider">
-                    Painéis Rápidos Clínicos
+            {aba === 'PROTOCOLO' && <ProtocoloExamesCard />}
+
+            {aba === 'COLAR' && <ExamPastePanel />}
+
+            {aba === 'PAINEIS' && (
+              <div className="space-y-5">
+                <div>
+                  <span className="block text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider mb-2">
+                    Gastro — Investigação
                   </span>
+                  <div className="flex flex-wrap gap-2.5">
+                    {Object.entries(PAINEIS_MARKDOWN)
+                      .filter(([, painel]) => painel.nome.startsWith('GASTRO — '))
+                      .map(([key, painel]) => (
+                        <button
+                          key={key}
+                          onClick={() => aplicarPainel(key)}
+                          title={painel.justificativa}
+                          className="px-3.5 py-2 bg-white text-emerald-700 text-xs font-semibold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-200 cursor-pointer"
+                        >
+                          {painel.nome.replace('GASTRO — ', '')}
+                        </button>
+                      ))}
+                  </div>
                 </div>
-                {paineisExpanded ? (
-                  <ChevronUp size={13} className="text-blue-500" />
-                ) : (
-                  <ChevronDown size={13} className="text-blue-500" />
-                )}
-              </button>
-              {paineisExpanded && (
-                <div className="p-4.5 bg-white border-t border-blue-100/50 animate-fadeIn space-y-4">
-                  {/* Gastro — Investigação (painéis com prefixo "GASTRO — ") */}
-                  <div>
-                    <span className="block text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider mb-2">
-                      Gastro — Investigação
-                    </span>
-                    <div className="flex flex-wrap gap-2.5">
-                      {Object.entries(PAINEIS_MARKDOWN)
-                        .filter(([, painel]) => painel.nome.startsWith('GASTRO — '))
-                        .map(([key, painel]) => (
-                          <button
-                            key={key}
-                            onClick={() => aplicarPainel(key)}
-                            title={painel.justificativa}
-                            className="px-3.5 py-2 bg-white text-emerald-700 text-xs font-semibold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-200 cursor-pointer"
-                          >
-                            {painel.nome.replace('GASTRO — ', '')}
-                          </button>
-                        ))}
-                    </div>
+                <div>
+                  <span className="block text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-2">Gerais</span>
+                  <div className="flex flex-wrap gap-2.5">
+                    {Object.entries(PAINEIS_MARKDOWN)
+                      .filter(([, painel]) => !painel.nome.startsWith('GASTRO — '))
+                      .map(([key, painel]) => (
+                        <button
+                          key={key}
+                          onClick={() => aplicarPainel(key)}
+                          title={painel.justificativa}
+                          className="px-3.5 py-2 bg-white text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors border border-blue-200 cursor-pointer"
+                        >
+                          {painel.nome}
+                        </button>
+                      ))}
                   </div>
+                </div>
+                <p className="text-[11px] text-neutral-text-muted">Cada painel soma seus exames à guia, sem apagar os que já estão nela.</p>
+              </div>
+            )}
 
-                  {/* Painéis gerais e de convênio */}
-                  <div>
-                    <span className="block text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-2">
-                      Gerais
-                    </span>
-                    <div className="flex flex-wrap gap-2.5 items-center">
-                      {Object.entries(PAINEIS_MARKDOWN)
-                        .filter(([, painel]) => !painel.nome.startsWith('GASTRO — '))
-                        .map(([key, painel]) => (
-                          <button
-                            key={key}
-                            onClick={() => aplicarPainel(key)}
-                            className="px-3.5 py-2 bg-white text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors border border-blue-200 cursor-pointer"
-                          >
-                            {painel.nome}
-                          </button>
-                        ))}
-                      <button
-                        onClick={() => {
-                          const confirmMsg = isLab
-                            ? 'Limpar todos os exames selecionados e justificativa?'
-                            : 'Limpar todos os procedimentos selecionados (incluindo personalizados) e justificativa?';
-                          if (confirm(confirmMsg)) {
-                            if (isLab) {
-                              setExamesSelecionados([]);
-                              setPaciente({ justificativaExames: '' });
-                            } else {
-                              setPaciente({
-                                procedimentosSelecionados: [],
-                                justificativaProcedimentos: ''
-                              });
-                              procedimentosPersonalizados.forEach(n => removeProcedimentoPersonalizado(n));
-                            }
-                            setJustificativa('');
-                          }
-                        }}
-                        className="px-3.5 py-2 bg-white text-neutral-text-muted text-xs font-semibold rounded-lg hover:bg-slate-100 transition-colors border border-neutral-border ml-auto cursor-pointer"
-                      >
-                        Limpar Tudo
-                      </button>
-                    </div>
-                  </div>
+            {aba === 'CATALOGO' && (
+              <div>
+                <div className="relative mb-5">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-text-muted" />
+                  <input
+                    type="search"
+                    value={busca}
+                    onChange={(e) => setBusca(e.target.value)}
+                    placeholder="Buscar exame por nome ou categoria..."
+                    className="w-full rounded-lg border border-neutral-border bg-white py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                  />
+                </div>
+
+              {categoriasFiltradas.length === 0 && buscaNormalizada && (
+                <div className="text-center py-12 text-gray-400">
+                  <Search size={32} className="mx-auto mb-3 opacity-25" />
+                  <p className="text-sm font-medium text-gray-500">Nenhum exame encontrado para "{busca}"</p>
+                  <p className="text-xs mt-1 text-gray-400">Tente outro termo ou use a função "Colar Lista" acima para exames não catalogados.</p>
                 </div>
               )}
-            </div>
 
-            <div className="mb-5.5 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-3 items-start">
-              <div className="relative">
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-text-muted" />
-                <input
-                  type="search"
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                  placeholder="Buscar exame por nome ou categoria..."
-                  className="w-full rounded-lg border border-neutral-border bg-white py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
-                />
-              </div>
-              <div className="text-xs text-neutral-text-muted bg-slate-50 border border-neutral-border rounded-lg px-4.5 py-2.5">
-                <strong className="text-blue-700">{examesSelecionados.length}</strong> exame(s) selecionado(s)
-              </div>
-            </div>
-
-            {examesSelecionados.length > 0 && (
-              <div className="mb-5.5 rounded-lg border border-blue-100 bg-blue-50/20 overflow-hidden">
-                <div className="flex items-center justify-between gap-3 flex-wrap px-3.5 py-2.5 bg-white/70 border-b border-blue-100/70">
-                  <span className="text-[11px] font-bold text-blue-800 uppercase tracking-wider">
-                    {examesSelecionados.length} exame{examesSelecionados.length !== 1 ? 's' : ''} selecionado{examesSelecionados.length !== 1 ? 's' : ''}
-                  </span>
-
-                  <div className="flex items-center gap-2.5 flex-wrap text-[9px] font-semibold text-neutral-text-muted">
-                    {(['AMBOS', 'SO_ISSEC', 'SO_IPM', 'SEM_CODIGO', 'NAO_CATALOGADO'] as CoberturaChip[]).map((c) => (
-                      <span key={c} className="inline-flex items-center gap-1" title={CHIP_META[c].title}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${CHIP_DOT[c]}`} />
-                        {CHIP_META[c].label}
-                      </span>
-                    ))}
+              {buscaNormalizada ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-neutral-border pb-2.5">
+                    <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Resultados da Busca
+                      <span className="ml-2 text-xs font-normal text-gray-400">({totalMatches} exames encontrados)</span>
+                    </h3>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (confirm('Limpar todos os exames selecionados e justificativa?')) {
-                        setExamesSelecionados([]);
-                        setPaciente({ justificativaExames: '' });
-                        setJustificativa('');
-                      }
-                    }}
-                    className="text-[10px] font-bold text-neutral-text-muted hover:text-red-600 transition-colors cursor-pointer"
-                  >
-                    Limpar seleção
-                  </button>
-                </div>
-
-                {totalAlerta > 0 && (
-                  <div className="px-3.5 py-2.5 bg-red-50/60 border-b border-red-100 space-y-2">
-                    <div className="flex items-center gap-1.5">
-                      <ShieldAlert size={12} className="text-red-600 shrink-0" />
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-red-700">
-                        {totalAlerta} exame{totalAlerta !== 1 ? 's' : ''} com restrição de cobertura
-                      </span>
+                  <div className="max-h-[500px] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 bg-white">
+                      {categoriasFiltradas.flatMap((cat) =>
+                        cat.exames.map((exame) => {
+                          const isChecked = examesSelecionados.includes(exame.nome);
+                          const cobertura = getCobertura(exame);
+                          const meta = COBERTURA_META[cobertura];
+                          const fora = isForaDoConvenio(cobertura, convenio);
+                          return (
+                            <label
+                              key={exame.nome}
+                              className={`flex items-start gap-2 px-2.5 py-2 rounded-lg border cursor-pointer transition-all text-[11px] ${
+                                isChecked
+                                  ? 'bg-blue-50 border-blue-300 text-blue-800 font-semibold shadow-none'
+                                  : 'bg-white border-neutral-border text-neutral-text-muted hover:border-blue-200 hover:bg-blue-50/40'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                className="w-3.5 h-3.5 text-blue-600 border-neutral-border rounded focus:ring-blue-500 shrink-0 cursor-pointer mt-0.5"
+                                checked={isChecked}
+                                onChange={() => toggleExame(exame.nome)}
+                              />
+                              <div className="flex flex-col min-w-0">
+                                <span className="leading-tight text-left font-medium text-neutral-text" title={exame.nome}>
+                                  {formatExamNameForDisplay(exame.nome)}
+                                </span>
+                                <span className="flex items-center gap-1 flex-wrap mt-1">
+                                  <span className="text-[9px] text-blue-650 uppercase tracking-wider font-extrabold">{formatCategoryName(cat.nome)}</span>
+                                  <span
+                                    title={fora ? `Não coberto pelo convênio ${convenio}. ${meta.title}` : meta.title}
+                                    className={`text-[8px] px-1 py-0.5 rounded border font-extrabold uppercase ${
+                                      fora ? 'bg-red-50 text-red-700 border-red-200' : meta.cls
+                                    }`}
+                                  >
+                                    {fora ? `Fora do ${convenio}` : meta.label}
+                                  </span>
+                                </span>
+                              </div>
+                            </label>
+                          );
+                        })
+                      )}
                     </div>
-
-                    {examesSemCobertura.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-bold text-red-700 mb-1">
-                          Sem cobertura no ISSEC e no IPM
-                          <span className="font-normal text-red-600/80"> · particular provável, confirmar com a operadora</span>
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {examesSemCobertura.map((exame) => {
-                            const cob = coberturaPorChip.get(exame) ?? 'NAO_CATALOGADO';
-                            return (
-                              <span
-                                key={exame}
-                                title={CHIP_META[cob].title}
-                                className="inline-flex items-center gap-1.5 rounded-md bg-white border border-red-200 px-2 py-1 text-[11px] font-semibold text-red-700"
-                              >
-                                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${CHIP_DOT[cob]}`} />
-                                {formatExamNameForDisplay(exame)}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleExame(exame)}
-                                  className="text-red-300 hover:text-red-600 transition-colors cursor-pointer ml-0.5"
-                                  title={`Remover ${exame}`}
-                                >
-                                  <X size={11} />
-                                </button>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {examesNoOutroConvenio.length > 0 && (
-                      <div>
-                        <p className="text-[10px] font-bold text-red-700 mb-1">
-                          Fora do {convenio}, mas disponível pelo {outroConvenio}
-                          <span className="font-normal text-red-600/80"> · trocar convênio da guia resolve</span>
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {examesNoOutroConvenio.map((exame) => {
-                            const cob = coberturaPorChip.get(exame) ?? 'NAO_CATALOGADO';
-                            return (
-                              <span
-                                key={exame}
-                                title={CHIP_META[cob].title}
-                                className="inline-flex items-center gap-1.5 rounded-md bg-white border border-red-200 px-2 py-1 text-[11px] font-semibold text-red-700"
-                              >
-                                <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${CHIP_DOT[cob]}`} />
-                                {formatExamNameForDisplay(exame)}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleExame(exame)}
-                                  className="text-red-300 hover:text-red-600 transition-colors cursor-pointer ml-0.5"
-                                  title={`Remover ${exame}`}
-                                >
-                                  <X size={11} />
-                                </button>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                )}
-
-                {examesOk.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 p-3 max-h-32 overflow-y-auto">
-                    {examesOk.map((exame) => {
-                      const cob = coberturaPorChip.get(exame) ?? 'NAO_CATALOGADO';
-                      return (
-                        <span
-                          key={exame}
-                          title={CHIP_META[cob].title}
-                          className="inline-flex items-center gap-1.5 rounded-md bg-white border border-blue-100 px-2 py-1 text-[11px] font-semibold text-blue-700 transition-all"
-                        >
-                          <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${CHIP_DOT[cob]}`} />
-                          {formatExamNameForDisplay(exame)}
-                          <button
-                            type="button"
-                            onClick={() => toggleExame(exame)}
-                            className="text-blue-300 hover:text-red-500 transition-colors cursor-pointer ml-0.5"
-                            title={`Remover ${exame}`}
-                          >
-                            <X size={11} />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {categoriasFiltradas.length === 0 && buscaNormalizada && (
-              <div className="text-center py-12 text-gray-400">
-                <Search size={32} className="mx-auto mb-3 opacity-25" />
-                <p className="text-sm font-medium text-gray-500">Nenhum exame encontrado para "{busca}"</p>
-                <p className="text-xs mt-1 text-gray-400">Tente outro termo ou use a função "Colar Lista" acima para exames não catalogados.</p>
-              </div>
-            )}
-
-            {buscaNormalizada ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-neutral-border pb-2.5">
-                  <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Resultados da Busca
-                    <span className="ml-2 text-xs font-normal text-gray-400">({totalMatches} exames encontrados)</span>
-                  </h3>
                 </div>
-
-                <div className="max-h-[500px] overflow-y-auto pr-1">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 bg-white">
-                    {categoriasFiltradas.flatMap((cat) =>
-                      cat.exames.map((exame) => {
-                        const isChecked = examesSelecionados.includes(exame.nome);
-                        const cobertura = getCobertura(exame);
-                        const meta = COBERTURA_META[cobertura];
-                        const fora = isForaDoConvenio(cobertura, convenio);
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5.5 items-stretch">
+                  <div className="hidden lg:block lg:col-span-4 border-r border-neutral-border pr-4.5">
+                    <div className="max-h-[500px] overflow-y-auto space-y-1.5 pr-1.5 scrollbar-thin">
+                      {CATEGORIAS_EXAMES.map((cat) => {
+                        const countInCat = cat.exames.filter((e) => examesSelecionados.includes(e.nome)).length;
+                        const isSelected = activeCategory === cat.nome;
+                        const Icon = getCategoryIcon(cat.nome);
                         return (
-                          <label
-                            key={exame.nome}
-                            className={`flex items-start gap-2 px-2.5 py-2 rounded-lg border cursor-pointer transition-all text-[11px] ${
-                              isChecked
-                                ? 'bg-blue-50 border-blue-300 text-blue-800 font-semibold shadow-none'
-                                : 'bg-white border-neutral-border text-neutral-text-muted hover:border-blue-200 hover:bg-blue-50/40'
+                          <button
+                            key={cat.nome}
+                            type="button"
+                            onClick={() => setActiveCategory(cat.nome)}
+                            className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-left text-xs font-semibold transition-all border cursor-pointer ${
+                              isSelected
+                                ? 'bg-blue-600 border-transparent text-white shadow-sm'
+                                : 'bg-white border-neutral-border text-neutral-text hover:bg-slate-50/50 hover:text-blue-600'
                             }`}
                           >
-                            <input
-                              type="checkbox"
-                              className="w-3.5 h-3.5 text-blue-600 border-neutral-border rounded focus:ring-blue-500 shrink-0 cursor-pointer mt-0.5"
-                              checked={isChecked}
-                              onChange={() => toggleExame(exame.nome)}
-                            />
-                            <div className="flex flex-col min-w-0">
-                              <span className="leading-tight text-left font-medium text-neutral-text" title={exame.nome}>
-                                {formatExamNameForDisplay(exame.nome)}
-                              </span>
-                              <span className="flex items-center gap-1 flex-wrap mt-1">
-                                <span className="text-[9px] text-blue-650 uppercase tracking-wider font-extrabold">{formatCategoryName(cat.nome)}</span>
-                                <span
-                                  title={fora ? `Não coberto pelo convênio ${convenio}. ${meta.title}` : meta.title}
-                                  className={`text-[8px] px-1 py-0.5 rounded border font-extrabold uppercase ${
-                                    fora ? 'bg-red-50 text-red-700 border-red-200' : meta.cls
-                                  }`}
-                                >
-                                  {fora ? `Fora do ${convenio}` : meta.label}
-                                </span>
-                              </span>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <Icon size={14} className={`shrink-0 ${isSelected ? 'text-white' : 'text-blue-600'}`} />
+                              <span className="truncate">{formatCategoryName(cat.nome)}</span>
                             </div>
-                          </label>
+                            {countInCat > 0 && (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold leading-none shrink-0 ${
+                                isSelected ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {countInCat}
+                              </span>
+                            )}
+                          </button>
                         );
-                      })
-                    )}
+                      })}
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5.5 items-stretch">
-                <div className="hidden lg:block lg:col-span-4 border-r border-neutral-border pr-4.5">
-                  <div className="max-h-[500px] overflow-y-auto space-y-1.5 pr-1.5 scrollbar-thin">
+
+                  <div className="lg:hidden w-full overflow-x-auto pb-3 mb-2 flex gap-2 scrollbar-none">
                     {CATEGORIAS_EXAMES.map((cat) => {
                       const countInCat = cat.exames.filter((e) => examesSelecionados.includes(e.nome)).length;
                       const isSelected = activeCategory === cat.nome;
@@ -1184,18 +982,16 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                           key={cat.nome}
                           type="button"
                           onClick={() => setActiveCategory(cat.nome)}
-                          className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-left text-xs font-semibold transition-all border cursor-pointer ${
+                          className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap cursor-pointer ${
                             isSelected
                               ? 'bg-blue-600 border-transparent text-white shadow-sm'
-                              : 'bg-white border-neutral-border text-neutral-text hover:bg-slate-50/50 hover:text-blue-600'
+                              : 'bg-white border-neutral-border text-neutral-text hover:bg-slate-50'
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <Icon size={14} className={`shrink-0 ${isSelected ? 'text-white' : 'text-blue-600'}`} />
-                            <span className="truncate">{formatCategoryName(cat.nome)}</span>
-                          </div>
+                          <Icon size={13} className={isSelected ? 'text-white' : 'text-blue-600'} />
+                          <span>{formatCategoryName(cat.nome)}</span>
                           {countInCat > 0 && (
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold leading-none shrink-0 ${
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
                               isSelected ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
                             }`}>
                               {countInCat}
@@ -1205,132 +1001,103 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                       );
                     })}
                   </div>
-                </div>
 
-                <div className="lg:hidden w-full overflow-x-auto pb-3 mb-2 flex gap-2 scrollbar-none">
-                  {CATEGORIAS_EXAMES.map((cat) => {
-                    const countInCat = cat.exames.filter((e) => examesSelecionados.includes(e.nome)).length;
-                    const isSelected = activeCategory === cat.nome;
-                    const Icon = getCategoryIcon(cat.nome);
-                    return (
-                      <button
-                        key={cat.nome}
-                        type="button"
-                        onClick={() => setActiveCategory(cat.nome)}
-                        className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap cursor-pointer ${
-                          isSelected
-                            ? 'bg-blue-600 border-transparent text-white shadow-sm'
-                            : 'bg-white border-neutral-border text-neutral-text hover:bg-slate-50'
-                        }`}
-                      >
-                        <Icon size={13} className={isSelected ? 'text-white' : 'text-blue-600'} />
-                        <span>{formatCategoryName(cat.nome)}</span>
-                        {countInCat > 0 && (
-                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
-                            isSelected ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {countInCat}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                  <div className="lg:col-span-8 flex flex-col">
+                    {(() => {
+                      const catObj = CATEGORIAS_EXAMES.find((c) => c.nome === activeCategory);
+                      if (!catObj) return null;
+                      const nomesCategoria = catObj.exames.map((exame) => exame.nome);
+                      const selectedInCatCount = catObj.exames.filter(e => examesSelecionados.includes(e.nome)).length;
 
-                <div className="lg:col-span-8 flex flex-col">
-                  {(() => {
-                    const catObj = CATEGORIAS_EXAMES.find((c) => c.nome === activeCategory);
-                    if (!catObj) return null;
-                    const nomesCategoria = catObj.exames.map((exame) => exame.nome);
-                    const selectedInCatCount = catObj.exames.filter(e => examesSelecionados.includes(e.nome)).length;
-
-                    return (
-                      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 px-5 py-3 border border-neutral-border rounded-t-lg mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-extrabold text-blue-800 uppercase tracking-wider">
-                            {formatCategoryName(activeCategory)}
-                          </span>
-                          {selectedInCatCount > 0 && (
-                            <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full">
-                              {selectedInCatCount} selecionado(s)
+                      return (
+                        <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 px-5 py-3 border border-neutral-border rounded-t-lg mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-extrabold text-blue-800 uppercase tracking-wider">
+                              {formatCategoryName(activeCategory)}
                             </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={() => selecionarCategoria(nomesCategoria)}
-                            className="text-[11px] font-semibold text-blue-655 hover:text-blue-800 cursor-pointer"
-                          >
-                            Selecionar tudo
-                          </button>
-                          {selectedInCatCount > 0 && (
+                            {selectedInCatCount > 0 && (
+                              <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-full">
+                                {selectedInCatCount} selecionado(s)
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
                             <button
                               type="button"
-                              onClick={() => limparCategoria(nomesCategoria)}
-                              className="text-[11px] font-semibold text-neutral-text-muted hover:text-red-500 cursor-pointer"
+                              onClick={() => selecionarCategoria(nomesCategoria)}
+                              className="text-[11px] font-semibold text-blue-655 hover:text-blue-800 cursor-pointer"
                             >
-                              Limpar
+                              Selecionar tudo
                             </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  <div className="max-h-[500px] overflow-y-auto pr-1 flex-1">
-                    {(() => {
-                      const catObj = categoriasFiltradas.find((c) => c.nome === activeCategory);
-                      if (!catObj || catObj.exames.length === 0) {
-                        return (
-                          <div className="text-center py-12 text-gray-400 border border-neutral-border rounded-b-lg border-t-0 bg-white text-xs font-medium">
-                            Nenhum exame disponível nesta categoria para o convênio selecionado.
-                          </div>
-                        );
-                      }
-                      return (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 bg-white">
-                          {catObj.exames.map((exame) => {
-                            const isChecked = examesSelecionados.includes(exame.nome);
-                            const cobertura = getCobertura(exame);
-                            const meta = COBERTURA_META[cobertura];
-                            const fora = isForaDoConvenio(cobertura, convenio);
-                            return (
-                              <label
-                                key={exame.nome}
-                                className={`flex items-start gap-2 px-2.5 py-2 rounded-lg border cursor-pointer transition-all text-[11px] ${
-                                  isChecked
-                                    ? 'bg-blue-50 border-blue-300 text-blue-800 font-semibold shadow-none'
-                                    : 'bg-white border-neutral-border text-neutral-text-muted hover:border-blue-200 hover:bg-blue-50/40'
-                                }`}
+                            {selectedInCatCount > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => limparCategoria(nomesCategoria)}
+                                className="text-[11px] font-semibold text-neutral-text-muted hover:text-red-500 cursor-pointer"
                               >
-                                <input
-                                  type="checkbox"
-                                  className="w-3.5 h-3.5 text-blue-600 border-neutral-border rounded focus:ring-blue-500 shrink-0 cursor-pointer mt-0.5"
-                                  checked={isChecked}
-                                  onChange={() => toggleExame(exame.nome)}
-                                />
-                                <div className="flex flex-col min-w-0">
-                                  <span className="leading-tight text-left font-medium text-neutral-text" title={exame.nome}>
-                                    {formatExamNameForDisplay(exame.nome)}
-                                  </span>
-                                  <span
-                                    title={fora ? `Não coberto pelo convênio ${convenio}. ${meta.title}` : meta.title}
-                                    className={`self-start text-[8px] px-1 py-0.5 mt-1 rounded border font-extrabold uppercase ${
-                                      fora ? 'bg-red-50 text-red-700 border-red-200' : meta.cls
-                                    }`}
-                                  >
-                                    {fora ? `Fora do ${convenio}` : meta.label}
-                                  </span>
-                                </div>
-                              </label>
-                            );
-                          })}
+                                Limpar
+                              </button>
+                            )}
+                          </div>
                         </div>
                       );
                     })()}
+
+                    <div className="max-h-[500px] overflow-y-auto pr-1 flex-1">
+                      {(() => {
+                        const catObj = categoriasFiltradas.find((c) => c.nome === activeCategory);
+                        if (!catObj || catObj.exames.length === 0) {
+                          return (
+                            <div className="text-center py-12 text-gray-400 border border-neutral-border rounded-b-lg border-t-0 bg-white text-xs font-medium">
+                              Nenhum exame disponível nesta categoria para o convênio selecionado.
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 bg-white">
+                            {catObj.exames.map((exame) => {
+                              const isChecked = examesSelecionados.includes(exame.nome);
+                              const cobertura = getCobertura(exame);
+                              const meta = COBERTURA_META[cobertura];
+                              const fora = isForaDoConvenio(cobertura, convenio);
+                              return (
+                                <label
+                                  key={exame.nome}
+                                  className={`flex items-start gap-2 px-2.5 py-2 rounded-lg border cursor-pointer transition-all text-[11px] ${
+                                    isChecked
+                                      ? 'bg-blue-50 border-blue-300 text-blue-800 font-semibold shadow-none'
+                                      : 'bg-white border-neutral-border text-neutral-text-muted hover:border-blue-200 hover:bg-blue-50/40'
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    className="w-3.5 h-3.5 text-blue-600 border-neutral-border rounded focus:ring-blue-500 shrink-0 cursor-pointer mt-0.5"
+                                    checked={isChecked}
+                                    onChange={() => toggleExame(exame.nome)}
+                                  />
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="leading-tight text-left font-medium text-neutral-text" title={exame.nome}>
+                                      {formatExamNameForDisplay(exame.nome)}
+                                    </span>
+                                    <span
+                                      title={fora ? `Não coberto pelo convênio ${convenio}. ${meta.title}` : meta.title}
+                                      className={`self-start text-[8px] px-1 py-0.5 mt-1 rounded border font-extrabold uppercase ${
+                                        fora ? 'bg-red-50 text-red-700 border-red-200' : meta.cls
+                                      }`}
+                                    >
+                                      {fora ? `Fora do ${convenio}` : meta.label}
+                                    </span>
+                                  </div>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                 </div>
+              )}
               </div>
             )}
           </div>
