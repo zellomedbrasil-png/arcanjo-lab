@@ -9,6 +9,8 @@ import {
 } from '../../../data/procedimentos';
 import logoIssec from '../../../assets/logo_issec.jpeg';
 import logoIssec2 from '../../../assets/logo_issec_2.jpeg';
+import { getExamCode } from '../../../utils/exames';
+import ExamesComCodigo from './ExamesComCodigo';
 
 /* ---------------------------------------------------------------------------
  *  GUIA ISSEC – fiel ao layout oficial do DOCX (GUIA_ISSEC_-_NOVO.docx)
@@ -71,12 +73,12 @@ export default function GuiaISSEC() {
 
   /* Quebra exames em até 3 linhas para o caso laboratorial */
   const getLinhas = () => {
-    const fmt = examesSelecionados;
+    const fmt = examesSelecionados.map(nome => ({ nome, codigo: getExamCode(nome, 'ISSEC') }));
     const chunk = Math.ceil(fmt.length / 3) || 1;
     return [
-      fmt.slice(0, chunk).join(', '),
-      fmt.slice(chunk, chunk * 2).join(', '),
-      fmt.slice(chunk * 2).join(', '),
+      fmt.slice(0, chunk),
+      fmt.slice(chunk, chunk * 2),
+      fmt.slice(chunk * 2),
     ];
   };
   const linhas = getLinhas();
@@ -425,7 +427,7 @@ export default function GuiaISSEC() {
             { h: '8.8mm', n: '02' },
             { h: '11mm',  n: '03' },
           ].map((row, idx) => {
-            const content = isLab ? linhas[idx] || '' : linhasProcs[idx] || '';
+            const content = isLab ? <ExamesComCodigo itens={linhas[idx]} /> : linhasProcs[idx] || '';
             return (
               <tr key={row.n} style={{ height: row.h }}>
                 <td

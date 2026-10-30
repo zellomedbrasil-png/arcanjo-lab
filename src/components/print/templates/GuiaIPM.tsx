@@ -1,6 +1,8 @@
 import { useAppStore } from '../../../store/useAppStore';
 import { getProcedimentoNome } from '../../../data/procedimentos';
 import logoIpm from '../../../assets/logo_ipm.jpeg';
+import { getExamCode } from '../../../utils/exames';
+import ExamesComCodigo, { type ExameImpresso } from './ExamesComCodigo';
 
 const MEDICO = {
   nome: 'DR. ROBERTO ARCANJO',
@@ -184,12 +186,12 @@ export default function GuiaIPM({ itemsOverride, justificativaOverride }: GuiaIP
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2mm', flexGrow: 1 }}>
             {(() => {
-              const finalItems = (() => {
+              const finalItems: ExameImpresso[] = (() => {
                 if (!isLab) {
                   return itemsList.map(item => {
                     // Check if it's a catalog procedure ID (all caps, underscore) or custom text
                     const isCatalogId = /^[A-Z0-9_]+$/.test(item) && getProcedimentoNome(item) !== item;
-                    return formatExamNameForPrint(isCatalogId ? getProcedimentoNome(item) : item);
+                    return { nome: formatExamNameForPrint(isCatalogId ? getProcedimentoNome(item) : item), codigo: '' };
                   });
                 }
                 
@@ -204,9 +206,13 @@ export default function GuiaIPM({ itemsOverride, justificativaOverride }: GuiaIP
                 return filtered.map(item => {
                   const upper = item.toUpperCase().trim();
                   if (hasUrinocultura && hasAntibiograma && upper === 'URINOCULTURA') {
-                    return formatExamNameForPrint('URINOCULTURA + ANTIBIOGRAMA');
+                    const antibiograma = itemsList.find(e => e.toUpperCase().trim() === 'ANTIBIOGRAMA')!;
+                    return {
+                      nome: formatExamNameForPrint('URINOCULTURA + ANTIBIOGRAMA'),
+                      codigo: [getExamCode(item, 'IPM'), getExamCode(antibiograma, 'IPM')].filter(Boolean).join(' + '),
+                    };
                   }
-                  return formatExamNameForPrint(item);
+                  return { nome: formatExamNameForPrint(item), codigo: getExamCode(item, 'IPM') };
                 });
               })();
 
@@ -224,44 +230,42 @@ export default function GuiaIPM({ itemsOverride, justificativaOverride }: GuiaIP
               }
 
               const getGuiaIPMLinhas = () => {
+                const lines: { itens: ExameImpresso[]; code: string }[] = [];
+
                 if (!isLab) {
                   // Um procedimento por linha; acima de 5, o excedente vai junto na última.
-                  const lines = finalItems.length > 5
-                    ? [...finalItems.slice(0, 4), finalItems.slice(4).join(', ')]
-                    : [...finalItems];
-                  while (lines.length < 5) {
-                    lines.push('');
-                  }
-                  return lines.map(name => ({ name, code: '' }));
-                }
+                  const nomes = finalItems.map(item => item.nome);
+                  const porLinha = nomes.length > 5 ? [...nomes.slice(0, 4), nomes.slice(4).join(', ')] : nomes;
+                  lines.push(...porLinha.map(nome => ({ itens: [{ nome, codigo: '' }], code: '' })));
+                } else if (finalItems.length <= 5) {
+                  // Até 5 exames: um por linha, com o código no campo CÓDIGO da guia.
+                  lines.push(...finalItems.map(({ nome, codigo }) => ({ itens: [{ nome, codigo: '' }], code: codigo })));
+                } else {
+                  // Acima de 5: linhas corridas, cada nome seguido do próprio código.
+                  let currentLine: ExameImpresso[] = [];
+                  let currentLen = 0;
 
-                const lines: string[] = [];
-                let currentLine: string[] = [];
-                let currentLen = 0;
-
-                for (const item of finalItems) {
-                  if (currentLine.length === 0) {
+                  for (const item of finalItems) {
+                    const len = item.nome.length + (item.codigo ? item.codigo.length + 1 : 0);
+                    if (currentLine.length > 0 && currentLen + 2 + len > maxChars) {
+                      lines.push({ itens: currentLine, code: '' });
+                      currentLine = [];
+                      currentLen = 0;
+                    }
+                    currentLen += (currentLine.length > 0 ? 2 : 0) + len;
                     currentLine.push(item);
-                    currentLen = item.length;
-                  } else if (currentLen + 2 + item.length <= maxChars) {
-                    currentLine.push(item);
-                    currentLen += 2 + item.length;
-                  } else {
-                    lines.push(currentLine.join(', '));
-                    currentLine = [item];
-                    currentLen = item.length;
                   }
-                }
-                
-                if (currentLine.length > 0) {
-                  lines.push(currentLine.join(', '));
+
+                  if (currentLine.length > 0) {
+                    lines.push({ itens: currentLine, code: '' });
+                  }
                 }
 
                 while (lines.length < 5) {
-                  lines.push('');
+                  lines.push({ itens: [], code: '' });
                 }
 
-                return lines.map(name => ({ name, code: '' }));
+                return lines;
               };
 
               return getGuiaIPMLinhas().map((linha, idx) => (
@@ -286,14 +290,14 @@ export default function GuiaIPM({ itemsOverride, justificativaOverride }: GuiaIP
                       textTransform: 'uppercase',
                     }}
                   >
-                    {linha.name || <>&nbsp;</>}
+                    {linha.itens.length > 0 ? <ExamesComCodigo itens={linha.itens} /> : <>&nbsp;</>}
                   </div>
                   <span style={{ fontSize: fontSize, margin: '0 2mm', flexShrink: 0, color: '#000', fontWeight: 'normal' }}>
                     CÓDIGO
                   </span>
                   <div
                     style={{
-                      width: '20mm',
+                      minWidth: '20mm',
                       borderBottom: '1px solid black',
                       textAlign: 'center',
                       paddingBottom: '1px',
