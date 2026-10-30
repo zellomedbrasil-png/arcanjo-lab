@@ -31,7 +31,7 @@ Dado o nome do medicamento ou diagnóstico/classe, retorne APENAS um JSON válid
   "duracao": "Duração sugerida do tratamento (ex: 30 dias, uso contínuo, 7 dias)",
   "indicacao": "A função básica do medicamento em poucas palavras (ex: 'Para controle da pressão', 'Para gastrite', 'Para o colesterol', 'Para dormir'). Seja extremamente conciso.",
   "observacoes": "Instruções críticas ao paciente (horários, jejum, etc.). Mantenha extremamente curto e direto (ex: 'Tomar em jejum', 'Pode causar sonolência'). Não insira alertas de Beers ou interações aqui.",
-  "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL para: (a) substâncias da Portaria ANVISA 344/98 (psicotrópicos, benzodiazepínicos, antidepressivos, opioides, anticonvulsivantes); e (b) ANTIMICROBIANOS (antibióticos e antifúngicos sistêmicos), que pela RDC 471/2021 da ANVISA exigem receita em 2 vias com retenção na farmácia. Todos os demais são SIMPLES.",
+  "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL para: (a) substâncias da Portaria ANVISA 344/98 (psicotrópicos, benzodiazepínicos, antidepressivos, opioides, anticonvulsivantes); e (b) ANTIMICROBIANOS: antibacterianos da lista da IN 360/2025 (RDC 471/2021) — antifúngicos, antiparasitários e antivirais NÃO entram; dos nitroimidazólicos só o metronidazol entra (secnidazol e tinidazol são SIMPLES), que exigem receita em 2 vias com retenção na farmácia. Todos os demais são SIMPLES.",
   "motivoTipo": "Se ESPECIAL por controle: informe a lista exata da Portaria 344/98 (ex: 'Lista C1', 'Lista B1', 'Lista A1'). Se ESPECIAL por antimicrobiano: 'Antimicrobiano (RDC 471/2021) — receita em 2 vias'. Se SIMPLES: deixe vazio."
 }
 REGRA DE SEGURANÇA: Não sugira medicamentos extras na posologia. Adote as recomendações de posologia brasileiras vigentes.`;
@@ -59,8 +59,8 @@ FORMATO DO JSON:
       "duracao": "Duração do tratamento (ex: 30 dias, uso contínuo)",
       "indicacao": "A função básica do medicamento em poucas palavras (ex: 'Para controle da pressão', 'Para gastrite', 'Para o colesterol', 'Para dormir'). Seja extremamente conciso.",
       "observacoes": "Orientação de administração (horários, jejum, etc.). Mantenha extremamente curto e direto (ex: 'Tomar em jejum', 'Pode causar sonolência'). Não insira alertas de Beers ou interações aqui.",
-      "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL para substâncias da Portaria ANVISA 344/98 E TAMBÉM para ANTIMICROBIANOS (antibióticos e antifúngicos sistêmicos), que pela RDC 471/2021 exigem receita em 2 vias",
-      "motivoTipo": "Especificação da lista regulatória da ANVISA se controlado (ex: 'Lista B1 da Portaria 344/98'), 'Antimicrobiano (RDC 471/2021) — receita em 2 vias' se antibiótico/antifúngico, ou vazio se SIMPLES."
+      "tipoReceita": "SIMPLES ou ESPECIAL — ESPECIAL para substâncias da Portaria ANVISA 344/98 E TAMBÉM para ANTIMICROBIANOS: antibacterianos da lista da IN 360/2025 (RDC 471/2021) — antifúngicos, antiparasitários e antivirais NÃO entram; dos nitroimidazólicos só o metronidazol entra (secnidazol e tinidazol são SIMPLES), que exigem receita em 2 vias",
+      "motivoTipo": "Especificação da lista regulatória da ANVISA se controlado (ex: 'Lista B1 da Portaria 344/98'), 'Antimicrobiano (RDC 471/2021) — receita em 2 vias' se antibiótico da lista, ou vazio se SIMPLES."
     }
   ],
   "alertas": [

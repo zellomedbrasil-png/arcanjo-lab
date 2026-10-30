@@ -283,7 +283,7 @@ export default function NovaReceita() {
 
   const opcoesTipo: Array<{ tipo: TipoReceita; titulo: string; desc: string }> = [
     { tipo: 'SIMPLES', titulo: 'Receita simples', desc: 'Medicamentos comuns · 1 via' },
-    { tipo: 'RETENCAO', titulo: 'Antimicrobiano', desc: 'Antibiótico/antifúngico ou GLP-1 · 2 vias' },
+    { tipo: 'RETENCAO', titulo: 'Antimicrobiano', desc: 'Antibiótico ou GLP-1 · 2 vias' },
     { tipo: 'ESPECIAL', titulo: 'Controle especial', desc: 'Listas C1, C5 · até 3 substâncias · 2 vias' },
   ];
 

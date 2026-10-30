@@ -86,7 +86,7 @@ export const TOPICOS_OFTALMO: MedicamentoDef[] = [
     quantidadePadrao: '1 bisnaga de 30g',
     duracaoPadrao: '14 dias',
     indicacao: 'Micose de pele / Dermatite seborreica',
-    explicacao: 'Antifúngico tópico. Antimicrobiano: sai na receita de 2 vias.',
+    explicacao: 'Antifúngico tópico. Antifúngico não está na lista da IN 360/2025: receita simples.',
   },
   {
     id: 'mupirocina-pomada',

@@ -25,7 +25,7 @@ for (const m of MEDICAMENTOS) {
     else if (VAGA.test(d.posologia)) erros.push(`${onde}: posologia vaga ("${d.posologia}")`);
   });
   if (m.grupo === 'ANTIMICROBIANO' && m.regra?.modelo === 'SIMPLES') {
-    avisos.push(`${m.id}: no grupo antimicrobianos, mas classificado como receita simples (antiparasitário/antiviral?)`);
+    avisos.push(`${m.id}: no grupo antimicrobianos, mas classificado como receita simples (antiparasitário, antiviral ou antifúngico: fora da IN 360/2025?)`);
   }
   const rotulos = dosesDe(m).map((d) => d.rotulo);
   if (new Set(rotulos).size !== rotulos.length) avisos.push(`${m.id}: rótulos de dose repetidos (${rotulos.join(', ')})`);

@@ -493,7 +493,7 @@ export const GASTRO: MedicamentoDef[] = [
     quantidadePadrao: '60 comprimidos',
     duracaoPadrao: '30 dias',
     indicacao: 'Encefalopatia hepática / SIBO / SII-D',
-    explicacao: 'Antibiótico não absorvível. Antimicrobiano: receita própria em 2 vias.',
+    explicacao: 'Antibiótico não absorvível. Não está na lista da IN 360/2025: receita simples.',
     observacoes: 'Na encefalopatia, associar à lactulose.',
   },
   {

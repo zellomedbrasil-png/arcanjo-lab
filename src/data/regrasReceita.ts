@@ -208,24 +208,53 @@ const GLP1 = [
 ];
 
 /**
- * Antimicrobianos de uso sob prescrição (RDC 471/2021, lista da IN 360/2025).
- * Formas tópicas, oftálmicas e otológicas também ficam aqui: não há exceção
- * expressa na norma, e 2 vias a mais nunca causam recusa.
+ * Antimicrobianos de uso sob prescrição: a lista do art. 1º da IN 360/2025
+ * (RDC 471/2021), conferida item a item com o texto publicado. Só o que está
+ * nela exige receita em 2 vias. Fora dela, e portanto receita simples:
+ * antifúngicos (fluconazol, nistatina, terbinafina...), secnidazol, tinidazol,
+ * nitazoxanida, rifaximina e cefixima. Dos nitroimidazólicos, só o metronidazol.
+ *
+ * A busca é por trecho do nome normalizado: raízes como 'ciprofloxacin' pegam
+ * "ciprofloxacino" e "ciprofloxacina". Formas tópicas e oftálmicas de substância
+ * da lista também ficam aqui: a norma não as excetua.
+ * O item 42 da lista não aparece no texto consultado; conferir no DOU.
  */
 const ANTIMICROBIANOS = [
-  'amoxicilina', 'clavulanato', 'ampicilina', 'penicilina', 'benzatina', 'oxacilina',
-  'piperacilina', 'cefalexina', 'cefadroxila', 'cefaclor', 'cefuroxima', 'ceftriaxona',
-  'cefepima', 'cefixima', 'cefpodoxima', 'cefalotina', 'cefazolina', 'ceftazidima',
-  'azitromicina', 'claritromicina', 'eritromicina', 'espiramicina',
-  'ciprofloxacino', 'levofloxacino', 'norfloxacino', 'moxifloxacino', 'ofloxacino',
-  'gatifloxacino', 'sulfametoxazol', 'trimetoprima', 'sulfadiazina',
-  'doxiciclina', 'tetraciclina', 'minociclina', 'tigeciclina', 'nitrofurantoina',
-  'clindamicina', 'metronidazol', 'secnidazol', 'tinidazol', 'vancomicina', 'linezolida',
-  'gentamicina', 'amicacina', 'tobramicina', 'neomicina', 'rifampicina', 'rifamicina',
-  'isoniazida', 'pirazinamida', 'etambutol', 'dapsona', 'fosfomicina', 'cloranfenicol', 'rifaximina',
-  'mupirocina', 'acido fusidico', 'bacitracina',
-  'fluconazol', 'itraconazol', 'cetoconazol', 'nistatina', 'griseofulvina', 'terbinafina',
-  'anfotericina', 'voriconazol',
+  // ácidos
+  'clavulan', 'acido fusidico', 'acido nalidixico', 'acido oxolinico', 'acido pipemidico',
+  // aminoglicosídeos
+  'amicacina', 'gentamicina', 'tobramicina', 'neomicina', 'netilmicina', 'estreptomicina',
+  'espectinomicina',
+  // penicilinas e associações
+  'amoxicilina', 'ampicilina', 'metampicilina', 'sultamicilina', 'penicilina', 'benzatina',
+  'oxacilina', 'cloxacilina', 'dicloxacilina', 'carbenicilina', 'ticarcilina', 'piperacilina',
+  'sulbactam', 'tazobactam',
+  // cefalosporinas e outros betalactâmicos
+  'cefaclor', 'cefadroxil', 'cefalexina', 'cefalotina', 'cefazolina', 'cefepima', 'cefodizima',
+  'cefoperazona', 'cefotaxima', 'cefoxitina', 'cefpodoxima', 'cefpiroma', 'cefprozil',
+  'ceftazidim', 'ceftadizim', 'ceftarolina', 'ceftobiprol', 'ceftriaxona', 'cefuroxima',
+  'loracarbef', 'aztreonam', 'imipenem', 'meropenem', 'ertapenem', 'doripenem',
+  // macrolídeos e lincosamidas
+  'azitromicina', 'claritromicina', 'eritromicina', 'roxitromicina', 'diritromicina',
+  'telitromicina', 'espiramicina', 'miocamicina', 'clindamicina', 'lincomicina',
+  // quinolonas
+  'ciprofloxacin', 'levofloxacin', 'norfloxacin', 'ofloxacin', 'moxifloxacin', 'gatifloxacin',
+  'gemifloxacin', 'besifloxacin', 'lomefloxacin', 'pefloxacin', 'trovafloxacin', 'rosoxacin',
+  // sulfas e diaminopirimidinas
+  'sulfacetamida', 'sulfadiazina', 'sulfadoxina', 'sulfaguanidina', 'sulfamerazina',
+  'sulfanilamida', 'sulfametizol', 'sulfametoxazol', 'sulfametoxipiridazina',
+  'sulfametoxipirimidina', 'sulfatiazol', 'ftalilsulfatiazol', 'trimetoprima', 'brodimoprima',
+  // tetraciclinas e glicilciclinas
+  'tetraciclina', 'oxitetraciclina', 'doxiciclina', 'minociclina', 'limeciclina', 'tigeciclina',
+  // glicopeptídeos, oxazolidinonas e outros
+  'vancomicina', 'teicoplanina', 'daptomicina', 'linezolida', 'tedizolida', 'polimixina',
+  'bacitracina', 'gramicidina', 'tirotricina', 'mupirocina', 'retapamulina', 'pristinamicina',
+  'fosfomicina', 'cloranfenicol', 'tianfenicol', 'metronidazol', 'nitrofurantoina',
+  'nitrofural', 'nitroxolina', 'mandelamina', 'clorfenesina', 'mitomicina', 'dactinomicina',
+  // tuberculose e hanseníase
+  'rifampicina', 'rifamicina', 'rifabutina', 'rifapentina', 'isoniazida', 'pirazinamida',
+  'etambutol', 'etionamida', 'protionamida', 'capreomicin', 'delamanid', 'clofazimina',
+  'dapsona', 'difenilsulfona',
 ];
 
 /** Substâncias que a tabela confirma como de receita simples. */
@@ -246,6 +275,10 @@ const COMUNS = [
   'sulfato ferroso', 'acido folico', 'cobalamina', 'levodopa', 'albendazol', 'ivermectina',
   'aciclovir', 'valaciclovir', 'oseltamivir', 'colchicina', 'tansulosina', 'betaistina',
   'alendronato',
+  // Anti-infecciosos fora da lista da IN 360/2025 (receita simples)
+  'secnidazol', 'tinidazol', 'nitazoxanida', 'rifaximina', 'cefixima',
+  'fluconazol', 'itraconazol', 'cetoconazol', 'miconazol', 'clotrimazol', 'nistatina',
+  'griseofulvina', 'terbinafina', 'voriconazol', 'anfotericina',
 ];
 
 // ─── Classificação ────────────────────────────────────────────────────────
