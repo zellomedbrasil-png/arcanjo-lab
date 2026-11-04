@@ -597,12 +597,6 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
         "codIpm": "40302830"
       },
       {
-        "nome": "Vitamina D, 1,25-di-hidroxi",
-        "marca": "",
-        "codIssec": "",
-        "codIpm": ""
-      },
-      {
         "nome": "ACIDO FOLICO",
         "marca": "",
         "codIssec": "28010060",
@@ -2101,7 +2095,8 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
   },
   // ─── Painéis do Carlos Ribeiro (CR), ISSEC e IPM, homem e mulher ───────────
   // Exames e ordem iguais às guias CR de cada convênio (ISSEC Masculino 2026
-  // jul corrigida, ISSEC Feminino, IPM Homem e IPM Mulher). Sufixo -CR- agrupa
+  // jul corrigida, ISSEC Feminino, IPM Homem e IPM Mulher), no máximo 50 por
+  // painel. "Vit D 1,25" das guias IPM = vitamina D 25-OH. Sufixo -CR- agrupa
   // estes painéis numa seção própria na UI.
   "ISSEC-CR-M": {
     "nome": "ISSEC-CR-M",
@@ -2141,7 +2136,6 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "PEPTIDEO C",
       "BETA 2 MICROGLOBULINA",
       "MIOGLOBINA",
-      "TROPONINA I",
       "CKMB-MASSA (CREATINO FOSFOCINASE MB)",
       "CEA",
       "CORTISOL",
@@ -2228,7 +2222,7 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "HEPATOGRAMA (PAINEL CONJUNTO)",
       "LIPIDOGRAMA",
       "VITAMINA B12",
-      "Vitamina D, 1,25-di-hidroxi",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "VITAMINA A",
       "VITAMINA E",
       "BNP / PROBNP - PEPTIDEO NATRIURETICO",
@@ -2285,10 +2279,9 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "LIPIDOGRAMA",
       "ACIDO FOLICO",
       "VITAMINA B12",
-      "Vitamina D, 1,25-di-hidroxi",
+      "Vitamina D, 25-hidroxi (25-OH-D)",
       "VITAMINA A",
       "VITAMINA E",
-      "Vitamina D, 25-hidroxi (25-OH-D)",
       "BNP / PROBNP - PEPTIDEO NATRIURETICO",
       "PROTEINA S FUNCIONAL",
       "PROTEINA C - FUNCIONAL",
