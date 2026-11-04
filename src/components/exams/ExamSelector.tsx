@@ -840,10 +840,29 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
                   </div>
                 </div>
                 <div>
+                  <span className="block text-[10px] font-extrabold text-indigo-700 uppercase tracking-wider mb-2">
+                    Carlos Ribeiro (CR) — ISSEC e IPM
+                  </span>
+                  <div className="flex flex-wrap gap-2.5">
+                    {Object.entries(PAINEIS_MARKDOWN)
+                      .filter(([, painel]) => painel.nome.includes('-CR-'))
+                      .map(([key, painel]) => (
+                        <button
+                          key={key}
+                          onClick={() => aplicarPainel(key)}
+                          title={`${painel.exames.length} exames`}
+                          className="px-3.5 py-2 bg-white text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-600 hover:text-white transition-colors border border-indigo-200 cursor-pointer"
+                        >
+                          {`${painel.nome.slice(0, -5)} · ${painel.nome.endsWith('-M') ? 'Homem' : 'Mulher'}`}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+                <div>
                   <span className="block text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-2">Gerais</span>
                   <div className="flex flex-wrap gap-2.5">
                     {Object.entries(PAINEIS_MARKDOWN)
-                      .filter(([, painel]) => !painel.nome.startsWith('GASTRO — '))
+                      .filter(([, painel]) => !painel.nome.startsWith('GASTRO — ') && !painel.nome.includes('-CR-'))
                       .map(([key, painel]) => (
                         <button
                           key={key}
