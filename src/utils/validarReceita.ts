@@ -11,6 +11,8 @@ import { infoDoMedicamento, itemNaoCabeNaVia, type DocumentoReceita } from './ag
 export interface Pendencia {
   nivel: 'bloqueio' | 'aviso';
   texto: string;
+  /** Campo da tela que resolve a pendência (a lista vira link para ele). */
+  campo?: 'nome' | 'idade' | 'sexo' | 'cpf' | 'endereco' | 'prescritor';
 }
 
 export interface DadosPaciente {
@@ -86,7 +88,7 @@ export function validarReceita(
   modo: ModoEmissao = 'FISICO'
 ): Pendencia[] {
   const p: Pendencia[] = [];
-  if (!paciente.pacienteNome.trim()) p.push({ nivel: 'bloqueio', texto: 'Informe o nome completo do paciente.' });
+  if (!paciente.pacienteNome.trim()) p.push({ nivel: 'bloqueio', texto: 'Informe o nome completo do paciente.', campo: 'nome' });
   else if (nomeComparavel(paciente.pacienteNome) === nomeComparavel(prescritor.nome)) {
     p.push({
       nivel: 'aviso',
@@ -105,14 +107,15 @@ export function validarReceita(
       p.push({
         nivel: 'bloqueio',
         texto: `Complete seus dados de prescritor (${faltam.join(', ')}). Endereço completo e telefone do médico são obrigatórios na receita de antimicrobiano e na de controle especial.`,
+        campo: 'prescritor',
       });
     }
   }
 
   const antimicrobiano = documentos.some((d) => d.modelo === 'RETENCAO' && !d.soGlp1);
   if (antimicrobiano) {
-    if (!paciente.pacienteIdade.trim()) p.push({ nivel: 'bloqueio', texto: 'Antimicrobiano: informe a idade do paciente (RDC 471/2021).' });
-    if (!paciente.pacienteSexo) p.push({ nivel: 'bloqueio', texto: 'Antimicrobiano: informe o sexo do paciente (RDC 471/2021).' });
+    if (!paciente.pacienteIdade.trim()) p.push({ nivel: 'bloqueio', texto: 'Antimicrobiano: informe a idade do paciente (RDC 471/2021).', campo: 'idade' });
+    if (!paciente.pacienteSexo) p.push({ nivel: 'bloqueio', texto: 'Antimicrobiano: informe o sexo do paciente (RDC 471/2021).', campo: 'sexo' });
   }
 
   if (temRce || notificacoes.length) {
@@ -120,12 +123,14 @@ export function validarReceita(
       p.push({
         nivel: temRce ? 'bloqueio' : 'aviso',
         texto: 'Controlado: informe o endereço completo do paciente.',
+        campo: 'endereco',
       });
     }
     if (!paciente.pacienteCpf.replace(/\D/g, '') && !paciente.pacienteSemCpf) {
       p.push({
         nivel: temRce ? 'bloqueio' : 'aviso',
         texto: 'Controlado: informe o CPF do paciente ou marque "Não possui CPF".',
+        campo: 'cpf',
       });
     }
   }
