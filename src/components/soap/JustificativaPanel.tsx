@@ -5,6 +5,7 @@ import { callAI, getLastUsedModel, cancelAIRequest } from '../../config/gemini';
 import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import { buildPacienteContexto } from '../../lib/aiContext';
+import { getProcedimentoNome } from '../../data/procedimentos';
 import { Wand2, FileText, X, Square } from 'lucide-react';
 
 const SYSTEM_PROMPT_JUSTIFICATIVA = `Você é um médico geriatra e gastroenterologista sênior, com expertise em auditoria médica de convênios.
@@ -21,7 +22,8 @@ REGRAS:
 - Para idosos, mencione "PACIENTE IDOSO" ou "PACIENTE GERIÁTRICO"
 - Seja profissional e objetivo — esta justificativa será auditada pelo convênio
 - NÃO use formato SOAP, NÃO use bullet points
-- Apenas uma frase clínica direta em português`;
+- Apenas uma frase clínica direta em português
+- Itens marcados "(fora do catálogo)" foram digitados pelo médico: identifique o exame ou procedimento pelo nome, justifique-o como os demais e escreva o nome por extenso, sem a marcação`;
 
 interface JustificativaPanelProps {
   mode: 'exames' | 'procedimentos';
@@ -39,6 +41,7 @@ export default function JustificativaPanel({ mode }: JustificativaPanelProps) {
   const genero = useAppStore((s) => s.genero);
   const examesSelecionados = useAppStore((s) => s.examesSelecionados);
   const procedimentosSelecionados = useAppStore((s) => s.procedimentosSelecionados);
+  const procedimentosPersonalizados = useAppStore((s) => s.procedimentosPersonalizados);
   const queixa = useAppStore((s) => s.queixa);
   const setQueixa = useAppStore((s) => s.setQueixa);
   const justificativaExames = useAppStore((s) => s.justificativaExames);
@@ -63,9 +66,15 @@ export default function JustificativaPanel({ mode }: JustificativaPanelProps) {
   };
 
   const buildContext = () => {
+    // Procedimentos vão pelo nome completo (o id interno não diz nada à IA), e os
+    // digitados fora do catálogo entram marcados, para também serem justificados.
+    const procedimentos = [
+      ...procedimentosSelecionados.map(getProcedimentoNome),
+      ...procedimentosPersonalizados.map((nome) => `${nome} (fora do catálogo)`),
+    ];
     const itemsStr = isLab
       ? `Exames laboratoriais: ${examesSelecionados.join(', ') || 'nenhum'}`
-      : `Procedimentos eletivos: ${procedimentosSelecionados.join(', ') || 'nenhum'}`;
+      : `Procedimentos eletivos: ${procedimentos.join(', ') || 'nenhum'}`;
     return `${buildPacienteContexto({ pacienteNome, pacienteIdade, genero })}
 ${itemsStr}
 Queixa clínica: "${queixa}"`;

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronRight, Plus, Search, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Pencil, Plus, Search, X } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import {
   GRUPO_LABELS,
@@ -90,6 +90,93 @@ function LinhaProcedimento({
         </span>
       )}
     </label>
+  );
+}
+
+/**
+ * Procedimento fora do catálogo, digitado à mão. Enquanto se digita, procura no
+ * catálogo e mostra o que já existe, para não duplicar. O item entra na guia
+ * impressa e na justificativa da IA, marcado como fora do catálogo.
+ */
+function ForaDoCatalogo({ aoMarcar }: { aoMarcar: (id: string) => void }) {
+  const selecionados = useAppStore((s) => s.procedimentosSelecionados);
+  const personalizados = useAppStore((s) => s.procedimentosPersonalizados);
+  const addPersonalizado = useAppStore((s) => s.addProcedimentoPersonalizado);
+  const [texto, setTexto] = useState('');
+
+  const consulta = normalizar(texto.trim());
+  const parecidos = useMemo(() => {
+    const termos = consulta.split(/\s+/).filter((t) => t.length >= 3);
+    if (!termos.length) return [];
+    return PROCEDIMENTOS.filter((p) => termos.every((t) => (TEXTO_BUSCA.get(p.id) ?? '').includes(t))).slice(0, 4);
+  }, [consulta]);
+
+  const nome = texto.trim();
+  const jaTem = personalizados.some((n) => normalizar(n) === normalizar(nome));
+  const adicionar = () => {
+    if (!nome || jaTem) return;
+    addPersonalizado(nome);
+    setTexto('');
+  };
+
+  return (
+    <div className="border-t border-neutral-border bg-indigo-50/40 px-4 py-3.5">
+      <label htmlFor="proc-fora-catalogo" className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-700 mb-2">
+        <Pencil size={11} />
+        Procedimento fora do catálogo
+      </label>
+      <div className="flex gap-2">
+        <input
+          id="proc-fora-catalogo"
+          type="text"
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              adicionar();
+            }
+          }}
+          placeholder="Ex.: Cintilografia de perfusão miocárdica, videolaringoscopia..."
+          className="min-w-0 flex-1 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400"
+        />
+        <button
+          type="button"
+          onClick={adicionar}
+          disabled={!nome || jaTem}
+          className="flex shrink-0 items-center gap-1 rounded-lg bg-indigo-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition-colors cursor-pointer disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+        >
+          <Plus size={13} />
+          Adicionar
+        </button>
+      </div>
+      {parecidos.length > 0 ? (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+          <span className="font-semibold text-amber-800">Já existe no catálogo:</span>
+          {parecidos.map((p) => {
+            const ativo = selecionados.includes(p.id);
+            return (
+              <button
+                key={p.id}
+                type="button"
+                disabled={ativo}
+                onClick={() => {
+                  aoMarcar(p.id);
+                  setTexto('');
+                }}
+                className="rounded-md border border-amber-200 bg-white px-2 py-1 font-semibold text-amber-900 hover:bg-amber-50 cursor-pointer disabled:cursor-default disabled:border-emerald-200 disabled:text-emerald-700"
+              >
+                {ativo ? `✓ ${p.nomeCurto}` : `Usar ${p.nomeCurto}`}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="mt-2 text-[11px] text-indigo-600/80">
+          {jaTem ? 'Esse já está na guia.' : 'Entra na guia impressa e na justificativa da IA, como os demais. Enter adiciona.'}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -299,6 +386,8 @@ export default function ProcedimentoSelector() {
           </button>
         )}
       </div>
+
+      <ForaDoCatalogo aoMarcar={(id) => { if (!selecionados.includes(id)) alternar(id); }} />
     </section>
   );
 }
