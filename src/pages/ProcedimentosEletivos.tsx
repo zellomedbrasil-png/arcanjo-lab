@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, FileText, Printer, RotateCcw, Sparkles } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import PatientForm from '../components/patient/PatientForm';
-import JustificativaPanel from '../components/soap/JustificativaPanel';
-import ExamSelector from '../components/exams/ExamSelector';
+import ProcedimentoSelector from '../components/procedimentos/ProcedimentoSelector';
+import GuiaProcedimentosLateral from '../components/procedimentos/GuiaProcedimentosLateral';
 import { useAppStore } from '../store/useAppStore';
 import { formatDraftTime } from '../lib/formatters';
 import type { TipoGuia } from '../types';
@@ -64,7 +64,7 @@ export default function ProcedimentosEletivos() {
 
   return (
     <Layout>
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 pb-28 max-lg:pb-36 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 lg:pb-10 max-lg:pb-36 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
@@ -89,15 +89,19 @@ export default function ProcedimentosEletivos() {
         {/* 1. Patient Form */}
         <PatientForm />
 
-        {/* 2. IA Justification Assistant (Procedimentos specific) */}
-        <JustificativaPanel mode="procedimentos" />
-
-        {/* 3. Selection Grid (Procedimentos specific) */}
-        <ExamSelector mode="procedimentos" />
+        {/* Escolha à esquerda; a guia em montagem fixa à direita, como em Exames */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-8 min-w-0">
+            <ProcedimentoSelector />
+          </div>
+          <aside className="lg:col-span-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+            <GuiaProcedimentosLateral />
+          </aside>
+        </div>
       </div>
 
-      {/* Fixed bottom footer */}
-      <div className="fixed bottom-0 lg:left-64 left-0 right-0 z-30 lg:z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg px-6 py-3.5 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))]">
+      {/* Rodapé fixo só no celular; no desktop o botão fica na guia lateral */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg px-6 py-3.5 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))]">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-6">
           <div className="flex min-w-0 flex-1 items-center gap-3 text-sm overflow-hidden">
             <div className={`flex items-center gap-1.5 shrink-0 ${isFormValid ? 'text-green-600' : 'text-gray-400'}`}>
