@@ -6,7 +6,7 @@ import GuiaIPM from '../components/print/templates/GuiaIPM';
 import GuiaServicoISSEC from '../components/print/templates/GuiaServicoISSEC';
 import GuiaParticular from '../components/print/templates/GuiaParticular';
 import GuiaSADTPadrao from '../components/print/templates/GuiaSADTPadrao';
-import { getServicoNome } from '../data/servicos';
+import { descreverServico } from '../data/servicos';
 
 export default function ImprimirServico() {
   const navigate = useNavigate();
@@ -16,6 +16,8 @@ export default function ImprimirServico() {
   const convenio = useAppStore((s) => s.convenio);
   const servicosSelecionados = useAppStore((s) => s.servicosSelecionados);
   const justificativaServicos = useAppStore((s) => s.justificativaServicos);
+  const servicoSessoes = useAppStore((s) => s.servicoSessoes);
+  const servicoFrequencia = useAppStore((s) => s.servicoFrequencia);
   const sadtOperadora = useAppStore((s) => s.sadtOperadora);
   const sadtRegistroAns = useAppStore((s) => s.sadtRegistroAns);
 
@@ -25,7 +27,8 @@ export default function ImprimirServico() {
 
   if (!pacienteNome) return null;
 
-  const terapias = servicosSelecionados.map(getServicoNome);
+  // Guias sem coluna de quantidade: nome — n sessões — frequência numa linha.
+  const terapias = servicosSelecionados.map((id) => descreverServico(id, servicoSessoes, servicoFrequencia));
   const isSADT = convenio === 'SADT';
 
   const guia = (() => {
