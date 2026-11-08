@@ -184,7 +184,20 @@ export const GRUPOS_PROCEDIMENTOS: ProcedimentoGrupo[] = [
   'UROLOGIA',
 ];
 
-export const PROCEDIMENTOS_POR_GRUPO = GRUPOS_PROCEDIMENTOS.reduce((acc, grupo) => {
+export const GRUPO_LABELS: Record<ProcedimentoGrupo, string> = {
+  CARDIOLOGIA: 'Cardiologia',
+  ULTRASSONOGRAFIA: 'Ultrassonografia e Doppler',
+  ARTICULACOES: 'Articulações',
+  ENDOSCOPIA: 'Endoscopia digestiva',
+  GASTRO_FUNCIONAL: 'Gastro funcional',
+  IMAGEM: 'Imagem (RX, TC, RM)',
+  MASTOLOGIA: 'Mastologia',
+  GERIATRIA: 'Geriatria e funcionais',
+  GINECOLOGIA: 'Ginecologia',
+  UROLOGIA: 'Urologia',
+};
+
+export const PROCEDIMENTOS_POR_GRUPO =GRUPOS_PROCEDIMENTOS.reduce((acc, grupo) => {
   acc[grupo] = PROCEDIMENTOS.filter((p) => p.grupo === grupo);
   return acc;
 }, {} as Record<ProcedimentoGrupo, ProcedimentoDef[]>);
