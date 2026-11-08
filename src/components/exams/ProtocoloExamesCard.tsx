@@ -33,7 +33,7 @@ export default function ProtocoloExamesCard() {
 
   return (
     <section className="rounded-lg border border-neutral-border bg-white overflow-hidden">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 px-4 py-3.5">
+      <div className="flex flex-wrap items-start gap-x-6 gap-y-3 px-4 py-3.5">
         <Segmentado
           rotulo="Área"
           opcoes={ESPECIALIDADES.map((e) => ({ id: e.id, nome: e.nome === 'Gastroenterologia' ? 'Gastro' : e.nome === 'Clínica Médica' ? 'Clínica' : e.nome }))}
