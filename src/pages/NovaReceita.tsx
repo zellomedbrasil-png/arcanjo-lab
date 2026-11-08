@@ -17,6 +17,7 @@ import DocumentoReceitaView from '../components/print/templates/DocumentoReceita
 import { useDocumentosReceita } from '../hooks/useDocumentosReceita';
 import { nomeDocumento } from '../utils/agruparReceita';
 import { REGRAS_MODELO } from '../data/regrasReceita';
+import type { Pendencia } from '../utils/validarReceita';
 import { enderecoCompleto, pendenciasPrescritor, registroConselho, usePrescritorStore } from '../config/prescritor';
 import {
   Printer, RotateCcw, FileText, ChevronDown, ChevronUp, User, Calendar, MapPin, Pill,
@@ -260,14 +261,21 @@ export default function NovaReceita() {
     const onKey = (e: KeyboardEvent) => {
       const alvo = e.target as HTMLElement;
       const digitando = alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA' || alvo.isContentEditable;
+      // Com a barra já na tela, foca na hora: esperar o próximo quadro perdia a
+      // primeira letra digitada logo depois da tecla.
+      const focarBarra = () => {
+        if (barraRef.current) barraRef.current.focar();
+        else {
+          setModoEntrada('ESTRUTURADO');
+          requestAnimationFrame(() => barraRef.current?.focar());
+        }
+      };
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setModoEntrada('ESTRUTURADO');
-        requestAnimationFrame(() => barraRef.current?.focar());
+        focarBarra();
       } else if (e.key === '/' && !digitando) {
         e.preventDefault();
-        setModoEntrada('ESTRUTURADO');
-        requestAnimationFrame(() => barraRef.current?.focar());
+        focarBarra();
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && podeImprimirRef.current) {
         e.preventDefault();
         navigate('/receita/imprimir');
@@ -276,6 +284,25 @@ export default function NovaReceita() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [navigate, setModoEntrada]);
+
+  // Pendência com campo vira link: rola até o campo e põe o cursor nele.
+  const irPara = (campo: NonNullable<Pendencia['campo']>) => {
+    if (campo === 'prescritor') setEditandoPrescritor(true);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`receita-${campo}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (campo !== 'prescritor') el.focus({ preventScroll: true });
+    });
+  };
+  const linhaPendencia = (p: Pendencia) =>
+    p.campo ? (
+      <button type="button" onClick={() => irPara(p.campo!)} className="text-left underline decoration-dotted underline-offset-2 hover:decoration-solid cursor-pointer">
+        {p.texto}
+      </button>
+    ) : (
+      p.texto
+    );
 
   const inputCls = "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all shadow-sm placeholder-gray-300 bg-white";
   const labelCls = "block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5";
@@ -314,111 +341,6 @@ export default function NovaReceita() {
           {/* Coluna Esquerda: Edição */}
           <div className="flex-1 w-full space-y-6">
 
-            {/* Dados do prescritor */}
-            <div className={`bg-white rounded-2xl shadow-sm border p-5 ${faltamPrescritor.length ? 'border-red-200' : 'border-gray-100'}`}>
-              <button
-                type="button"
-                onClick={() => setEditandoPrescritor(!editandoPrescritor)}
-                className="w-full flex items-center justify-between gap-3 text-left"
-              >
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Stethoscope size={16} className="text-indigo-500" />
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Seus dados na receita</span>
-                  {faltamPrescritor.length > 0 && (
-                    <span className="text-[11px] font-semibold text-red-600">Falta: {faltamPrescritor.join(', ')}</span>
-                  )}
-                </div>
-                {editandoPrescritor ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
-              </button>
-              {!editandoPrescritor && (
-                <p className="mt-2 text-xs text-gray-500">{enderecoCompleto(prescritor) || 'Sem endereço'} · {prescritor.telefone || 'sem telefone'}</p>
-              )}
-              {editandoPrescritor && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="md:col-span-2">
-                    <label className={labelCls}>Endereço do consultório (rua, nº, complemento){obrig(true)}</label>
-                    <input type="text" value={prescritor.endereco} onChange={(e) => setPrescritor({ endereco: e.target.value })} className={inputCls} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Bairro{obrig(true)}</label>
-                    <input type="text" value={prescritor.bairro} onChange={(e) => setPrescritor({ bairro: e.target.value })} className={inputCls} />
-                  </div>
-                  <div>
-                    <label className={labelCls}>CEP{obrig(true)}</label>
-                    <input type="text" value={prescritor.cep} onChange={(e) => setPrescritor({ cep: formatCep(e.target.value) })} placeholder="00000-000" className={inputCls} />
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <label className={labelCls}>Cidade</label>
-                      <input type="text" value={prescritor.cidade} onChange={(e) => setPrescritor({ cidade: e.target.value })} className={inputCls} />
-                    </div>
-                    <div style={{ width: '80px' }}>
-                      <label className={labelCls}>UF</label>
-                      <input type="text" value={prescritor.uf} maxLength={2} onChange={(e) => setPrescritor({ uf: e.target.value.toUpperCase() })} className={inputCls} />
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelCls}>Telefone{obrig(true)}</label>
-                    <input type="text" value={prescritor.telefone} onChange={(e) => setPrescritor({ telefone: formatTelefone(e.target.value) })} placeholder="(85) 0000-0000" className={inputCls} />
-                  </div>
-                  <p className="md:col-span-2 text-[11px] text-gray-500">
-                    Endereço completo e telefone do médico são obrigatórios na receita de antimicrobiano (RDC 471/2021) e na de controle especial (Port. 344/98). Ficam salvos neste aparelho.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Tipo de receita: automático no estruturado, escolha manual nos modos texto */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              {modoTexto ? (
-                <>
-                  <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Tipo de receita do texto</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {opcoesTipo.map((o) => (
-                      <button
-                        key={o.tipo}
-                        type="button"
-                        onClick={() => setTipoReceita(o.tipo)}
-                        className={`relative flex flex-col items-start gap-1 p-3.5 rounded-xl border-2 transition-all text-left ${
-                          tipoReceita === o.tipo ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
-                      >
-                        <p className={`font-bold text-sm ${tipoReceita === o.tipo ? 'text-indigo-900' : 'text-gray-700'}`}>{o.titulo}</p>
-                        <p className="text-xs text-gray-400">{o.desc}</p>
-                      </button>
-                    ))}
-                  </div>
-                  <p className="mt-3 text-xs text-gray-500">
-                    Notificação azul ou amarela (benzodiazepínicos, zolpidem, opioides fortes, metilfenidato) não sai daqui: use o modo estruturado, que gera a guia para o talonário.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">O que vai ser impresso</h2>
-                  {documentos.length === 0 ? (
-                    <p className="text-sm text-gray-400">Adicione medicamentos. O sistema separa cada um no papel que a farmácia exige.</p>
-                  ) : (
-                    <ol className="space-y-1.5">
-                      {documentos.map((d, i) => {
-                        const notif = !REGRAS_MODELO[d.modelo].imprimeReceita;
-                        return (
-                          <li key={d.chave} className={`flex items-start gap-2 text-sm ${notif ? 'text-red-700' : 'text-gray-700'}`}>
-                            <span className="font-bold text-gray-400 w-4 shrink-0">{i + 1}.</span>
-                            <span>
-                              <span className="font-semibold">{nomeDocumento(d)}</span>
-                              {!notif && (
-                                <span className="text-gray-500"> — {d.medicamentos.map((m) => (m.nomeDigitado || m.principioAtivo).replace(/\s+\d.*$/, '')).join(', ')}</span>
-                              )}
-                            </span>
-                          </li>
-                        );
-                      })}
-                    </ol>
-                  )}
-                </>
-              )}
-            </div>
-
             {/* Dados do Paciente */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-50">
@@ -429,7 +351,7 @@ export default function NovaReceita() {
 
                 <div className="md:col-span-2">
                   <label className={labelCls}>Nome Completo{obrig(true)}</label>
-                  <input type="text" value={pacienteNome} onChange={(e) => setPacienteReceita({ pacienteNome: e.target.value })} onBlur={handleBlur} placeholder="Nome completo do paciente" className={inputCls} />
+                  <input id="receita-nome" type="text" value={pacienteNome} onChange={(e) => setPacienteReceita({ pacienteNome: e.target.value })} onBlur={handleBlur} placeholder="Nome completo do paciente" className={inputCls} />
                   {pacientesRecentes.length > 0 && (
                     <div className="mt-2.5 flex flex-wrap items-center gap-2 animate-in fade-in duration-300">
                       <span className="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider flex items-center gap-1 mr-1">
@@ -455,7 +377,7 @@ export default function NovaReceita() {
                   <div className="flex gap-3">
                     <div className="shrink-0" style={{ width: '88px' }}>
                       <label className={labelCls}>Idade{obrig(precisaIdadeSexo)}</label>
-                      <input type="text" inputMode="numeric" value={pacienteIdade} onChange={(e) => setPacienteReceita({ pacienteIdade: e.target.value.replace(/[^\d]/g, '').slice(0, 3) })} placeholder="anos" className={`${inputCls} ${faltaIdade ? '!border-red-400 !bg-red-50/40' : ''}`} aria-invalid={faltaIdade} />
+                      <input id="receita-idade" type="text" inputMode="numeric" value={pacienteIdade} onChange={(e) => setPacienteReceita({ pacienteIdade: e.target.value.replace(/[^\d]/g, '').slice(0, 3) })} placeholder="anos" className={`${inputCls} ${faltaIdade ? '!border-red-400 !bg-red-50/40' : ''}`} aria-invalid={faltaIdade} />
                     </div>
                     <div className="flex-1">
                       <label className={labelCls}>Sexo{obrig(precisaIdadeSexo)}</label>
@@ -463,6 +385,7 @@ export default function NovaReceita() {
                         {(['F', 'M'] as const).map((sx) => (
                           <button
                             key={sx}
+                            id={sx === 'F' ? 'receita-sexo' : undefined}
                             type="button"
                             onClick={() => setPacienteReceita({ pacienteSexo: pacienteSexo === sx ? '' : sx })}
                             className={`flex-1 min-w-0 px-2 py-2.5 rounded-xl border text-sm font-semibold whitespace-nowrap transition-all ${
@@ -489,7 +412,7 @@ export default function NovaReceita() {
 
                 <div>
                   <label className={labelCls}>CPF{obrig(precisaEndereco)}</label>
-                  <input type="text" value={pacienteCpf} disabled={pacienteSemCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} onBlur={handleBlur} placeholder={pacienteSemCpf ? 'Não possui' : '000.000.000-00'} className={`${inputCls} disabled:bg-gray-50`} />
+                  <input id="receita-cpf" type="text" value={pacienteCpf} disabled={pacienteSemCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} onBlur={handleBlur} placeholder={pacienteSemCpf ? 'Não possui' : '000.000.000-00'} className={`${inputCls} disabled:bg-gray-50`} />
                   <label className="mt-1.5 flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer select-none">
                     <input type="checkbox" checked={pacienteSemCpf} onChange={(e) => setPacienteReceita({ pacienteSemCpf: e.target.checked, ...(e.target.checked ? { pacienteCpf: '' } : {}) })} />
                     Não possui CPF
@@ -500,7 +423,7 @@ export default function NovaReceita() {
                   <>
                     <div className="md:col-span-2">
                       <label className={labelCls}>Endereço (Rua, Nº, Bairro){obrig(true)}</label>
-                      <input type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} onBlur={handleBlur} placeholder="Rua, número, bairro" className={inputCls} />
+                      <input id="receita-endereco" type="text" value={pacienteEndereco} onChange={(e) => setPacienteReceita({ pacienteEndereco: e.target.value })} onBlur={handleBlur} placeholder="Rua, número, bairro" className={inputCls} />
                     </div>
 
                     <div>
@@ -552,6 +475,57 @@ export default function NovaReceita() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Tipo de receita: automático no estruturado, escolha manual nos modos texto */}
+            <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 ${modoTexto ? '' : 'lg:hidden'}`}>
+              {modoTexto ? (
+                <>
+                  <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Tipo de receita do texto</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {opcoesTipo.map((o) => (
+                      <button
+                        key={o.tipo}
+                        type="button"
+                        onClick={() => setTipoReceita(o.tipo)}
+                        className={`relative flex flex-col items-start gap-1 p-3.5 rounded-xl border-2 transition-all text-left ${
+                          tipoReceita === o.tipo ? 'border-indigo-600 bg-indigo-50/20' : 'border-gray-200 bg-white hover:border-gray-300'
+                        }`}
+                      >
+                        <p className={`font-bold text-sm ${tipoReceita === o.tipo ? 'text-indigo-900' : 'text-gray-700'}`}>{o.titulo}</p>
+                        <p className="text-xs text-gray-400">{o.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-3 text-xs text-gray-500">
+                    Notificação azul ou amarela (benzodiazepínicos, zolpidem, opioides fortes, metilfenidato) não sai daqui: use o modo estruturado, que gera a guia para o talonário.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">O que vai ser impresso</h2>
+                  {documentos.length === 0 ? (
+                    <p className="text-sm text-gray-400">Adicione medicamentos. O sistema separa cada um no papel que a farmácia exige.</p>
+                  ) : (
+                    <ol className="space-y-1.5">
+                      {documentos.map((d, i) => {
+                        const notif = !REGRAS_MODELO[d.modelo].imprimeReceita;
+                        return (
+                          <li key={d.chave} className={`flex items-start gap-2 text-sm ${notif ? 'text-red-700' : 'text-gray-700'}`}>
+                            <span className="font-bold text-gray-400 w-4 shrink-0">{i + 1}.</span>
+                            <span>
+                              <span className="font-semibold">{nomeDocumento(d)}</span>
+                              {!notif && (
+                                <span className="text-gray-500"> — {d.medicamentos.map((m) => (m.nomeDigitado || m.principioAtivo).replace(/\s+\d.*$/, '')).join(', ')}</span>
+                              )}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Medicamentos */}
@@ -700,16 +674,69 @@ export default function NovaReceita() {
                 </div>
                 {bloqueios.length > 0 && (
                   <ul className="mt-3 ml-16 list-disc text-xs text-red-800 space-y-1">
-                    {bloqueios.map((p) => <li key={p.texto}>{p.texto}</li>)}
+                    {bloqueios.map((p) => <li key={p.texto}>{linhaPendencia(p)}</li>)}
                   </ul>
                 )}
                 {avisos.length > 0 && (
                   <ul className="mt-3 ml-16 list-disc text-xs text-amber-800 space-y-1">
-                    {avisos.map((p) => <li key={p.texto}>{p.texto}</li>)}
+                    {avisos.map((p) => <li key={p.texto}>{linhaPendencia(p)}</li>)}
                   </ul>
                 )}
               </div>
             )}
+            {/* Dados do prescritor */}
+            <div id="receita-prescritor" className={`bg-white rounded-2xl shadow-sm border p-5 scroll-mt-6 ${faltamPrescritor.length ? 'border-red-200' : 'border-gray-100'}`}>
+              <button
+                type="button"
+                onClick={() => setEditandoPrescritor(!editandoPrescritor)}
+                className="w-full flex items-center justify-between gap-3 text-left"
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Stethoscope size={16} className="text-indigo-500" />
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Seus dados na receita</span>
+                  {faltamPrescritor.length > 0 && (
+                    <span className="text-[11px] font-semibold text-red-600">Falta: {faltamPrescritor.join(', ')}</span>
+                  )}
+                </div>
+                {editandoPrescritor ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
+              </button>
+              {!editandoPrescritor && (
+                <p className="mt-2 text-xs text-gray-500">{enderecoCompleto(prescritor) || 'Sem endereço'} · {prescritor.telefone || 'sem telefone'}</p>
+              )}
+              {editandoPrescritor && (
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="md:col-span-2">
+                    <label className={labelCls}>Endereço do consultório (rua, nº, complemento){obrig(true)}</label>
+                    <input type="text" value={prescritor.endereco} onChange={(e) => setPrescritor({ endereco: e.target.value })} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Bairro{obrig(true)}</label>
+                    <input type="text" value={prescritor.bairro} onChange={(e) => setPrescritor({ bairro: e.target.value })} className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>CEP{obrig(true)}</label>
+                    <input type="text" value={prescritor.cep} onChange={(e) => setPrescritor({ cep: formatCep(e.target.value) })} placeholder="00000-000" className={inputCls} />
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="flex-1">
+                      <label className={labelCls}>Cidade</label>
+                      <input type="text" value={prescritor.cidade} onChange={(e) => setPrescritor({ cidade: e.target.value })} className={inputCls} />
+                    </div>
+                    <div style={{ width: '80px' }}>
+                      <label className={labelCls}>UF</label>
+                      <input type="text" value={prescritor.uf} maxLength={2} onChange={(e) => setPrescritor({ uf: e.target.value.toUpperCase() })} className={inputCls} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelCls}>Telefone{obrig(true)}</label>
+                    <input type="text" value={prescritor.telefone} onChange={(e) => setPrescritor({ telefone: formatTelefone(e.target.value) })} placeholder="(85) 0000-0000" className={inputCls} />
+                  </div>
+                  <p className="md:col-span-2 text-[11px] text-gray-500">
+                    Endereço completo e telefone do médico são obrigatórios na receita de antimicrobiano (RDC 471/2021) e na de controle especial (Port. 344/98). Ficam salvos neste aparelho.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Coluna Direita: prévia A4 — os mesmos documentos que vão para a impressão */}
