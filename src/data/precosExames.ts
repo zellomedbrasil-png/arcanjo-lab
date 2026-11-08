@@ -43,7 +43,8 @@ export const PRECOS_EXAMES: Record<string, { ISSEC?: number; IPM?: number }> = {
   'CALCITONINA': { ISSEC: 63.00, IPM: 66.91 },
   'CALCIURIA': { ISSEC: 2.80, IPM: 4.59 },
   'CAPACIDADE DE LIGACAO DO FERRO': { ISSEC: 3.92, IPM: 5.22 },
-  'CARGA VIRAL HIV': { ISSEC: 289.82 },
+  // Não consta na tabela IPM: o valor IPM repete o do ISSEC, por decisão do médico.
+  'CARGA VIRAL HIV': { ISSEC: 289.82, IPM: 289.82 },
   'CEA': { ISSEC: 53.20, IPM: 32.13 },
   'CERULOPLASMINA': { ISSEC: 11.20, IPM: 11.27 },
   'CHAGAS - ANTICORPOS IGG': { ISSEC: 8.40, IPM: 17.47 },
