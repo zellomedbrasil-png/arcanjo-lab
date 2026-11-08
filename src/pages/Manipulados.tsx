@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FlaskConical, Search, X, Plus, Printer, Trash2, ShieldAlert,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, User,
 } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import { useManipuladosStore, viasNecessarias } from '../store/useManipuladosStore';
@@ -16,6 +16,25 @@ import FormulaCard from '../components/manipulados/FormulaCard';
 import MontadorFormula from '../components/manipulados/MontadorFormula';
 import ReceitaManipulado from '../components/print/templates/ReceitaManipulado';
 import { formatCpf } from '../lib/formatters';
+import { useAppStore } from '../store/useAppStore';
+import { useRecentPatientsStore } from '../store/useRecentPatientsStore';
+
+// Biblioteca aberta/fechada lembrada neste aparelho.
+const CHAVE_BIBLIOTECA = 'arcanjo-lab-manipulados-biblioteca';
+const lerBiblioteca = () => {
+  try {
+    return localStorage.getItem(CHAVE_BIBLIOTECA) !== '0';
+  } catch {
+    return true;
+  }
+};
+const gravarBiblioteca = (aberta: boolean) => {
+  try {
+    localStorage.setItem(CHAVE_BIBLIOTECA, aberta ? '1' : '0');
+  } catch {
+    // sem armazenamento: só não lembra
+  }
+};
 
 type FiltroArea = AreaFormula | 'TODAS';
 type FiltroEvidencia = NivelEvidencia | 'TODAS';
@@ -40,7 +59,36 @@ export default function Manipulados() {
   const setTextoLivre = useManipuladosStore((s) => s.setTextoLivre);
   const resetManipulado = useManipuladosStore((s) => s.resetManipulado);
 
-  const [bibliotecaAberta, setBibliotecaAberta] = useState(true);
+  const [bibliotecaAberta, setBibliotecaAbertaState] = useState(lerBiblioteca);
+  const setBibliotecaAberta = (v: boolean) => {
+    setBibliotecaAbertaState(v);
+    gravarBiblioteca(v);
+  };
+  const [editandoPaciente, setEditandoPaciente] = useState(false);
+
+  // O paciente vem do cadastro do início do atendimento (useAppStore). A sincronia
+  // entre telas só corre quando algo muda; ao abrir a aba, puxa o que já está lá.
+  // Paciente diferente: troca os dados e traz o endereço salvo nos recentes.
+  useEffect(() => {
+    const app = useAppStore.getState();
+    const nome = app.pacienteNome.trim();
+    if (!nome) return;
+    const m = useManipuladosStore.getState();
+    if (nome.toLowerCase() === m.pacienteNome.trim().toLowerCase()) {
+      if (!m.pacienteCpf && app.pacienteCpf) useManipuladosStore.setState({ pacienteCpf: app.pacienteCpf });
+      return;
+    }
+    const recente = useRecentPatientsStore.getState().pacientes.find((p) => p.nome.toLowerCase() === nome.toLowerCase());
+    useManipuladosStore.setState({
+      pacienteNome: app.pacienteNome,
+      pacienteCpf: app.pacienteCpf || recente?.cpf || '',
+      pacienteEndereco: recente?.endereco || '',
+      pacienteCep: recente?.cep || '',
+      pacienteCidade: recente?.cidade || 'Fortaleza',
+      pacienteUf: recente?.uf || 'CE',
+      pacienteTelefone: recente?.telefone || '',
+    });
+  }, []);
   const [busca, setBusca] = useState('');
   const [filtroArea, setFiltroArea] = useState<FiltroArea>('TODAS');
   const [filtroEvid, setFiltroEvid] = useState<FiltroEvidencia>('TODAS');
@@ -65,14 +113,50 @@ export default function Manipulados() {
 
   const isTextoLivre = modoEntrada === 'TEXTO_LIVRE';
   const temConteudo = isTextoLivre ? textoLivre.trim() !== '' : formulas.length > 0;
-  const podeImprimir = pacienteNome.trim() !== '' && temConteudo;
 
+  // Paciente: resumo quando já há nome; formulário inteiro sem nome ou em "Editar".
+  const resumido = pacienteNome.trim() !== '' && !editandoPaciente;
+  const faltaCpf = vias === 2 && !pacienteCpf.replace(/\D/g, '');
+
+  // O que falta antes de imprimir. Ativo C1/C5 (2 vias) é receita de controle
+  // especial: o endereço do paciente é obrigatório (Port. 344/98, art. 55).
+  type Campo = 'nome' | 'cpf' | 'endereco';
+  const pendencias: { texto: string; campo?: Campo; bloqueia: boolean }[] = [];
+  if (!pacienteNome.trim()) pendencias.push({ texto: 'Informe o nome do paciente.', campo: 'nome', bloqueia: true });
+  if (!temConteudo) pendencias.push({ texto: 'Adicione ao menos uma fórmula.', bloqueia: true });
+  if (vias === 2 && !pacienteEndereco.trim())
+    pendencias.push({ texto: 'Controle especial: informe o endereço do paciente.', campo: 'endereco', bloqueia: true });
+  if (faltaCpf) pendencias.push({ texto: 'Controle especial: informe o CPF do paciente, se ele tiver.', campo: 'cpf', bloqueia: false });
+  const podeImprimir = pendencias.every((p) => !p.bloqueia);
+
+  const irPara = (campo: Campo) => {
+    if (campo === 'nome') setEditandoPaciente(true);
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`man-${campo}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el?.focus({ preventScroll: true });
+    });
+  };
+
+  // Ctrl+Enter imprime quando não falta nada.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && podeImprimir) {
+        e.preventDefault();
+        navigate('/manipulados/imprimir');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [podeImprimir, navigate]);
+
+  const labelCls = 'block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1';
   const inputCls =
     'w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all shadow-sm placeholder-gray-300 bg-white';
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 max-lg:pb-24">
         {/* ── Cabeçalho ── */}
         <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
           <div>
@@ -87,7 +171,9 @@ export default function Manipulados() {
           </div>
           <button
             type="button"
-            onClick={resetManipulado}
+            onClick={() => {
+              if (confirm('Limpar o paciente e todas as fórmulas desta receita?')) resetManipulado();
+            }}
             className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-red-600 transition-colors"
           >
             <Trash2 size={14} />
@@ -98,87 +184,113 @@ export default function Manipulados() {
         <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
           {/* ── Coluna de edição ── */}
           <div className="xl:col-span-3">
-            {/* Paciente */}
+            {/* Paciente: vem do início do atendimento; aqui só o resumo e o que falta */}
             <div className="bg-white border border-neutral-border rounded-2xl p-5 mb-6 shadow-sm">
-              <h2 className="text-xs font-bold uppercase text-indigo-700 tracking-wider mb-3">
-                Dados do Paciente
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="sm:col-span-2">
-                  <label className="block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1">
-                    Nome completo *
-                  </label>
-                  <input
-                    type="text"
-                    value={pacienteNome}
-                    onChange={(e) => setPacienteManipulado({ pacienteNome: e.target.value })}
-                    placeholder="Nome completo do paciente"
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1">
-                    CPF {vias === 2 && <span className="text-amber-600">*</span>}
-                  </label>
-                  <input
-                    type="text"
-                    value={pacienteCpf}
-                    onChange={(e) =>
-                      setPacienteManipulado({ pacienteCpf: formatCpf(e.target.value) })
-                    }
-                    placeholder="000.000.000-00"
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1">
-                    Telefone
-                  </label>
-                  <input
-                    type="text"
-                    value={pacienteTelefone}
-                    onChange={(e) => setPacienteManipulado({ pacienteTelefone: e.target.value })}
-                    placeholder="(85) 00000-0000"
-                    className={inputCls}
-                  />
-                </div>
-                {vias === 2 && (
-                  <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1">
-                      Endereço
-                    </label>
-                    <input
-                      type="text"
-                      value={pacienteEndereco}
-                      onChange={(e) => setPacienteManipulado({ pacienteEndereco: e.target.value })}
-                      placeholder="Rua, número, bairro"
-                      className={inputCls}
-                    />
+              {resumido ? (
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <User size={16} className="text-indigo-500 shrink-0" />
+                      <span className="text-sm font-bold uppercase text-gray-900 truncate">{pacienteNome}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {[pacienteCpf ? `CPF ${pacienteCpf}` : '', pacienteTelefone, data, local].filter(Boolean).join(' · ')}
+                    </p>
                   </div>
-                )}
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1">
-                    Data
-                  </label>
-                  <input
-                    type="text"
-                    value={data}
-                    onChange={(e) => setPacienteManipulado({ data: e.target.value })}
-                    className={inputCls}
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setEditandoPaciente(true)}
+                    className="shrink-0 text-xs font-bold text-indigo-700 hover:text-indigo-900 cursor-pointer"
+                  >
+                    Editar
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase text-gray-500 tracking-wide mb-1">
-                    Local
-                  </label>
-                  <input
-                    type="text"
-                    value={local}
-                    onChange={(e) => setPacienteManipulado({ local: e.target.value })}
-                    className={inputCls}
-                  />
+              ) : (
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <h2 className="text-xs font-bold uppercase text-indigo-700 tracking-wider">Dados do Paciente</h2>
+                  {editandoPaciente && pacienteNome.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setEditandoPaciente(false)}
+                      className="text-xs font-bold text-indigo-700 hover:text-indigo-900 cursor-pointer"
+                    >
+                      Concluir
+                    </button>
+                  )}
                 </div>
-              </div>
+              )}
+              {(!resumido || faltaCpf || vias === 2) && (
+                <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 ${resumido ? 'mt-4 pt-4 border-t border-gray-50' : ''}`}>
+                  {!resumido && (
+                    <div className="sm:col-span-2">
+                      <label htmlFor="man-nome" className={labelCls}>Nome completo *</label>
+                      <input
+                        id="man-nome"
+                        type="text"
+                        value={pacienteNome}
+                        onChange={(e) => setPacienteManipulado({ pacienteNome: e.target.value })}
+                        placeholder="Nome completo do paciente"
+                        className={inputCls}
+                      />
+                    </div>
+                  )}
+                  {(!resumido || faltaCpf) && (
+                    <div>
+                      <label htmlFor="man-cpf" className={labelCls}>
+                        CPF {vias === 2 && <span className="text-amber-600">*</span>}
+                      </label>
+                      <input
+                        id="man-cpf"
+                        type="text"
+                        value={pacienteCpf}
+                        onChange={(e) => setPacienteManipulado({ pacienteCpf: formatCpf(e.target.value) })}
+                        placeholder="000.000.000-00"
+                        className={inputCls}
+                      />
+                    </div>
+                  )}
+                  {!resumido && (
+                    <div>
+                      <label htmlFor="man-telefone" className={labelCls}>Telefone</label>
+                      <input
+                        id="man-telefone"
+                        type="text"
+                        value={pacienteTelefone}
+                        onChange={(e) => setPacienteManipulado({ pacienteTelefone: e.target.value })}
+                        placeholder="(85) 00000-0000"
+                        className={inputCls}
+                      />
+                    </div>
+                  )}
+                  {vias === 2 && (
+                    <div className="sm:col-span-2">
+                      <label htmlFor="man-endereco" className={labelCls}>
+                        Endereço <span className="text-amber-600">*</span>
+                      </label>
+                      <input
+                        id="man-endereco"
+                        type="text"
+                        value={pacienteEndereco}
+                        onChange={(e) => setPacienteManipulado({ pacienteEndereco: e.target.value })}
+                        placeholder="Rua, número, bairro, cidade"
+                        className={inputCls}
+                      />
+                    </div>
+                  )}
+                  {!resumido && (
+                    <>
+                      <div>
+                        <label htmlFor="man-data" className={labelCls}>Data</label>
+                        <input id="man-data" type="text" value={data} onChange={(e) => setPacienteManipulado({ data: e.target.value })} className={inputCls} />
+                      </div>
+                      <div>
+                        <label htmlFor="man-local" className={labelCls}>Local</label>
+                        <input id="man-local" type="text" value={local} onChange={(e) => setPacienteManipulado({ local: e.target.value })} className={inputCls} />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Alerta de controle especial — derivado, não escolhido */}
@@ -202,13 +314,13 @@ export default function Manipulados() {
 
             {/* Biblioteca de fórmulas */}
             <div className="bg-gradient-to-br from-indigo-50/20 via-indigo-50/10 to-transparent border border-indigo-100/50 rounded-2xl p-5 mb-6 shadow-sm">
-              <div className="flex justify-between items-center gap-3 mb-4">
+              <div className={`flex justify-between items-center gap-3 ${bibliotecaAberta ? 'mb-4' : ''}`}>
                 <span className="text-xs font-bold uppercase text-indigo-700 tracking-wider">
                   Biblioteca de Protocolos
                 </span>
                 <button
                   type="button"
-                  onClick={() => setBibliotecaAberta((v) => !v)}
+                  onClick={() => setBibliotecaAberta(!bibliotecaAberta)}
                   className="flex items-center gap-1 text-[10px] font-bold text-gray-500 hover:text-gray-800 transition-colors"
                 >
                   {bibliotecaAberta ? 'Recolher' : `Expandir (${FORMULAS.length})`}
@@ -292,6 +404,11 @@ export default function Manipulados() {
                             onUsar={(formula) => {
                               addFormulaDaBiblioteca(formula);
                               setModoEntrada('MONTADOR');
+                              // Fecha a biblioteca e leva até a fórmula para ajustar doses.
+                              setBibliotecaAberta(false);
+                              requestAnimationFrame(() =>
+                                document.getElementById('man-prescricao')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                              );
                             }}
                           />
                         ))}
@@ -303,7 +420,7 @@ export default function Manipulados() {
             </div>
 
             {/* Montador / Texto livre */}
-            <div className="bg-white border border-neutral-border rounded-2xl p-5 shadow-sm">
+            <div id="man-prescricao" className="bg-white border border-neutral-border rounded-2xl p-5 shadow-sm scroll-mt-6">
               <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
                 <span className="text-xs font-bold uppercase text-indigo-700 tracking-wider">
                   Prescrição
@@ -377,10 +494,26 @@ export default function Manipulados() {
                 <Printer size={16} />
                 {vias === 2 ? 'Imprimir Receita (2 vias)' : 'Imprimir Receita'}
               </button>
-              {!podeImprimir && (
-                <p className="text-[10px] text-gray-400 text-center mt-1.5">
-                  Preencha o nome do paciente e ao menos uma fórmula.
-                </p>
+              {pendencias.length > 0 ? (
+                <ul className="mt-2 space-y-0.5 text-[11px]">
+                  {pendencias.map((p) => (
+                    <li key={p.texto} className={p.bloqueia ? 'text-red-700' : 'text-amber-700'}>
+                      {p.campo ? (
+                        <button
+                          type="button"
+                          onClick={() => irPara(p.campo!)}
+                          className="text-left underline decoration-dotted underline-offset-2 hover:decoration-solid cursor-pointer"
+                        >
+                          {p.texto}
+                        </button>
+                      ) : (
+                        p.texto
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="hidden sm:block text-[10px] text-gray-400 text-center mt-1.5">Atalho: Ctrl+Enter</p>
               )}
             </div>
           </div>

@@ -89,6 +89,7 @@ function ViaManipulado({
   // Seletores por campo — nunca assinar o store inteiro (ver commit 41ae3d7).
   const pacienteNome = useManipuladosStore((s) => s.pacienteNome);
   const pacienteCpf = useManipuladosStore((s) => s.pacienteCpf);
+  const pacienteEndereco = useManipuladosStore((s) => s.pacienteEndereco);
   const local = useManipuladosStore((s) => s.local);
   const data = useManipuladosStore((s) => s.data);
   const formulas = useManipuladosStore((s) => s.formulas);
@@ -172,6 +173,13 @@ function ViaManipulado({
           <span style={{ fontSize: compacto ? '9px' : '12px' }}>{dataFormatada}</span>
         </div>
       </div>
+      {/* Controle especial (2 vias): endereço do paciente obrigatório (Port. 344/98, art. 55). */}
+      {duasVias && pacienteEndereco.trim() && (
+        <div className="text-left -mt-1 mb-2" style={{ fontSize: '8px' }}>
+          <span className="font-bold uppercase text-gray-600 tracking-wide">Endereço: </span>
+          {pacienteEndereco}
+        </div>
+      )}
 
       {/* ── Prescrição ── */}
       <div>
