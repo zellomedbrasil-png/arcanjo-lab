@@ -1,233 +1,114 @@
 import { useAppStore } from '../../store/useAppStore';
-import {
-  SERVICOS, GRUPOS_SERVICOS, SERVICOS_POR_GRUPO, SERVICO_REGRAS, SERVICO_POR_ID,
-} from '../../data/servicos';
-import type { ServicoGrupo, ServicoDef } from '../../data/servicos';
-import {
-  Activity, Wind, Ear, Brain, Apple, Hand, Sparkles, X, CheckCircle2, Wand2, Info, Pencil,
-} from 'lucide-react';
-import type { ElementType } from 'react';
-import { toast } from '../../lib/toast';
+import { GRUPOS_SERVICOS, SERVICOS_POR_GRUPO, SERVICO_REGRAS, SERVICO_POR_ID } from '../../data/servicos';
+import type { ServicoDef, ServicoGrupo } from '../../data/servicos';
+import { Info, Pencil } from 'lucide-react';
 
-const GRUPO_UI: Record<ServicoGrupo, { label: string; icon: ElementType; activeBg: string; color: string }> = {
-  FISIOTERAPIA:        { label: '🦴 Fisioterapia',        icon: Activity, activeBg: 'bg-emerald-600', color: 'text-emerald-500' },
-  FONOAUDIOLOGIA:      { label: '👂 Fonoaudiologia',      icon: Ear,      activeBg: 'bg-sky-600',     color: 'text-sky-500' },
-  PSICOLOGIA:          { label: '🧠 Psicologia',          icon: Brain,    activeBg: 'bg-indigo-600',  color: 'text-indigo-500' },
-  NUTRICAO:            { label: '🍎 Nutrição',            icon: Apple,    activeBg: 'bg-rose-600',    color: 'text-rose-500' },
-  TERAPIA_OCUPACIONAL: { label: '🖐️ Terapia Ocupacional', icon: Hand,     activeBg: 'bg-amber-600',   color: 'text-amber-500' },
-  ACUPUNTURA:          { label: '🌿 Acupuntura',          icon: Sparkles, activeBg: 'bg-teal-600',    color: 'text-teal-500' },
+const GRUPO_LABEL: Record<ServicoGrupo, string> = {
+  FISIOTERAPIA: 'Fisioterapia',
+  FONOAUDIOLOGIA: 'Fonoaudiologia',
+  PSICOLOGIA: 'Psicologia',
+  NUTRICAO: 'Nutrição',
+  TERAPIA_OCUPACIONAL: 'Terapia ocupacional',
+  ACUPUNTURA: 'Acupuntura',
 };
 
-const ICON_POR_ID: Record<string, ElementType> = {
-  FISIO_MOTORA: Activity,
-  FISIO_RESPIRATORIA: Wind,
-  FONOAUDIOLOGIA: Ear,
-  PSICOLOGIA: Brain,
-  NUTRICAO: Apple,
-  TERAPIA_OCUPACIONAL: Hand,
-  ACUPUNTURA: Sparkles,
-};
-
+/**
+ * Escolha da terapia (uma por guia), no visual da aba Protocolo: lista compacta
+ * por grupo, com a cobertura do convênio do paciente ao lado. Serviço fora da
+ * lista vai no campo "Outro serviço". Sessões, frequência e justificativa ficam
+ * na guia ao lado.
+ */
 export default function ServicoSelector() {
-  // Seletores por campo: useAppStore() sem seletor assina o store inteiro,
-  // então qualquer campo alterado em qualquer tela re-renderizava aqui.
   const convenio = useAppStore((s) => s.convenio);
   const servicosSelecionados = useAppStore((s) => s.servicosSelecionados);
   const setServicosSelecionados = useAppStore((s) => s.setServicosSelecionados);
-  const justificativaServicos = useAppStore((s) => s.justificativaServicos);
-  const setJustificativaServicos = useAppStore((s) => s.setJustificativaServicos);
 
-  const total = servicosSelecionados.length;
   const regras = convenio === 'ISSEC' ? SERVICO_REGRAS.ISSEC : convenio === 'IPM' ? SERVICO_REGRAS.IPM : null;
-
+  const escolhido = servicosSelecionados[0];
   // Serviço digitado à mão (não faz parte do catálogo). Uma guia = um serviço.
-  const servicoCustom = servicosSelecionados.find((id) => !SERVICO_POR_ID[id]);
+  const servicoCustom = escolhido && !SERVICO_POR_ID[escolhido] ? escolhido : '';
 
-  // Guia de Serviço II aceita UM serviço por vez → seleção única.
-  const selecionar = (id: string) => {
-    setServicosSelecionados(servicosSelecionados.includes(id) ? [] : [id]);
-  };
-
-  // Serviço personalizado: substitui as pré-seleções (mantém uma guia = um serviço).
-  const alterarCustom = (valor: string) => {
-    setServicosSelecionados(valor.trim() === '' ? [] : [valor]);
-  };
-
-  const cobertura = (s: ServicoDef) =>
-    convenio === 'ISSEC' ? s.coberturaIssec : convenio === 'IPM' ? s.coberturaIpm : '';
-
-  const aplicarJustificativaPadrao = (s: ServicoDef) => {
-    // Aplicar o texto-padrão também seleciona a terapia (uma por guia).
-    setServicosSelecionados([s.id]);
-    const atual = justificativaServicos.trim();
-    if (atual && !atual.includes(s.justificativaPadrao.slice(0, 30))) {
-      setJustificativaServicos(`${atual}\n\n${s.justificativaPadrao}`);
-    } else {
-      setJustificativaServicos(s.justificativaPadrao);
-    }
-    toast.success(`${s.nomeCurto} selecionada · texto-padrão aplicado`);
-  };
+  const cobertura = (s: ServicoDef) => (convenio === 'ISSEC' ? s.coberturaIssec : convenio === 'IPM' ? s.coberturaIpm : '');
 
   return (
-    <div className="bg-white rounded-lg border border-neutral-border overflow-hidden">
-      <div className="p-5.5">
-        {/* Counter & info */}
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="text-sm text-neutral-text font-medium">
-              Selecione <strong>uma terapia</strong> por guia.
-            </p>
-            <p className="text-xs text-neutral-text-muted mt-0.5">
-              A Guia de Serviço II (ISSEC) aceita um serviço por vez — emita guias separadas para tipos distintos.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${total > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
-              {total > 0 ? '1 selecionada' : 'Nenhuma'}
-            </span>
-          </div>
-        </div>
-
-        {/* Regras do convênio ativo */}
-        {regras && (
-          <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50/50 p-3.5 text-[11px] text-blue-900 leading-relaxed">
-            <Info size={15} className="shrink-0 mt-0.5 text-blue-500" />
-            <div className="space-y-0.5">
-              <p><strong className="font-bold">{convenio}</strong> · Guia: {regras.guia}</p>
-              <p>Validade do pedido: {regras.validade}</p>
-              <p className="text-blue-700/90">Documentos: {regras.documentos}</p>
-              <p className="text-blue-700/80">Excedente: {regras.excedente}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Selected chips */}
-        {total > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4 p-3.5 bg-emerald-50/50 rounded-lg border border-emerald-100">
-            {servicosSelecionados.map(id => {
-              const s = SERVICOS.find(x => x.id === id);
-              const isCustom = !s;
-              const Icon = isCustom ? Pencil : (ICON_POR_ID[id] ?? Activity);
-              const label = isCustom ? id : s.nomeCurto;
-              return (
-                <span key={id} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-full">
-                  <Icon size={11} />
-                  {label}
-                  <button onClick={() => selecionar(id)} className="ml-1 hover:text-emerald-200 transition-colors cursor-pointer">
-                    <X size={11} />
-                  </button>
-                </span>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Serviço personalizado (texto livre) */}
-        <div className="mb-4 rounded-xl border border-neutral-border overflow-hidden">
-          <div className="px-4 py-2.5 bg-slate-50">
-            <h4 className="text-[11px] font-bold text-neutral-text-muted uppercase tracking-wider">✏️ Outro serviço (personalizado)</h4>
-          </div>
-          <div className="p-3 bg-white">
-            <label className="block text-xs text-neutral-text-muted mb-1.5">
-              Digite qualquer serviço/terapia para imprimir na guia — não precisa estar na lista abaixo. Substitui a pré-seleção.
-            </label>
-            <div className="relative">
-              <Pencil size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-text-muted pointer-events-none" />
-              <input
-                type="text"
-                value={servicoCustom ?? ''}
-                onChange={(e) => alterarCustom(e.target.value)}
-                placeholder="Ex.: Drenagem linfática, Hidroterapia, RPG, Pilates terapêutico..."
-                className={`w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 ${
-                  servicoCustom
-                    ? 'border-emerald-400 bg-emerald-50/40 text-neutral-text'
-                    : 'border-neutral-border bg-white text-neutral-text'
-                }`}
-              />
-            </div>
-            {servicoCustom && (
-              <p className="mt-1.5 text-[11px] text-emerald-600 font-medium flex items-center gap-1">
-                <CheckCircle2 size={11} /> Este serviço será impresso na guia.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Therapy grid grouped */}
-        <div className="space-y-4">
-          {GRUPOS_SERVICOS.map(grupo => {
-            const servicos = SERVICOS_POR_GRUPO[grupo];
-            if (!servicos || servicos.length === 0) return null;
-            const ui = GRUPO_UI[grupo];
-            return (
-              <div key={grupo} className="rounded-xl border border-neutral-border overflow-hidden">
-                <div className="px-4 py-2.5 bg-slate-50">
-                  <h4 className="text-[11px] font-bold text-neutral-text-muted uppercase tracking-wider">{ui.label}</h4>
-                </div>
-                <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 bg-white">
-                  {servicos.map((s) => {
-                    const isSelected = servicosSelecionados.includes(s.id);
-                    const Icon = ICON_POR_ID[s.id] ?? ui.icon;
-                    const cob = cobertura(s);
-                    return (
-                      <div
-                        key={s.id}
-                        className={`relative flex flex-col gap-2 p-3 rounded-lg border text-left transition-all ${
-                          isSelected
-                            ? `${ui.activeBg} border-transparent text-white shadow-sm`
-                            : 'border-neutral-border bg-white hover:border-slate-300 hover:bg-slate-50/50'
-                        }`}
-                      >
-                        <button
-                          onClick={() => selecionar(s.id)}
-                          title={s.nome}
-                          className="flex items-start gap-2 text-left cursor-pointer"
-                        >
-                          <Icon size={18} className={`shrink-0 mt-0.5 ${isSelected ? 'text-white' : ui.color}`} />
-                          <div className="min-w-0">
-                            <span className={`block text-xs font-bold leading-tight ${isSelected ? 'text-white' : 'text-neutral-text'}`}>
-                              {s.nomeCurto}
-                            </span>
-                            {cob && (
-                              <span className={`block text-[10px] mt-0.5 leading-tight ${isSelected ? 'text-white/85' : 'text-neutral-text-muted'}`}>
-                                {cob}
-                              </span>
-                            )}
-                          </div>
-                          {isSelected && <CheckCircle2 size={13} className="absolute top-2 right-2 text-white opacity-90" />}
-                        </button>
-                        <button
-                          onClick={() => aplicarJustificativaPadrao(s)}
-                          title="Aplicar texto-padrão de justificativa (anti-glosa)"
-                          className={`flex items-center justify-center gap-1 text-[10px] font-bold rounded-md py-1 transition-colors cursor-pointer ${
-                            isSelected
-                              ? 'bg-white/20 text-white hover:bg-white/30'
-                              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                          }`}
-                        >
-                          <Wand2 size={10} />
-                          Texto-padrão
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {total > 0 && (
-          <button
-            onClick={() => {
-              if (confirm('Limpar todas as terapias selecionadas?')) setServicosSelecionados([]);
-            }}
-            className="mt-4.5 text-xs text-neutral-text-muted hover:text-neutral-text underline transition-colors cursor-pointer"
-          >
-            Limpar toda a seleção
-          </button>
-        )}
+    <section className="rounded-lg border border-neutral-border bg-white overflow-hidden">
+      <div className="px-4 py-3.5">
+        <p className="text-sm font-semibold text-neutral-text">Terapia</p>
+        <p className="text-xs text-neutral-text-muted mt-0.5">Uma por guia. Para outra terapia, gere outra guia.</p>
       </div>
-    </div>
+
+      <div role="radiogroup" aria-label="Terapia" className="border-t border-neutral-border divide-y divide-slate-100">
+        {GRUPOS_SERVICOS.map((grupo) => {
+          const lista = SERVICOS_POR_GRUPO[grupo];
+          if (!lista?.length) return null;
+          return (
+            <div key={grupo}>
+              <div className="bg-slate-50/95 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-text-muted">
+                {GRUPO_LABEL[grupo]}
+              </div>
+              {lista.map((s) => {
+                const ativo = escolhido === s.id;
+                const cob = cobertura(s);
+                return (
+                  <label
+                    key={s.id}
+                    title={s.nome}
+                    className={`flex items-center gap-2.5 px-3 py-2 cursor-pointer ${ativo ? 'bg-emerald-50' : 'hover:bg-slate-50'}`}
+                  >
+                    <input
+                      type="radio"
+                      name="servico"
+                      checked={ativo}
+                      onChange={() => setServicosSelecionados([s.id])}
+                      onClick={() => ativo && setServicosSelecionados([])}
+                      className="h-3.5 w-3.5 accent-emerald-600 cursor-pointer"
+                    />
+                    <span className={`min-w-0 flex-1 truncate text-xs ${ativo ? 'font-bold text-emerald-800' : 'font-semibold text-neutral-text'}`}>
+                      {s.nome}
+                    </span>
+                    {cob && <span className="hidden sm:block shrink-0 text-[10px] text-neutral-text-muted">{cob}</span>}
+                  </label>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="border-t border-neutral-border bg-indigo-50/40 px-4 py-3.5">
+        <label htmlFor="servico-outro" className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-indigo-700 mb-2">
+          <Pencil size={11} />
+          Outro serviço (fora da lista)
+        </label>
+        <input
+          id="servico-outro"
+          type="text"
+          value={servicoCustom}
+          onChange={(e) => setServicosSelecionados(e.target.value.trim() ? [e.target.value] : [])}
+          placeholder="Ex.: Drenagem linfática, hidroterapia, RPG, pilates terapêutico..."
+          className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 ${
+            servicoCustom ? 'border-indigo-400 bg-white' : 'border-indigo-200 bg-white'
+          }`}
+        />
+        <p className="mt-1.5 text-[11px] text-indigo-600/80">
+          Substitui a terapia marcada acima. Sai na guia e entra na justificativa da IA.
+        </p>
+      </div>
+
+      {regras && (
+        <details className="border-t border-neutral-border px-4 py-3 text-[11px] text-neutral-text-muted">
+          <summary className="flex cursor-pointer items-center gap-1.5 font-semibold text-blue-800">
+            <Info size={12} className="shrink-0" />
+            Regras do {convenio} para terapias
+          </summary>
+          <div className="mt-2 space-y-0.5 leading-relaxed">
+            <p>Guia: {regras.guia}</p>
+            <p>Validade do pedido: {regras.validade}</p>
+            <p>Documentos: {regras.documentos}</p>
+            <p>Excedente: {regras.excedente}</p>
+          </div>
+        </details>
+      )}
+    </section>
   );
 }

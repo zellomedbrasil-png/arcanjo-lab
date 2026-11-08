@@ -24,12 +24,12 @@ function Chk({ checked }: { checked: boolean }) {
 }
 
 export default function GuiaServicoISSEC() {
-  const { pacienteNome, numeroBeneficiario, servicosSelecionados, justificativaServicos } = useAppStore();
+  const { pacienteNome, numeroBeneficiario, servicosSelecionados, justificativaServicos, servicoSessoes, servicoFrequencia } = useAppStore();
 
   // Guia de Serviço II aceita UM serviço por vez.
   const servicoId = servicosSelecionados[0];
   const grupo: ServicoGrupo | undefined = servicoId ? SERVICO_POR_ID[servicoId]?.grupo : undefined;
-  const procedimento = servicoId ? getServicoNome(servicoId) : '';
+  const procedimento = servicoId ? [getServicoNome(servicoId), servicoFrequencia?.trim()].filter(Boolean).join(' — ') : '';
 
   return (
     <div
@@ -144,7 +144,7 @@ export default function GuiaServicoISSEC() {
           <tr style={{ height: '11mm' }}>
             <td style={{ borderRight: '1pt solid black', borderBottom: '1pt solid black', textAlign: 'center', fontWeight: 'bold', fontSize: '10pt', verticalAlign: 'middle' }}>01</td>
             <td colSpan={2} style={{ borderRight: '1pt solid black', borderBottom: '1pt solid black', padding: '1mm 2mm', fontSize: '10px', fontFamily: 'Arial, Helvetica, sans-serif', textTransform: 'uppercase', verticalAlign: 'middle' }}>{procedimento}</td>
-            <td style={{ borderBottom: '1pt solid black', verticalAlign: 'middle' }}>&nbsp;</td>
+            <td style={{ borderBottom: '1pt solid black', verticalAlign: 'middle', textAlign: 'center', fontSize: '11pt', fontWeight: 'bold' }}>{servicoSessoes?.trim() || '\u00a0'}</td>
           </tr>
 
           {/* Justificativa (esq) | Senha + Data + Carimbo (dir, mais larga que QUANT) */}

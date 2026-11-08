@@ -28,6 +28,8 @@ interface AppState {
   procedimentosPersonalizados: string[]; // Exames livres digitados pelo médico
   servicosSelecionados: string[]; // Terapias/serviços (aba Serviços)
   justificativaServicos: string;
+  servicoSessoes: string; // quantidade de sessões, impressa no QUANT. da guia (fora da justificativa)
+  servicoFrequencia: string; // ex.: '2x/semana'
   soap: string;
   queixa: string;
   justificativa: string;
@@ -87,6 +89,8 @@ const initialState = {
   procedimentosPersonalizados: [] as string[],
   servicosSelecionados: [] as string[],
   justificativaServicos: '',
+  servicoSessoes: '',
+  servicoFrequencia: '',
   soap: '',
   queixa: '',
   justificativa: '',
@@ -283,6 +287,8 @@ export const useAppStore = create<AppState>()(
         procedimentosPersonalizados: state.procedimentosPersonalizados,
         servicosSelecionados: state.servicosSelecionados,
         justificativaServicos: state.justificativaServicos,
+        servicoSessoes: state.servicoSessoes,
+        servicoFrequencia: state.servicoFrequencia,
         soap: state.soap,
         queixa: state.queixa,
         justificativa: state.justificativa,

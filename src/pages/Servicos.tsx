@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, HeartPulse, Printer, RotateCcw, Sparkles } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import PatientForm from '../components/patient/PatientForm';
-import ServicoJustificativaPanel from '../components/servicos/ServicoJustificativaPanel';
 import ServicoSelector from '../components/servicos/ServicoSelector';
+import GuiaServicoLateral from '../components/servicos/GuiaServicoLateral';
 import { useAppStore } from '../store/useAppStore';
 import { formatDraftTime } from '../lib/formatters';
-import { getServicoNome } from '../data/servicos';
+import { descreverServico } from '../data/servicos';
 import { toast } from '../lib/toast';
 
 export default function Servicos() {
@@ -16,6 +16,8 @@ export default function Servicos() {
   // então qualquer campo alterado em qualquer tela re-renderizava aqui.
   const pacienteNome = useAppStore((s) => s.pacienteNome);
   const servicosSelecionados = useAppStore((s) => s.servicosSelecionados);
+  const servicoSessoes = useAppStore((s) => s.servicoSessoes);
+  const servicoFrequencia = useAppStore((s) => s.servicoFrequencia);
   const lastSavedAt = useAppStore((s) => s.lastSavedAt);
   const setServicosSelecionados = useAppStore((s) => s.setServicosSelecionados);
   const resetForm = useAppStore((s) => s.resetForm);
@@ -49,17 +51,17 @@ export default function Servicos() {
       return;
     }
     if (total === 0) {
-      toast.error('Selecione ao menos uma terapia (clique no nome/ícone da terapia).');
+      toast.error('Escolha a terapia na lista.');
       return;
     }
     navigate('/servicos/imprimir');
   };
 
-  const preview = servicosSelecionados.map(getServicoNome).join(', ');
+  const preview = servicosSelecionados.map((id) => descreverServico(id, servicoSessoes, servicoFrequencia)).join(', ');
 
   return (
     <Layout>
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 pb-28 max-lg:pb-36 space-y-6">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 lg:pb-10 max-lg:pb-36 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <h1 className="text-xl lg:text-2xl font-bold font-display tracking-tight text-neutral-text">Serviços / Terapias</h1>
@@ -83,15 +85,19 @@ export default function Servicos() {
         {/* 1. Patient Form */}
         <PatientForm />
 
-        {/* 2. IA Justification Assistant (Serviços) */}
-        <ServicoJustificativaPanel />
-
-        {/* 3. Therapy Selection Grid */}
-        <ServicoSelector />
+        {/* Escolha à esquerda; a guia em montagem fixa à direita, como em Exames */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-7 min-w-0">
+            <ServicoSelector />
+          </div>
+          <aside className="lg:col-span-5 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto">
+            <GuiaServicoLateral onGerar={handleGerarGuia} />
+          </aside>
+        </div>
       </div>
 
-      {/* Fixed bottom footer */}
-      <div className="fixed bottom-0 lg:left-64 left-0 right-0 z-30 lg:z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg px-6 py-3.5 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))]">
+      {/* Rodapé fixo só no celular; no desktop o botão fica na guia lateral */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg px-6 py-3.5 max-lg:bottom-[calc(3.5rem+env(safe-area-inset-bottom))]">
         <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-6">
           <div className="flex min-w-0 flex-1 items-center gap-3 text-sm overflow-hidden">
             <div className={`flex items-center gap-1.5 shrink-0 ${isFormValid ? 'text-green-600' : 'text-gray-400'}`}>

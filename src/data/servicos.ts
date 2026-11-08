@@ -19,8 +19,11 @@ export interface ServicoDef {
   coberturaIssec: string;
   /** Cobertura/teto resumido no IPM (vazio = não listada) */
   coberturaIpm: string;
-  /** Texto-padrão de justificativa (anti-glosa). Campos entre [colchetes] devem ser preenchidos. */
+  /** Texto-padrão de justificativa (anti-glosa). Campos entre [colchetes] devem ser preenchidos.
+   *  Não cita quantidade de sessões: ela vai em campo próprio (QUANT. da guia). */
   justificativaPadrao: string;
+  /** Máximo de sessões por semana coberto, quando o manual do convênio define. */
+  maxSemana?: Partial<Record<'ISSEC' | 'IPM', number>>;
 }
 
 export const SERVICOS: ServicoDef[] = [
@@ -31,8 +34,9 @@ export const SERVICOS: ServicoDef[] = [
     grupo: 'FISIOTERAPIA',
     coberturaIssec: '≈ 30 sessões/ano · máx. 3x/semana',
     coberturaIpm: '12 sessões/mês · até 5x/semana',
+    maxSemana: { ISSEC: 3, IPM: 5 },
     justificativaPadrao:
-      'Paciente com [diagnóstico — CID], apresentando [dor / limitação de amplitude de movimento / déficit de marcha e equilíbrio / redução de força]. Indicada fisioterapia [motora/neurofuncional], [nº] sessões, [frequência], visando [ganho funcional / reeducação de marcha / prevenção de imobilismo e quedas]. Reavaliação ao término do ciclo. Na ausência do tratamento, risco de agravamento e sequela funcional irreversível.',
+      'Paciente com [diagnóstico — CID], apresentando [dor / limitação de amplitude de movimento / déficit de marcha e equilíbrio / redução de força]. Indicada fisioterapia [motora/neurofuncional] visando [ganho funcional / reeducação de marcha / prevenção de imobilismo e quedas], com reavaliação ao término do ciclo. Na ausência do tratamento, risco de agravamento e sequela funcional irreversível.',
   },
   {
     id: 'FISIO_RESPIRATORIA',
@@ -41,8 +45,9 @@ export const SERVICOS: ServicoDef[] = [
     grupo: 'FISIOTERAPIA',
     coberturaIssec: 'Até 5x/semana (respiratória)',
     coberturaIpm: '12 sessões/mês · até 5x/semana',
+    maxSemana: { ISSEC: 5, IPM: 5 },
     justificativaPadrao:
-      'Paciente com [DPOC / pneumopatia / pós-internamento], evoluindo com [dispneia / retenção de secreção / hipoxemia]. Indicada fisioterapia respiratória, até 5 sessões/semana, para higiene brônquica, reexpansão pulmonar e prevenção de complicações infecciosas e de reinternação.',
+      'Paciente com [DPOC / pneumopatia / pós-internamento], evoluindo com [dispneia / retenção de secreção / hipoxemia]. Indicada fisioterapia respiratória para higiene brônquica, reexpansão pulmonar e prevenção de complicações infecciosas e de reinternação.',
   },
   {
     id: 'FONOAUDIOLOGIA',
@@ -61,8 +66,9 @@ export const SERVICOS: ServicoDef[] = [
     grupo: 'PSICOLOGIA',
     coberturaIssec: 'Teto ≈ 48 sessões/ano (4/mês, até 2x/semana)',
     coberturaIpm: 'Por periodicidade · análise da Auditoria IPM',
+    maxSemana: { ISSEC: 2 },
     justificativaPadrao:
-      'Paciente com [transtorno depressivo / ansioso / quadro F__ / processo de luto], em acompanhamento clínico. Indicada psicoterapia, [frequência], para estabilização do quadro, manejo de sintomas e adesão ao tratamento, com reavaliação periódica do plano terapêutico.',
+      'Paciente com [transtorno depressivo / ansioso / quadro F__ / processo de luto], em acompanhamento clínico. Indicada psicoterapia para estabilização do quadro, manejo de sintomas e adesão ao tratamento, com reavaliação periódica do plano terapêutico.',
   },
   {
     id: 'NUTRICAO',
@@ -102,6 +108,17 @@ export const SERVICO_POR_ID = Object.fromEntries(
 
 export function getServicoNome(id: string): string {
   return SERVICO_POR_ID[id]?.nome ?? id;
+}
+
+/** Frequências oferecidas na tela (a guia imprime o texto escolhido). */
+export const FREQUENCIAS_SERVICO = ['1x/semana', '2x/semana', '3x/semana', '5x/semana'] as const;
+
+/** Texto do serviço na guia: nome, quantidade e frequência (o que houver). */
+export function descreverServico(id: string, sessoes: string, frequencia: string): string {
+  const partes = [getServicoNome(id)];
+  if (sessoes.trim()) partes.push(`${sessoes.trim()} sessões`);
+  if (frequencia.trim()) partes.push(frequencia.trim());
+  return partes.join(' — ');
 }
 
 export const GRUPOS_SERVICOS: ServicoGrupo[] = [
