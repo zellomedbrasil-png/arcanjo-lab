@@ -70,6 +70,7 @@ const gravarPreferencia = (chave: string, valor: string) => {
 export default function NovaReceita() {
   const navigate = useNavigate();
   const [editandoPrescritor, setEditandoPrescritor] = useState(false);
+  const [editandoPaciente, setEditandoPaciente] = useState(false);
   const {
     tipoReceita, pacienteNome, pacienteCpf, pacienteSemCpf, pacienteIdade, pacienteSexo,
     pacienteEndereco, pacienteCep, pacienteCidade, pacienteUf, pacienteTelefone,
@@ -89,6 +90,38 @@ export default function NovaReceita() {
   const avisos = pendencias.filter((p) => p.nivel === 'aviso');
 
   const { pacientes: pacientesRecentes } = useRecentPatientsStore();
+
+  // O paciente vem do cadastro do início do atendimento (useAppStore). A sincronia
+  // entre as telas só corre quando algo muda; ao abrir a receita, puxa o que já
+  // está lá. Paciente diferente: troca os dados e traz o endereço salvo nos
+  // recentes, se houver, para não imprimir o endereço do anterior.
+  useEffect(() => {
+    const app = useAppStore.getState();
+    const nome = app.pacienteNome.trim();
+    if (!nome) return;
+    const r = useReceitaStore.getState();
+    if (nome.toLowerCase() === r.pacienteNome.trim().toLowerCase()) {
+      const faltando: Partial<typeof r> = {};
+      if (!r.pacienteIdade && app.pacienteIdade) faltando.pacienteIdade = app.pacienteIdade;
+      if (!r.pacienteCpf && app.pacienteCpf) faltando.pacienteCpf = app.pacienteCpf;
+      if (!r.pacienteSexo && app.genero) faltando.pacienteSexo = app.genero;
+      if (Object.keys(faltando).length) useReceitaStore.setState(faltando);
+      return;
+    }
+    const recente = useRecentPatientsStore.getState().pacientes.find((p) => p.nome.toLowerCase() === nome.toLowerCase());
+    useReceitaStore.setState({
+      pacienteNome: app.pacienteNome,
+      pacienteCpf: app.pacienteCpf || recente?.cpf || '',
+      pacienteSemCpf: false,
+      pacienteIdade: app.pacienteIdade || '',
+      pacienteSexo: app.genero || recente?.genero || '',
+      pacienteEndereco: recente?.endereco || '',
+      pacienteCep: recente?.cep || '',
+      pacienteCidade: recente?.cidade || 'Fortaleza',
+      pacienteUf: recente?.uf || 'CE',
+      pacienteTelefone: recente?.telefone || '',
+    });
+  }, []);
 
   const handleBlur = () => {
     if (pacienteNome && pacienteNome.trim().length >= 3) {
@@ -158,6 +191,21 @@ export default function NovaReceita() {
   const faltaSexo = precisaIdadeSexo && !pacienteSexo;
   const precisaEndereco =
     modelos.has('RCE') || documentos.some((d) => !REGRAS_MODELO[d.modelo].imprimeReceita) || (modoTexto && tipoReceita === 'ESPECIAL');
+
+  // Paciente já vem do início do atendimento: mostra um resumo e só os campos
+  // que esta receita exige e ainda faltam. Sem nome, ou em "Editar", o formulário inteiro.
+  const resumido = pacienteNome.trim() !== '' && !editandoPaciente;
+  const faltaCpf = precisaEndereco && !pacienteCpf.replace(/\D/g, '') && !pacienteSemCpf;
+  const mostraIdadeSexo = !resumido || faltaIdade || faltaSexo;
+  const mostraCpf = !resumido || faltaCpf;
+  const temCamposPaciente = !resumido || mostraIdadeSexo || mostraCpf || precisaEndereco;
+  const resumoPaciente = [
+    pacienteIdade ? `${pacienteIdade} anos` : '',
+    pacienteSexo === 'F' ? 'Feminino' : pacienteSexo === 'M' ? 'Masculino' : '',
+    pacienteCpf ? `CPF ${pacienteCpf}` : pacienteSemCpf ? 'Sem CPF' : '',
+    data,
+    local,
+  ].filter(Boolean).join(' · ');
 
   // ─── Prescrição rápida ───────────────────────────────────────
   type NovoItem = Omit<Partial<MedicamentoReceita>, 'id'>;
@@ -342,13 +390,45 @@ export default function NovaReceita() {
           <div className="flex-1 w-full space-y-6">
 
             {/* Dados do Paciente */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-50">
-                <User size={18} className="text-indigo-500" />
-                <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Dados do Paciente</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 ${resumido ? 'p-5' : 'p-6'}`}>
+              {resumido ? (
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <User size={16} className="text-indigo-500 shrink-0" />
+                      <span className="text-sm font-bold uppercase text-gray-900 truncate">{pacienteNome}</span>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">{resumoPaciente}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setEditandoPaciente(true)}
+                    className="shrink-0 text-xs font-bold text-indigo-700 hover:text-indigo-900 cursor-pointer"
+                  >
+                    Editar
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-2 mb-5 pb-3 border-b border-gray-50">
+                  <div className="flex items-center gap-2">
+                    <User size={18} className="text-indigo-500" />
+                    <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Dados do Paciente</h2>
+                  </div>
+                  {editandoPaciente && pacienteNome.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setEditandoPaciente(false)}
+                      className="text-xs font-bold text-indigo-700 hover:text-indigo-900 cursor-pointer"
+                    >
+                      Concluir
+                    </button>
+                  )}
+                </div>
+              )}
+              {temCamposPaciente && (
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${resumido ? 'mt-4 pt-4 border-t border-gray-50' : ''}`}>
 
+                {!resumido && (
                 <div className="md:col-span-2">
                   <label className={labelCls}>Nome Completo{obrig(true)}</label>
                   <input id="receita-nome" type="text" value={pacienteNome} onChange={(e) => setPacienteReceita({ pacienteNome: e.target.value })} onBlur={handleBlur} placeholder="Nome completo do paciente" className={inputCls} />
@@ -372,7 +452,9 @@ export default function NovaReceita() {
                     </div>
                   )}
                 </div>
+                )}
 
+                {mostraIdadeSexo && (
                 <div>
                   <div className="flex gap-3">
                     <div className="shrink-0" style={{ width: '88px' }}>
@@ -409,7 +491,9 @@ export default function NovaReceita() {
                     </p>
                   )}
                 </div>
+                )}
 
+                {mostraCpf && (
                 <div>
                   <label className={labelCls}>CPF{obrig(precisaEndereco)}</label>
                   <input id="receita-cpf" type="text" value={pacienteCpf} disabled={pacienteSemCpf} onChange={(e) => setPacienteReceita({ pacienteCpf: formatCpf(e.target.value) })} onBlur={handleBlur} placeholder={pacienteSemCpf ? 'Não possui' : '000.000.000-00'} className={`${inputCls} disabled:bg-gray-50`} />
@@ -418,6 +502,7 @@ export default function NovaReceita() {
                     Não possui CPF
                   </label>
                 </div>
+                )}
 
                 {precisaEndereco && (
                   <>
@@ -460,6 +545,7 @@ export default function NovaReceita() {
                   </>
                 )}
 
+                {!resumido && (
                 <div className="flex gap-3 md:col-span-2">
                   <div className="flex-1">
                     <label className={labelCls}>
@@ -474,7 +560,9 @@ export default function NovaReceita() {
                     <input type="text" value={local} onChange={(e) => setPacienteReceita({ local: e.target.value })} className={inputCls} />
                   </div>
                 </div>
+                )}
               </div>
+              )}
             </div>
 
             {/* Tipo de receita: automático no estruturado, escolha manual nos modos texto */}
