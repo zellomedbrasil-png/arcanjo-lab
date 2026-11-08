@@ -1,9 +1,10 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useAppStore } from '../../store/useAppStore';
-import { CATEGORIAS_EXAMES, PAINEIS_MARKDOWN } from '../../types';
+import { CATEGORIAS_EXAMES } from '../../types';
 import { formatExamNameForDisplay } from '../../lib/formatters';
 import { findExamPreciso } from '../../services/groqExames';
 import ProtocoloExamesCard from './ProtocoloExamesCard';
+import PaineisExamesCard from './PaineisExamesCard';
 import ExamPastePanel from './ExamPastePanel';
 import {
   CHIP_DOT, CHIP_META, COBERTURA_META, getCobertura, isForaDoConvenio, type CoberturaChip,
@@ -263,7 +264,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
   const procedimentosPersonalizados = useAppStore((s) => s.procedimentosPersonalizados);
   // Ações têm referência estável no zustand — nunca disparam re-render.
   const setExamesSelecionados = useAppStore((s) => s.setExamesSelecionados);
-  const setJustificativa = useAppStore((s) => s.setJustificativa);
   const setPaciente = useAppStore((s) => s.setPaciente);
   const toggleProcedimento = useAppStore((s) => s.toggleProcedimento);
   const addProcedimentoPersonalizado = useAppStore((s) => s.addProcedimentoPersonalizado);
@@ -333,21 +333,6 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
       setExamesSelecionados(examesSelecionados.filter((e) => e !== exameNome));
     } else {
       setExamesSelecionados([...examesSelecionados, exameNome]);
-    }
-  };
-
-  const aplicarPainel = (chave: string) => {
-    const painel = PAINEIS_MARKDOWN[chave];
-    const examesAtuais = useAppStore.getState().examesSelecionados;
-    setExamesSelecionados([...new Set([...examesAtuais, ...painel.exames])]);
-    if (painel.justificativa) {
-      const justificativaLimpa = painel.justificativa.trim();
-      const justificativaAtualLimpa = (useAppStore.getState().justificativa || '').trim();
-      if (justificativaAtualLimpa && !justificativaAtualLimpa.toUpperCase().includes(justificativaLimpa.toUpperCase())) {
-        setJustificativa(`${justificativaAtualLimpa}\n${justificativaLimpa}`);
-      } else if (!justificativaAtualLimpa) {
-        setJustificativa(justificativaLimpa);
-      }
     }
   };
 
@@ -818,66 +803,7 @@ export default function ExamSelector({ mode }: ExamSelectorProps = {}) {
 
             {aba === 'COLAR' && <ExamPastePanel />}
 
-            {aba === 'PAINEIS' && (
-              <div className="space-y-5">
-                <div>
-                  <span className="block text-[10px] font-extrabold text-emerald-700 uppercase tracking-wider mb-2">
-                    Gastro — Investigação
-                  </span>
-                  <div className="flex flex-wrap gap-2.5">
-                    {Object.entries(PAINEIS_MARKDOWN)
-                      .filter(([, painel]) => painel.nome.startsWith('GASTRO — '))
-                      .map(([key, painel]) => (
-                        <button
-                          key={key}
-                          onClick={() => aplicarPainel(key)}
-                          title={painel.justificativa}
-                          className="px-3.5 py-2 bg-white text-emerald-700 text-xs font-semibold rounded-lg hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-200 cursor-pointer"
-                        >
-                          {painel.nome.replace('GASTRO — ', '')}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-                <div>
-                  <span className="block text-[10px] font-extrabold text-indigo-700 uppercase tracking-wider mb-2">
-                    Carlos Ribeiro (CR) — ISSEC e IPM
-                  </span>
-                  <div className="flex flex-wrap gap-2.5">
-                    {Object.entries(PAINEIS_MARKDOWN)
-                      .filter(([, painel]) => painel.nome.includes('-CR-'))
-                      .map(([key, painel]) => (
-                        <button
-                          key={key}
-                          onClick={() => aplicarPainel(key)}
-                          title={`${painel.exames.length} exames`}
-                          className="px-3.5 py-2 bg-white text-indigo-700 text-xs font-semibold rounded-lg hover:bg-indigo-600 hover:text-white transition-colors border border-indigo-200 cursor-pointer"
-                        >
-                          {`${painel.nome.slice(0, -5)} · ${painel.nome.endsWith('-M') ? 'Homem' : 'Mulher'}`}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-                <div>
-                  <span className="block text-[10px] font-extrabold text-blue-700 uppercase tracking-wider mb-2">Gerais</span>
-                  <div className="flex flex-wrap gap-2.5">
-                    {Object.entries(PAINEIS_MARKDOWN)
-                      .filter(([, painel]) => !painel.nome.startsWith('GASTRO — ') && !painel.nome.includes('-CR-'))
-                      .map(([key, painel]) => (
-                        <button
-                          key={key}
-                          onClick={() => aplicarPainel(key)}
-                          title={painel.justificativa}
-                          className="px-3.5 py-2 bg-white text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-colors border border-blue-200 cursor-pointer"
-                        >
-                          {painel.nome}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-                <p className="text-[11px] text-neutral-text-muted">Cada painel soma seus exames à guia, sem apagar os que já estão nela.</p>
-              </div>
-            )}
+            {aba === 'PAINEIS' && <PaineisExamesCard />}
 
             {aba === 'CATALOGO' && (
               <div>

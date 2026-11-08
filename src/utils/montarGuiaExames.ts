@@ -71,63 +71,29 @@ export function lerIdade(texto: string): number | undefined {
 }
 
 /**
- * Monta a guia do atendimento a partir dos blocos de protocolo.
- * Ordem das regras: blocos que valem → equivalência do convênio → sem duplicata
- * → critérios e alertas → ordem dos grupos.
+ * Item da guia com o que vale para qualquer origem (protocolo ou painel): código
+ * e valor no convênio, alertas de código a conferir e de fora da tabela. Exame
+ * fora da tabela vem desmarcado, porque não seria pago.
  */
-export function montarGuiaExames(ctx: ContextoGuia, idade?: number): GuiaMontada {
-  const pedidos: string[] = [];
-  for (const bloco of BLOCOS_PROTOCOLO_EXAMES) {
-    if (!vale(bloco.quando, ctx)) continue;
-    for (const item of bloco.itens) if (vale(item.quando, ctx)) pedidos.push(item.exame);
+function itemDaGuia(exame: string, convenio: ConvenioProtocolo): ItemGuia {
+  const codigo = codigoNo(exame, convenio);
+  const alertas: string[] = [];
+  for (const c of CODIGOS_A_CONFERIR) {
+    if (c.exames.includes(exame) && (!c.convenio || c.convenio === convenio)) alertas.push(c.mensagem);
   }
-
-  const itens: ItemGuia[] = [];
-  const vistos = new Set<string>();
-  const incluir = (exame: string, substituiu?: ItemGuia['substituiu']) => {
-    if (vistos.has(exame)) return;
-    vistos.add(exame);
-    const codigo = codigoNo(exame, ctx.convenio);
-    const criterio = CRITERIOS_EXAMES.find(
-      (c) => c.exame === exame && (!c.area || c.area.includes(ctx.area)) && (!c.sexo || c.sexo.includes(ctx.sexo))
-    );
-    const alertas: string[] = [];
-    for (const c of CODIGOS_A_CONFERIR) {
-      if (c.exames.includes(exame) && (!c.convenio || c.convenio === ctx.convenio)) alertas.push(c.mensagem);
-    }
-    if (!codigo) alertas.push(`Fora da tabela ${ctx.convenio}.`);
-
-    let foraDaFaixa: string | undefined;
-    if (criterio?.idade && idade !== undefined) {
-      const { min, max } = criterio.idade;
-      if (min !== undefined && idade < min) foraDaFaixa = `Paciente com ${idade} anos; indicado a partir de ${min}.`;
-      else if (max !== undefined && idade > max) foraDaFaixa = `Paciente com ${idade} anos; indicado até ${max}.`;
-    }
-
-    itens.push({
-      exame,
-      grupo: GRUPO_DO_EXAME[exame] ?? 'Outros',
-      codigo,
-      valor: PRECOS_EXAMES[exame]?.[ctx.convenio],
-      marcado: !!codigo,
-      condicional: criterio?.condicional,
-      nota: criterio?.nota,
-      foraDaFaixa,
-      substituiu,
-      alertas,
-    });
+  if (!codigo) alertas.push(`Fora da tabela ${convenio}.`);
+  return {
+    exame,
+    grupo: GRUPO_DO_EXAME[exame] ?? 'Outros',
+    codigo,
+    valor: PRECOS_EXAMES[exame]?.[convenio],
+    marcado: !!codigo,
+    alertas,
   };
+}
 
-  for (const exame of pedidos) {
-    if (codigoNo(exame, ctx.convenio)) {
-      incluir(exame);
-      continue;
-    }
-    const eq = EQUIVALENCIAS_CONVENIO.find((e) => e.exame === exame && e.convenio === ctx.convenio);
-    if (eq && eq.usar.length) eq.usar.forEach((u) => incluir(u, { exame, nota: eq.nota }));
-    else incluir(exame, eq ? { exame, nota: eq.nota } : undefined);
-  }
-
+/** Alerta de código repetido, ordem dos grupos e totais dos itens marcados. */
+function fecharGuia(itens: ItemGuia[]): GuiaMontada {
   // Dois exames diferentes com o mesmo código na mesma guia = cobrança dupla ou glosa.
   const porCodigo = new Map<string, ItemGuia[]>();
   for (const i of itens) if (i.codigo) porCodigo.set(i.codigo, [...(porCodigo.get(i.codigo) ?? []), i]);
@@ -147,4 +113,62 @@ export function montarGuiaExames(ctx: ContextoGuia, idade?: number): GuiaMontada
   const total = Math.round(marcados.reduce((s, i) => s + (i.valor ?? 0), 0) * 100) / 100;
   const semValor = marcados.filter((i) => i.valor === undefined).length;
   return { itens: ordenados, total, semValor };
+}
+
+/**
+ * Guia de um painel fixo (aba Painéis): a lista vai como está, sem critérios de
+ * idade nem equivalências de convênio; só código, valor, alertas e grupos.
+ */
+export function montarGuiaPainel(exames: string[], convenio: ConvenioProtocolo): GuiaMontada {
+  return fecharGuia([...new Set(exames)].map((e) => itemDaGuia(e, convenio)));
+}
+
+/**
+ * Monta a guia do atendimento a partir dos blocos de protocolo.
+ * Ordem das regras: blocos que valem → equivalência do convênio → sem duplicata
+ * → critérios e alertas → ordem dos grupos.
+ */
+export function montarGuiaExames(ctx: ContextoGuia, idade?: number): GuiaMontada {
+  const pedidos: string[] = [];
+  for (const bloco of BLOCOS_PROTOCOLO_EXAMES) {
+    if (!vale(bloco.quando, ctx)) continue;
+    for (const item of bloco.itens) if (vale(item.quando, ctx)) pedidos.push(item.exame);
+  }
+
+  const itens: ItemGuia[] = [];
+  const vistos = new Set<string>();
+  const incluir = (exame: string, substituiu?: ItemGuia['substituiu']) => {
+    if (vistos.has(exame)) return;
+    vistos.add(exame);
+    const criterio = CRITERIOS_EXAMES.find(
+      (c) => c.exame === exame && (!c.area || c.area.includes(ctx.area)) && (!c.sexo || c.sexo.includes(ctx.sexo))
+    );
+
+    let foraDaFaixa: string | undefined;
+    if (criterio?.idade && idade !== undefined) {
+      const { min, max } = criterio.idade;
+      if (min !== undefined && idade < min) foraDaFaixa = `Paciente com ${idade} anos; indicado a partir de ${min}.`;
+      else if (max !== undefined && idade > max) foraDaFaixa = `Paciente com ${idade} anos; indicado até ${max}.`;
+    }
+
+    itens.push({
+      ...itemDaGuia(exame, ctx.convenio),
+      condicional: criterio?.condicional,
+      nota: criterio?.nota,
+      foraDaFaixa,
+      substituiu,
+    });
+  };
+
+  for (const exame of pedidos) {
+    if (codigoNo(exame, ctx.convenio)) {
+      incluir(exame);
+      continue;
+    }
+    const eq = EQUIVALENCIAS_CONVENIO.find((e) => e.exame === exame && e.convenio === ctx.convenio);
+    if (eq && eq.usar.length) eq.usar.forEach((u) => incluir(u, { exame, nota: eq.nota }));
+    else incluir(exame, eq ? { exame, nota: eq.nota } : undefined);
+  }
+
+  return fecharGuia(itens);
 }

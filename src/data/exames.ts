@@ -415,8 +415,8 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
       {
         "nome": "T4 TOTAL",
         "marca": "",
-        "codIssec": "28050738",
-        "codIpm": "40316483"
+        "codIssec": "28050711",
+        "codIpm": "40316548"
       }
     ]
   },
@@ -479,15 +479,15 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
       },
       {
         "nome": "ERITROPOIETINA",
-        "marca": "",
+        "marca": "*",
         "codIssec": "28050266",
-        "codIpm": "40316254"
+        "codIpm": ""
       },
       {
         "nome": "LEPTINA",
-        "marca": "",
+        "marca": "*",
         "codIssec": "28050851",
-        "codIpm": "40316580"
+        "codIpm": ""
       },
       {
         "nome": "ESTRADIOL E2",
@@ -592,8 +592,8 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
     "exames": [
       {
         "nome": "Vitamina D, 25-hidroxi (25-OH-D)",
-        "marca": "",
-        "codIssec": "28011430",
+        "marca": "**",
+        "codIssec": "",
         "codIpm": "40302830"
       },
       {
@@ -999,7 +999,7 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
       {
         "nome": "CARGA VIRAL HIV",
         "marca": "",
-        "codIssec": "28062060",
+        "codIssec": "40314120",
         "codIpm": "40307484"
       },
       {
@@ -1590,8 +1590,8 @@ export const CATEGORIAS_EXAMES: CategoriaExames[] = [
       },
       {
         "nome": "D-DIMERO",
-        "marca": "",
-        "codIssec": "40304906",
+        "marca": "**",
+        "codIssec": "",
         "codIpm": "40304906"
       },
       {
