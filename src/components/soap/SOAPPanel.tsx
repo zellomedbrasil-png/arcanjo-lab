@@ -12,7 +12,7 @@ import { getErrorMessage } from '../../lib/errors';
 import { toast } from '../../lib/toast';
 import { Loader2, Wand2, ClipboardList, Check, Mic, Square, Smartphone, Radio, ShieldAlert, Activity, HelpCircle, Settings2, ChevronDown } from 'lucide-react';
 import { cleanSoapMarkdown, juntarAlertasSOAP, separarAlertasSOAP } from '../../lib/formatters';
-import { buildMensagemSOAP, buildPacienteContexto, type ModalidadeConsulta } from '../../lib/aiContext';
+import { buildMensagemSOAP, buildPacienteContexto, nomesProcedimentos, type ModalidadeConsulta } from '../../lib/aiContext';
 import { SYSTEM_PROMPT_JUSTIFICATIVA, SYSTEM_PROMPT_SOAP } from './prompts';
 import DuvidaClinicaPanel from './DuvidaClinicaPanel';
 
@@ -71,7 +71,9 @@ function analisarSOAP(texto: string) {
     ? 'Possível risco terapêutico/medicamento inapropriado detectado (Critérios de Beers 2023 / STOPP-START). Avalie desprescrição ou ajuste de dose.'
     : null;
   const escalas = ESCALAS.filter((e) => e.keywords.some((k) => textLower.includes(k))).map((e) => e.nome);
-  const cids = Array.from(new Set(texto.match(/\b[A-Z]\d{2}(?:\.\d)?\b/g) || []));
+  // B12 não é categoria da CID-10: na nota, é a vitamina.
+  const NAO_CID = new Set(['B12']);
+  const cids = Array.from(new Set(texto.match(/\b[A-Z]\d{2}(?:\.\d)?\b/g) || [])).filter((c) => !NAO_CID.has(c));
   return { alertBeers, escalas, cids };
 }
 
@@ -104,6 +106,7 @@ export default function SOAPPanel() {
   const genero = useAppStore((s) => s.genero);
   const examesSelecionados = useAppStore((s) => s.examesSelecionados);
   const procedimentosSelecionados = useAppStore((s) => s.procedimentosSelecionados);
+  const procedimentosPersonalizados = useAppStore((s) => s.procedimentosPersonalizados);
   const soap = useAppStore((s) => s.soap);
   const queixa = useAppStore((s) => s.queixa);
   const tipoGuia = useAppStore((s) => s.tipoGuia);
@@ -311,7 +314,7 @@ export default function SOAPPanel() {
     const isLab = tipoGuia === 'LABORATORIO';
     const examesStr = isLab
       ? `Exames laboratoriais: ${examesSelecionados.join(', ') || 'nenhum'}`
-      : `Procedimento: ${procedimentosSelecionados.join(', ') || tipoGuia}`;
+      : `Procedimentos: ${nomesProcedimentos(procedimentosSelecionados, procedimentosPersonalizados).join(', ') || 'nenhum'}`;
     return `${buildPacienteContexto({ pacienteNome, pacienteIdade, genero })}
 ${examesStr}
 Queixa clínica: "${queixa}"`;
@@ -352,7 +355,7 @@ Queixa clínica: "${queixa}"`;
       const content = await callAI(
         {
           prompt: buildMensagemSOAP(
-            { pacienteIdade, genero, convenio, tipoGuia, examesSelecionados, procedimentosSelecionados, queixa },
+            { pacienteIdade, genero, convenio, tipoGuia, examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados, queixa },
             modalidadeConsulta
           ),
           systemInstruction: SYSTEM_PROMPT_SOAP,

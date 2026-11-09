@@ -5,6 +5,11 @@ export interface ConsultaGravada {
   nome: string;
   queixa: string;
   data: string;
+  /** Dados do paciente e nota da consulta (registros antigos não têm). */
+  idade?: string;
+  genero?: 'M' | 'F';
+  cpf?: string;
+  soap?: string;
 }
 
 export type TipoGuia =

@@ -15,6 +15,7 @@ export default function ProntuarioLateral() {
   const setJustificativa = useAppStore((s) => s.setJustificativa);
   const setPaciente = useAppStore((s) => s.setPaciente);
   const setQueixa = useAppStore((s) => s.setQueixa);
+  const setSoap = useAppStore((s) => s.setSoap);
   const gravarConsulta = useAppStore((s) => s.gravarConsulta);
   const removerConsultaGravada = useAppStore((s) => s.removerConsultaGravada);
   const limparConsultasGravadas = useAppStore((s) => s.limparConsultasGravadas);
@@ -26,9 +27,19 @@ export default function ProntuarioLateral() {
     else toast.error('Preencha o nome do paciente e a queixa.');
   };
 
+  // Carrega o paciente inteiro da consulta (não só o nome): sem isso, idade, sexo
+  // e CPF do paciente que estava na tela ficavam misturados com o carregado.
   const carregar = (c: ConsultaGravada) => {
-    setPaciente({ pacienteNome: c.nome });
+    const atual = pacienteNome.trim();
+    if (atual && atual.toLowerCase() !== c.nome.toLowerCase() && !confirm(`Trocar ${atual} por ${c.nome}? A queixa e a nota na tela serão substituídas.`)) return;
+    setPaciente({
+      pacienteNome: c.nome,
+      pacienteIdade: c.idade ?? '',
+      pacienteCpf: c.cpf ?? '',
+      ...(c.genero ? { genero: c.genero } : {}),
+    });
     setQueixa(c.queixa);
+    setSoap(c.soap ?? '');
     toast.success(`Consulta de ${c.nome} carregada`);
   };
 
@@ -72,7 +83,7 @@ export default function ProntuarioLateral() {
             type="button"
             onClick={salvar}
             disabled={!podeSalvar}
-            title={podeSalvar ? 'Salvar nome e queixa no histórico' : 'Preencha o nome do paciente e a queixa'}
+            title={podeSalvar ? 'Salvar paciente, queixa e nota SOAP no histórico' : 'Preencha o nome do paciente e a queixa'}
             className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-neutral-border bg-white px-2.5 py-1 text-xs font-semibold text-neutral-text hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             <Save size={12} />

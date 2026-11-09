@@ -7,6 +7,8 @@
 // etária e escrevia "PACIENTE IDOSO" em qualquer paciente. Centralizar garante
 // que a idade — ou a ausência explícita dela — chegue igual em todos os fluxos.
 
+import { getProcedimentoNome } from '../data/procedimentos';
+
 export interface PacienteContexto {
   pacienteNome?: string;
   /** Idade em anos, como texto. Vazio = não informada. */
@@ -31,6 +33,11 @@ export function buildPacienteContexto(p: PacienteContexto): string {
   return `Paciente: ${nome} | Idade: ${idadeStr} | Gênero: ${generoStr}`;
 }
 
+/** Procedimentos pelo nome completo; os digitados à mão vão marcados como fora do catálogo. */
+export function nomesProcedimentos(ids: string[] = [], personalizados: string[] = []): string[] {
+  return [...ids.map(getProcedimentoNome), ...personalizados.map((n) => `${n} (fora do catálogo)`)];
+}
+
 export type ModalidadeConsulta = 'PRESENCIAL' | 'TELEMEDICINA';
 
 export interface DadosMensagemSOAP {
@@ -40,6 +47,8 @@ export interface DadosMensagemSOAP {
   tipoGuia?: string;
   examesSelecionados?: string[];
   procedimentosSelecionados?: string[];
+  /** Procedimentos digitados fora do catálogo. */
+  procedimentosPersonalizados?: string[];
   /** Transcrição da consulta ou anotações digitadas (campo "Queixa / Contexto"). */
   queixa: string;
 }
@@ -61,11 +70,12 @@ export function buildMensagemSOAP(d: DadosMensagemSOAP, modalidade: ModalidadeCo
   if (d.convenio === 'ISSEC' || d.convenio === 'IPM') linhas.push(`OPERADORA: ${d.convenio}`);
   linhas.push(`DADOS CONHECIDOS: ${dados}`);
 
-  const marcados = d.tipoGuia === 'LABORATORIO' ? d.examesSelecionados ?? [] : d.procedimentosSelecionados ?? [];
-  if (marcados.length) {
-    const tipo = d.tipoGuia === 'LABORATORIO' ? 'Exames laboratoriais' : 'Procedimentos';
-    linhas.push(`INSTRUÇÕES DO MÉDICO: ${tipo} já marcados na guia: ${marcados.join(', ')}.`);
-  }
+  // Exames e procedimentos marcados, pelo nome (o id interno, ex. US_PROSTATA, não
+  // diz nada à IA). Os dois entram: a guia de exames e a de procedimentos convivem.
+  const exames = d.examesSelecionados ?? [];
+  const procedimentos = nomesProcedimentos(d.procedimentosSelecionados, d.procedimentosPersonalizados);
+  if (exames.length) linhas.push(`INSTRUÇÕES DO MÉDICO: Exames laboratoriais já marcados na guia: ${exames.join(', ')}.`);
+  if (procedimentos.length) linhas.push(`INSTRUÇÕES DO MÉDICO: Procedimentos já marcados na guia: ${procedimentos.join(', ')}.`);
 
   return `${linhas.join('\n')}\n\n<transcricao>\n${d.queixa.trim()}\n</transcricao>`;
 }
