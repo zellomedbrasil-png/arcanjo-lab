@@ -19,7 +19,8 @@ Dado o pedido do médico ou descrição resumida do caso do paciente, elabore as
 
 DIRETRIZES TÉCNICAS (MAXIMA QUALIDADE):
 1. Nomenclatura Científica: Utilize terminologias formais da semiologia (ex: "sintomas dispépticos", "astenia progressiva", "alterações do hábito evacuatório", "hiporexia").
-2. Coerência de Conduta: A conduta sugerida no laudo deve refletir as melhores práticas para a faixa etária do paciente, incorporando de forma sutil o monitoramento de riscos em idosos (ex: monitorar função renal, sugerir escalas funcionais ou evitar fármacos irritativos gástricos).
+2. Coerência de Conduta: A conduta sugerida no laudo deve refletir as melhores práticas para a faixa etária do paciente. Só trate como idoso/geriátrico (e só então inclua o monitoramento de riscos do idoso) se o campo "Idade" do contexto for 60 anos ou mais.
+3. IDADE [CRÍTICO]: use somente a idade do campo "Idade" do contexto. Se vier "NÃO INFORMADA", não escreva nem estime idade e não use descritor de faixa etária. Nunca deduza a idade pela queixa.
 
 REGRA ABSOLUTA DE SEGURANÇA: Não invente comorbidades, exames que o paciente não realizou, valores de laboratório fictícios ou sintomas que o médico não tenha explicitado na descrição do caso. Se o histórico fornecido for curto, descreva-o de forma sucinta e formal sem criar fatos clínicos inventados.
 
@@ -39,6 +40,7 @@ Dado o pedido ou descrição do atestado, forneça a justificativa clínica/moti
 DIRETRIZES TÉCNICAS:
 1. Redação Formal: Use linguagem técnica e impessoal para descrever a necessidade de convalescença laborativa (ex: "Necessita de repouso domiciliar para restabelecimento clínico").
 2. Segurança do Paciente: Certifique-se de que a justificativa do afastamento e o período proposto sejam estritamente compatíveis e proporcionais à queixa clínica informada.
+3. IDADE [CRÍTICO]: use somente a idade do campo "Idade" do contexto. Se vier "NÃO INFORMADA", não escreva nem estime idade.
 
 REGRA ABSOLUTA DE SEGURANÇA: Baseie o atestado unicamente no quadro clínico fornecido. Não invente doenças secundárias, exames imaginários ou justificativas não suportadas pela queixa de entrada do médico.
 
@@ -52,9 +54,10 @@ Evite termos informais e mantenha a redação profissional e segura.`;
 
 import { extractJson } from '../lib/formatters';
 
-export async function gerarLaudoIA(prompt: string): Promise<IaLaudoResponse> {
+/** `contexto`: linha do paciente (buildPacienteContexto), para a IA não presumir idade/sexo. */
+export async function gerarLaudoIA(prompt: string, contexto = ''): Promise<IaLaudoResponse> {
   const raw = await callAI({
-    prompt: `Descrição do Caso: "${prompt}"\n\nRetorne apenas o JSON.`,
+    prompt: `${contexto ? `${contexto}\n` : ''}Descrição do Caso: "${prompt}"\n\nRetorne apenas o JSON.`,
     systemInstruction: LAUDO_SYSTEM_PROMPT,
     jsonMode: true
   });
@@ -68,9 +71,9 @@ export async function gerarLaudoIA(prompt: string): Promise<IaLaudoResponse> {
   }
 }
 
-export async function gerarAtestadoIA(prompt: string): Promise<IaAtestadoResponse> {
+export async function gerarAtestadoIA(prompt: string, contexto = ''): Promise<IaAtestadoResponse> {
   const raw = await callAI({
-    prompt: `Descrição do Afastamento: "${prompt}"\n\nRetorne apenas o JSON.`,
+    prompt: `${contexto ? `${contexto}\n` : ''}Descrição do Afastamento: "${prompt}"\n\nRetorne apenas o JSON.`,
     systemInstruction: ATESTADO_SYSTEM_PROMPT,
     jsonMode: true
   });

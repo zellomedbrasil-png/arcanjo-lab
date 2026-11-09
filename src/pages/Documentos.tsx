@@ -11,6 +11,8 @@ import {
   CheckCircle2, Loader2, Eye
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { buildPacienteContexto } from '../lib/aiContext';
+import { getErrorMessage } from '../lib/errors';
 import { getDefaultModelId, AI_MODELS } from '../config/gemini';
 
 const formatCnpj = (v: string) => {
@@ -132,29 +134,25 @@ const PRESETS = {
       label: 'Gastroenterite Aguda (3 dias)',
       dias: '3',
       motivo: 'Paciente apresenta quadro clínico de diarreia líquida profusa, náuseas, vômitos e febre não medida de início há 12h. Necessita de afastamento das atividades laborativas para repouso, hidratação oral vigorosa e isolamento de contágio direto.',
-      cid: 'A09',
-      declararCid: true
+      cid: 'A09'
     },
     {
       label: 'IVAS / Gripe (5 dias)',
       dias: '5',
       motivo: 'Paciente com quadro de febre termometrada (38.5ºC), tosse produtiva, coriza intensa, mialgia difusa e prostração física. Indicado repouso domiciliar, sintomáticos e hidratação regular, devendo permanecer afastado de aglomerações e atividades profissionais.',
-      cid: 'J06.9',
-      declararCid: true
+      cid: 'J06.9'
     },
     {
       label: 'Saúde Mental / Transtorno Ansioso (7 dias)',
       dias: '7',
       motivo: 'Paciente em acompanhamento psiquiátrico/psicológico regular apresenta crise ansiosa aguda com sintomas de palpitações, insônia refratária, irritabilidade acentuada e incapacidade de manter concentração para as atividades laborativas. Necessita de afastamento temporário para estabilização clínica e ajuste terapêutico.',
-      cid: 'F41.1',
-      declararCid: false
+      cid: 'F41.1'
     },
     {
       label: 'Pós-Cirúrgico / Recuperação (15 dias)',
       dias: '15',
       motivo: 'Paciente em período pós-operatório imediato, necessitando de repouso relativo, curativos periódicos e acompanhamento ambulatorial. Está temporariamente impedido de exercer suas atividades laborativas habituais até liberação médica formal.',
-      cid: 'Z48.0',
-      declararCid: false
+      cid: 'Z48.0'
     }
   ],
   COMPARECIMENTO: [
@@ -238,10 +236,25 @@ export default function Documentos() {
     }
   }, [appPacienteNome, appPacienteCpf]);
 
-  const [aiPrompt, setAiPrompt] = useState('');
+  // A caixa da IA já vem com a queixa da consulta (Prontuário/outras abas): não redigitar o caso.
+  const [aiPrompt, setAiPrompt] = useState(() => useAppStore.getState().queixa || '');
+  const appIdade = useAppStore((s) => s.pacienteIdade);
+  const appGenero = useAppStore((s) => s.genero);
   const [loadingAi, setLoadingAi] = useState(false);
   const [erroAi, setErroAi] = useState('');
   const [showFullPreview, setShowFullPreview] = useState(false);
+
+  // Ctrl+Enter imprime quando há paciente.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && useDocumentStore.getState().pacienteNome) {
+        e.preventDefault();
+        navigate('/documentos/imprimir');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [navigate]);
 
   const inputCls = "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 focus:bg-white focus:border-indigo-500 rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-100 font-medium text-gray-800 placeholder-gray-400";
   const labelCls = "block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5";
@@ -251,8 +264,10 @@ export default function Documentos() {
     setLoadingAi(true);
     setErroAi('');
     try {
+      const app = useAppStore.getState();
+      const contexto = buildPacienteContexto({ pacienteNome: app.pacienteNome, pacienteIdade: app.pacienteIdade, genero: app.genero });
       if (doc.tipoDocumento === 'LAUDO') {
-        const res = await gerarLaudoIA(aiPrompt);
+        const res = await gerarLaudoIA(aiPrompt, contexto);
         doc.setDocumento({
           laudoDiagnostico: res.laudoDiagnostico,
           laudoCid: res.laudoCid,
@@ -261,17 +276,18 @@ export default function Documentos() {
           laudoPrognostico: res.laudoPrognostico,
         });
       } else if (doc.tipoDocumento === 'ATESTADO') {
-        const res = await gerarAtestadoIA(aiPrompt);
+        const res = await gerarAtestadoIA(aiPrompt, contexto);
         doc.setDocumento({
           atestadoMotivo: res.atestadoMotivo,
           atestadoCid: res.atestadoCid,
           atestadoDias: res.atestadoDias,
-          atestadoDeclararCid: !!res.atestadoCid,
+          // A IA sugere o CID; imprimir depende da autorização do paciente, marcada pelo médico.
+          atestadoDeclararCid: false,
         });
       }
       setAiPrompt('');
-    } catch {
-      setErroAi('Erro ao gerar documento com IA. Tente preencher manualmente.');
+    } catch (err: unknown) {
+      setErroAi(getErrorMessage(err, 'Erro ao gerar documento com IA. Tente preencher manualmente.'));
     } finally {
       setLoadingAi(false);
     }
@@ -293,7 +309,9 @@ export default function Documentos() {
       atestadoDias: preset.dias,
       atestadoMotivo: preset.motivo,
       atestadoCid: preset.cid,
-      atestadoDeclararCid: preset.declararCid,
+      // CID no atestado só com autorização expressa do paciente (Res. CFM 1.658/2002,
+      // art. 5º): o modelo preenche o código, quem marca a autorização é o médico.
+      atestadoDeclararCid: false,
     });
   };
 
@@ -340,36 +358,24 @@ export default function Documentos() {
 
   return (
     <Layout>
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Top Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-gradient-to-r from-gray-900 via-indigo-950 to-indigo-900 p-6 rounded-3xl text-white shadow-xl">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Emissão de Documentos Clínicos</h1>
-            <p className="text-xs text-indigo-200 mt-1 font-medium">
-              Gere laudos formais, atestados médicos e ASO com auxílio de IA e presets oficiais.
-            </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {/* Cabeçalho no padrão das outras abas; o botão de imprimir fica no rodapé */}
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="min-w-0">
+            <h1 className="text-xl lg:text-2xl font-bold font-display tracking-tight text-neutral-text">Documentos</h1>
+            <p className="text-xs text-neutral-text-muted mt-0.5">Laudo, atestado, comparecimento, aptidão, ASO e documento livre · Ctrl+Enter imprime</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (confirm('Limpar todos os dados do documento e dados do paciente?')) {
-                  doc.resetDocumento();
-                }
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/15 active:bg-white/20 text-white rounded-xl text-xs font-bold transition-all border border-white/10"
-            >
-              <RotateCcw size={14} />
-              Limpar Rascunho
-            </button>
-            <button
-              onClick={() => navigate('/documentos/imprimir')}
-              disabled={!doc.pacienteNome}
-              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 disabled:text-gray-400 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-emerald-900/10 hover:scale-[1.01]"
-            >
-              <Printer size={14} />
-              Imprimir / PDF
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              if (confirm('Limpar todos os dados do documento?')) {
+                doc.resetDocumento();
+              }
+            }}
+            className="flex items-center gap-1 px-3 py-2 text-xs text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 bg-white cursor-pointer font-medium"
+          >
+            <RotateCcw size={12} />
+            Limpar
+          </button>
         </div>
 
         {/* Tab Selector */}
@@ -407,124 +413,6 @@ export default function Documentos() {
           {/* Coluna Esquerda: Edição */}
           <div className="flex-1 w-full space-y-6">
             
-            {/* Presets Rápidos */}
-            {doc.tipoDocumento !== 'LIVRE' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3.5">Modelos Rápidos / Presets</h2>
-                <div className="flex flex-wrap gap-2.5">
-                  {doc.tipoDocumento === 'LAUDO' && (
-                    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {Array.from(new Set(PRESETS.LAUDO.map(p => p.categoria))).map((cat) => {
-                        const presetsDaCat = PRESETS.LAUDO.filter(p => p.categoria === cat);
-                        return (
-                          <div key={cat} className="bg-gray-50/50 border border-gray-150 p-3 rounded-2xl flex flex-col gap-2">
-                            <h3 className="text-[10px] font-extrabold text-indigo-650 uppercase tracking-widest flex items-center gap-1.5 border-b border-gray-200/60 pb-1 mb-1">
-                              {cat === 'Cognitivo / Neuro' && '🧠'}
-                              {cat === 'Cardiovascular' && '🫀'}
-                              {cat === 'Insumos / Cuidados' && '🩹'}
-                              {cat === 'Reabilitação' && '♿'}
-                              {cat}
-                            </h3>
-                            <div className="flex flex-wrap gap-1.5">
-                              {presetsDaCat.map((p, idx) => (
-                                <button
-                                  key={idx}
-                                  onClick={() => aplicarPresetLaudo(p)}
-                                  className="px-3 py-1.5 bg-white hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 text-indigo-900 rounded-xl text-xs font-semibold transition-all hover:scale-[1.01]"
-                                >
-                                  {p.label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {doc.tipoDocumento === 'ATESTADO' && PRESETS.ATESTADO.map((p, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => aplicarPresetAtestado(p)}
-                      className="px-3.5 py-2 bg-rose-50/40 hover:bg-rose-50 border border-rose-100/50 hover:border-rose-200 text-rose-800 rounded-xl text-xs font-semibold transition-all"
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                  {doc.tipoDocumento === 'COMPARECIMENTO' && PRESETS.COMPARECIMENTO.map((p, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => aplicarPresetComparecimento(p)}
-                      className="px-3.5 py-2 bg-sky-50/40 hover:bg-sky-50 border border-sky-100/50 hover:border-sky-200 text-sky-800 rounded-xl text-xs font-semibold transition-all"
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                  {doc.tipoDocumento === 'APTIDAO' && PRESETS.APTIDAO.map((p, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => aplicarPresetAptidao(p)}
-                      className="px-3.5 py-2 bg-amber-50/40 hover:bg-amber-50 border border-amber-100/50 hover:border-amber-200 text-amber-800 rounded-xl text-xs font-semibold transition-all"
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                  {doc.tipoDocumento === 'ASO' && PRESETS.ASO.map((p, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => aplicarPresetAso(p)}
-                      className="px-3.5 py-2 bg-emerald-50/40 hover:bg-emerald-50 border border-emerald-100/50 hover:border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold transition-all"
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* AI Assistant Panel (For Laudo & Atestado) */}
-            {(doc.tipoDocumento === 'LAUDO' || doc.tipoDocumento === 'ATESTADO') && (
-              <div className="bg-gradient-to-br from-indigo-950 via-indigo-900 to-indigo-950 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-44 h-44 bg-indigo-500/10 rounded-full blur-2xl"></div>
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="text-yellow-400 fill-yellow-400" size={18} />
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-indigo-200">Redigir Documento Clínico com IA</h3>
-                </div>
-                <p className="text-xs text-indigo-150 leading-relaxed mb-4">
-                  Digite brevemente as queixas ou justificativas e a IA gerará um documento estruturado sob os termos técnicos do CFM.
-                </p>
-                <div className="space-y-3">
-                  <textarea
-                    rows={2}
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    placeholder={
-                      doc.tipoDocumento === 'LAUDO'
-                        ? 'Ex: Paciente com Alzheimer avançado, perda cognitiva e incontinência, necessita de cuidador constante.'
-                        : 'Ex: Paciente de 32 anos com cefaleia intensa e picos febris, necessita de repouso por 2 dias.'
-                    }
-                    className="w-full px-4 py-3 bg-white/10 hover:bg-white/12 focus:bg-white/15 text-white placeholder-indigo-300/60 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-none border border-white/10 font-medium"
-                  />
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] text-indigo-300 font-semibold">IA Ativa: {getActiveModelLabel()}</span>
-                    <button
-                      onClick={handleIA}
-                      disabled={loadingAi || !aiPrompt.trim()}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 disabled:from-gray-700 disabled:to-gray-800 disabled:text-gray-400 text-gray-900 font-bold text-xs rounded-xl shadow-lg transition-all"
-                    >
-                      {loadingAi ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                      {loadingAi ? 'Processando...' : 'Gerar com IA'}
-                    </button>
-                  </div>
-                </div>
-                {erroAi && (
-                  <p className="text-xs text-red-300 mt-2.5 font-bold flex items-center gap-1">
-                    <ShieldAlert size={14} />
-                    {erroAi}
-                  </p>
-                )}
-              </div>
-            )}
-
             {/* Dados de Identificação */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-50">
@@ -540,7 +428,7 @@ export default function Documentos() {
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-gray-800 truncate">{doc.pacienteNome}</p>
                         <p className="text-[11px] text-gray-500 font-medium mt-0.5">
-                          {doc.pacienteCpf ? `CPF ${doc.pacienteCpf}` : 'CPF não informado no prontuário'}
+                          {[appIdade ? `${appIdade} anos` : 'idade não informada', appGenero === 'F' ? 'Feminino' : 'Masculino', doc.pacienteCpf ? `CPF ${doc.pacienteCpf}` : 'sem CPF'].join(' · ')}
                         </p>
                       </div>
                       <button
@@ -657,6 +545,124 @@ export default function Documentos() {
                 </div>
               </div>
             </div>
+
+            {/* Presets Rápidos */}
+            {doc.tipoDocumento !== 'LIVRE' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3.5">Modelos Rápidos / Presets</h2>
+                <div className="flex flex-wrap gap-2.5">
+                  {doc.tipoDocumento === 'LAUDO' && (
+                    <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Array.from(new Set(PRESETS.LAUDO.map(p => p.categoria))).map((cat) => {
+                        const presetsDaCat = PRESETS.LAUDO.filter(p => p.categoria === cat);
+                        return (
+                          <div key={cat} className="bg-gray-50/50 border border-gray-150 p-3 rounded-2xl flex flex-col gap-2">
+                            <h3 className="text-[10px] font-extrabold text-indigo-650 uppercase tracking-widest flex items-center gap-1.5 border-b border-gray-200/60 pb-1 mb-1">
+                              {cat === 'Cognitivo / Neuro' && '🧠'}
+                              {cat === 'Cardiovascular' && '🫀'}
+                              {cat === 'Insumos / Cuidados' && '🩹'}
+                              {cat === 'Reabilitação' && '♿'}
+                              {cat}
+                            </h3>
+                            <div className="flex flex-wrap gap-1.5">
+                              {presetsDaCat.map((p, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => aplicarPresetLaudo(p)}
+                                  className="px-3 py-1.5 bg-white hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 text-indigo-900 rounded-xl text-xs font-semibold transition-all hover:scale-[1.01]"
+                                >
+                                  {p.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {doc.tipoDocumento === 'ATESTADO' && PRESETS.ATESTADO.map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => aplicarPresetAtestado(p)}
+                      className="px-3.5 py-2 bg-rose-50/40 hover:bg-rose-50 border border-rose-100/50 hover:border-rose-200 text-rose-800 rounded-xl text-xs font-semibold transition-all"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  {doc.tipoDocumento === 'COMPARECIMENTO' && PRESETS.COMPARECIMENTO.map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => aplicarPresetComparecimento(p)}
+                      className="px-3.5 py-2 bg-sky-50/40 hover:bg-sky-50 border border-sky-100/50 hover:border-sky-200 text-sky-800 rounded-xl text-xs font-semibold transition-all"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  {doc.tipoDocumento === 'APTIDAO' && PRESETS.APTIDAO.map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => aplicarPresetAptidao(p)}
+                      className="px-3.5 py-2 bg-amber-50/40 hover:bg-amber-50 border border-amber-100/50 hover:border-amber-200 text-amber-800 rounded-xl text-xs font-semibold transition-all"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                  {doc.tipoDocumento === 'ASO' && PRESETS.ASO.map((p, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => aplicarPresetAso(p)}
+                      className="px-3.5 py-2 bg-emerald-50/40 hover:bg-emerald-50 border border-emerald-100/50 hover:border-emerald-200 text-emerald-800 rounded-xl text-xs font-semibold transition-all"
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* AI Assistant Panel (For Laudo & Atestado) */}
+            {(doc.tipoDocumento === 'LAUDO' || doc.tipoDocumento === 'ATESTADO') && (
+              <div className="bg-gradient-to-br from-indigo-950 via-indigo-900 to-indigo-950 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-44 h-44 bg-indigo-500/10 rounded-full blur-2xl"></div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="text-yellow-400 fill-yellow-400" size={18} />
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-indigo-200">Redigir Documento Clínico com IA</h3>
+                </div>
+                <p className="text-xs text-indigo-150 leading-relaxed mb-4">
+                  A queixa da consulta já vem aqui; ajuste se precisar. A IA recebe também a idade e o sexo do paciente.
+                </p>
+                <div className="space-y-3">
+                  <textarea
+                    rows={2}
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder={
+                      doc.tipoDocumento === 'LAUDO'
+                        ? 'Ex: Paciente com Alzheimer avançado, perda cognitiva e incontinência, necessita de cuidador constante.'
+                        : 'Ex: Paciente de 32 anos com cefaleia intensa e picos febris, necessita de repouso por 2 dias.'
+                    }
+                    className="w-full px-4 py-3 bg-white/10 hover:bg-white/12 focus:bg-white/15 text-white placeholder-indigo-300/60 text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all resize-none border border-white/10 font-medium"
+                  />
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-indigo-300 font-semibold">IA Ativa: {getActiveModelLabel()}</span>
+                    <button
+                      onClick={handleIA}
+                      disabled={loadingAi || !aiPrompt.trim()}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 disabled:from-gray-700 disabled:to-gray-800 disabled:text-gray-400 text-gray-900 font-bold text-xs rounded-xl shadow-lg transition-all"
+                    >
+                      {loadingAi ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                      {loadingAi ? 'Processando...' : 'Gerar com IA'}
+                    </button>
+                  </div>
+                </div>
+                {erroAi && (
+                  <p className="text-xs text-red-300 mt-2.5 font-bold flex items-center gap-1">
+                    <ShieldAlert size={14} />
+                    {erroAi}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Formulários Dinâmicos */}
             
@@ -1169,7 +1175,7 @@ export default function Documentos() {
               className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-200 disabled:text-gray-400 text-white rounded-xl font-bold text-sm shadow-md transition-all"
             >
               <Printer size={15} />
-              Imprimir Guia A4
+              Imprimir documento
             </button>
           </div>
         </div>
