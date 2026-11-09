@@ -56,7 +56,8 @@ export default function AtivoAutocomplete({
       setIndiceAtivo((p) => (p > 0 ? p - 1 : sugestoes.length - 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (indiceAtivo >= 0) escolher(sugestoes[indiceAtivo]);
+      // Sem linha escolhida com as setas, Enter fica com a primeira sugestão.
+      escolher(sugestoes[indiceAtivo >= 0 ? indiceAtivo : 0]);
     } else if (e.key === 'Escape') {
       setAberto(false);
     }
