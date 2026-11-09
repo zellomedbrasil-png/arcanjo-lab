@@ -64,7 +64,7 @@ interface AppState {
   gravarConsulta: () => boolean;
   removerConsultaGravada: (index: number) => void;
   limparConsultasGravadas: () => void;
-  adicionarConsultaAoHistorico: (nome: string, queixa: string) => boolean;
+  adicionarConsultaAoHistorico: (nome: string, queixa: string, extra?: Pick<ConsultaGravada, 'idade' | 'genero' | 'cpf' | 'soap'>) => boolean;
   setSyncRoomCode: (code: string) => void;
   setSyncStatus: (status: 'idle' | 'waiting' | 'connected' | 'recording' | 'transcribing') => void;
   setQuickNotes: (notes: string) => void;
@@ -221,7 +221,7 @@ export const useAppStore = create<AppState>()(
         });
       },
 
-      adicionarConsultaAoHistorico: (nome: string, queixaVal: string) => {
+      adicionarConsultaAoHistorico: (nome, queixaVal, extra) => {
         let success = false;
         set((state) => {
           const n = nome.trim();
@@ -233,6 +233,7 @@ export const useAppStore = create<AppState>()(
             nome: n,
             queixa: q,
             data: new Date().toISOString(),
+            ...(extra ?? {}),
           };
           const filtradas = state.consultasGravadas.filter(
             (c) => !(c.nome.toLowerCase() === n.toLowerCase() && c.queixa.toLowerCase() === q.toLowerCase())
@@ -248,7 +249,12 @@ export const useAppStore = create<AppState>()(
 
       gravarConsulta: () => {
         const state = get();
-        return state.adicionarConsultaAoHistorico(state.pacienteNome, state.queixa);
+        return state.adicionarConsultaAoHistorico(state.pacienteNome, state.queixa, {
+          idade: state.pacienteIdade,
+          genero: state.genero,
+          cpf: state.pacienteCpf,
+          soap: state.soap,
+        });
       },
 
       removerConsultaGravada: (index: number) => set((state) => ({
