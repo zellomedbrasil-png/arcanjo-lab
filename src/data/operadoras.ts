@@ -16,6 +16,8 @@ export const OPERADORAS: Operadora[] = [
   { nome: 'Cassi',                      registroAns: '346659', grupo: 'Nacional' },
   { nome: 'Omint',                      registroAns: '359661', grupo: 'Nacional' },
   { nome: 'Prevent Senior',             registroAns: '302147', grupo: 'Nacional' },
+  // GEAP Autogestão em Saúde: SP/SADT padrão TISS 3.02, campo 1 = 323080 (guia da operadora).
+  { nome: 'GEAP Saúde',                 registroAns: '323080', grupo: 'Nacional' },
   // Regional (CE)
   { nome: 'Hapvida',                    registroAns: '368253', grupo: 'Regional' },
   { nome: 'Unimed Fortaleza',           registroAns: '317144', grupo: 'Regional' },

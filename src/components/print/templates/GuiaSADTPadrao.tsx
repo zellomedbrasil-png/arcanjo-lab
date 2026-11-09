@@ -1,5 +1,11 @@
 import { useAppStore } from '../../../store/useAppStore';
 import { getProcedimentoNome } from '../../../data/procedimentos';
+import logoGeap from '../../../assets/logo_geap.png';
+
+// Operadoras que exigem o logotipo no cabeçalho da guia (recortado da guia oficial).
+const LOGO_OPERADORA: { padrao: RegExp; src: string; alt: string }[] = [
+  { padrao: /\bgeap\b/i, src: logoGeap, alt: 'GEAP Saúde' },
+];
 
 const MEDICO = {
   nome: 'ROBERTO ARCANJO',
@@ -90,6 +96,7 @@ export default function GuiaSADTPadrao({
     examesSelecionados, procedimentosSelecionados, procedimentosPersonalizados, tipoGuia,
   } = store;
 
+  const logo = LOGO_OPERADORA.find((l) => l.padrao.test(operadora));
   const isServico = itemsOverride !== undefined;
   const justificativa = justificativaOverride !== undefined ? justificativaOverride : store.justificativa;
   const isLab = !isServico && tipoGuia === 'LABORATORIO';
@@ -140,7 +147,11 @@ export default function GuiaSADTPadrao({
         {/* ══ CABEÇALHO ══ */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '3px', position: 'relative' }}>
           <div style={{ width: '160px', fontSize: '9px', fontWeight: 700, color: '#000', textTransform: 'uppercase' }}>
-            {operadora || ' '}
+            {logo ? (
+              <img src={logo.src} alt={logo.alt} style={{ height: '9mm', width: 'auto', maxWidth: '160px', objectFit: 'contain', display: 'block' }} />
+            ) : (
+              operadora || ' '
+            )}
           </div>
           <div style={{ flex: 1, textAlign: 'center' }}>
             <div style={{ fontSize: '11px', fontWeight: 700, lineHeight: 1.2 }}>
