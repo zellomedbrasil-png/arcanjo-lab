@@ -46,7 +46,7 @@ function salvarEscolha(v: ReturnType<typeof lerEscolha>) {
 function PreviaPainel({ chave, convenio }: { chave: string; convenio: ConvenioProtocolo }) {
   const setJustificativa = useAppStore((s) => s.setJustificativa);
   const painel = PAINEIS_MARKDOWN[chave];
-  const guia = useMemo(() => montarGuiaPainel(painel.exames, convenio), [painel, convenio]);
+  const guia = useMemo(() => montarGuiaPainel(painel.exames, convenio, ehCR(painel.nome)), [painel, convenio]);
 
   // Junta a justificativa do painel à que já existe, sem repetir.
   const aplicarJustificativa = () => {

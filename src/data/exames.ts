@@ -2095,9 +2095,10 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
   },
   // ─── Painéis do Carlos Ribeiro (CR), ISSEC e IPM, homem e mulher ───────────
   // Exames e ordem iguais às guias CR de cada convênio (ISSEC Masculino 2026
-  // jul corrigida, ISSEC Feminino, IPM Homem e IPM Mulher), no máximo 50 por
-  // painel. "Vit D 1,25" das guias IPM = vitamina D 25-OH. Sufixo -CR- agrupa
-  // estes painéis numa seção própria na UI.
+  // jul corrigida, ISSEC Feminino, IPM Homem e IPM Mulher), todos os exames de
+  // cada PDF. "Vit D 1,25" das guias IPM = vitamina D 25-OH. Sufixo -CR- agrupa
+  // estes painéis numa seção própria na UI e os mantém marcados mesmo sem
+  // código no convênio (ver montarGuiaPainel).
   "ISSEC-CR-M": {
     "nome": "ISSEC-CR-M",
     "exames": [
@@ -2120,7 +2121,6 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "TSH",
       "PARATORMONIO - PTH",
       "ACTH - ADRENOCORTICOTROFICO",
-      "CROMO",
       "ALUMINIO",
       "ZINCO SERICO",
       "HEPATITE C - ANTI HCV",
@@ -2150,7 +2150,8 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "TIREOGLOBULINA",
       "CA 125",
       "CA 19-9",
-      "PSA LIVRE"
+      "PSA LIVRE",
+      "SUMARIO DE URINA"
     ],
     "justificativa": ""
   },
@@ -2252,7 +2253,6 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "MIOGLOBINA",
       "GASTRINA",
       "ZINCO SERICO",
-      "ALUMINIO",
       "TIREOGLOBULINA",
       "HIV 1 E 2",
       "HTLV 1/2",
@@ -2262,7 +2262,8 @@ export const PAINEIS_MARKDOWN: Record<string, { nome: string, exames: string[], 
       "BIG PROLACTINA",
       "BETA 2 MICROGLOBULINA",
       "PSA TOTAL",
-      "PSA LIVRE"
+      "PSA LIVRE",
+      "SUMARIO DE URINA"
     ],
     "justificativa": ""
   },

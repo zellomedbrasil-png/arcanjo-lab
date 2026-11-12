@@ -118,9 +118,23 @@ function fecharGuia(itens: ItemGuia[]): GuiaMontada {
 /**
  * Guia de um painel fixo (aba Painéis): a lista vai como está, sem critérios de
  * idade nem equivalências de convênio; só código, valor, alertas e grupos.
+ *
+ * `manterTodos` (painéis CR, que repetem a guia impressa do convênio): o exame
+ * sem código na tabela continua marcado, porque está na guia; o aviso fica para
+ * o médico conferir. Sem isso ele sairia desmarcado e a guia perderia exames.
  */
-export function montarGuiaPainel(exames: string[], convenio: ConvenioProtocolo): GuiaMontada {
-  return fecharGuia([...new Set(exames)].map((e) => itemDaGuia(e, convenio)));
+export function montarGuiaPainel(exames: string[], convenio: ConvenioProtocolo, manterTodos = false): GuiaMontada {
+  return fecharGuia(
+    [...new Set(exames)].map((e) => {
+      const item = itemDaGuia(e, convenio);
+      if (!manterTodos || item.marcado) return item;
+      return {
+        ...item,
+        marcado: true,
+        alertas: item.alertas.map((a) => (a === `Fora da tabela ${convenio}.` ? `Sem código na tabela ${convenio}; consta na guia.` : a)),
+      };
+    })
+  );
 }
 
 /**
